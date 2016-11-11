@@ -2,9 +2,15 @@ package testingframe;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import game.Player;
 import game.board.Board;
@@ -20,6 +26,7 @@ public class TestingFrame extends JFrame {
 	private final Player player1, player2;
 
 	private final GamePainter gamePainter;
+	private final GridLayout gridLayout;
 	private final SquareLabel[][] labels;
 
 	public TestingFrame(Board board, Player player1, Player player2) {
@@ -29,6 +36,10 @@ public class TestingFrame extends JFrame {
 
 		labels = new SquareLabel[board.getWidth()][board.getHeight()];
 
+		gamePainter = new GamePainter();
+		gridLayout = new GridLayout(board.getHeight(),board.getWidth());
+		gamePainter.setLayout(gridLayout);
+
 		for (int y = 0; y < board.getHeight(); y++) {
 			for (int x = 0; x < board.getWidth(); x++) {
 				Coordinate coor = new Coordinate(x, y);
@@ -37,10 +48,10 @@ public class TestingFrame extends JFrame {
 				} else {
 					labels[x][y] = new SquareLabel(board.getSquare(coor));
 				}
+				gamePainter.add(labels[x][y]);
 			}
 		}
 		
-		gamePainter = new GamePainter();
 		this.add(gamePainter);
 		
 	}
@@ -50,7 +61,7 @@ public class TestingFrame extends JFrame {
 		return (num * scale + new1);
 	}
 	
-	class GamePainter extends JComponent{
+	class GamePainter extends JPanel{
 
 		private static final long serialVersionUID = 7783998123812310360L;
 		
@@ -58,27 +69,33 @@ public class TestingFrame extends JFrame {
 			super();
 		}
 		@Override
-		public void paintComponent(Graphics g){
+		public void paint(Graphics g){
+			
+			int totalwidth = getWidth(), totalheight = getHeight();
+			
+			g.clearRect(0, 0, totalwidth, totalheight);
+			g.setColor(Color.lightGray);
+			g.fillRect(0, 0, totalwidth, totalheight);
+			
 			g.setColor(Color.black);
 			
-			int width = getWidth(), height = getHeight();
 			
 			for(int x=0; x<board.getWidth()+1;x++){
-				int xdist = x*width/board.getWidth();
-				g.drawLine(xdist, 0, xdist, height);
+				int xdist = x*totalwidth/board.getWidth();
+				g.drawLine(xdist, 0, xdist, totalheight);
 			}
 			for(int y=0; y<board.getWidth()+1;y++){
-				int ydist = y*height/board.getHeight();
-				g.drawLine(0,ydist, width, ydist);
+				int ydist = y*totalheight/board.getHeight();
+				g.drawLine(0,ydist, totalwidth, ydist);
 			}
-			
+			super.paint(g);
 		}
 		
 	}
 
 	private static final Color slightBlue = new Color(192, 192, 210),slightRed = new Color(210, 192, 192);
 
-	class SquareLabel extends JComponent {
+	class SquareLabel extends JComponent implements ActionListener, MouseListener{
 
 		private static final long serialVersionUID = 7959593291619934967L;
 
@@ -86,15 +103,17 @@ public class TestingFrame extends JFrame {
 
 		public SquareLabel(Square sqr) {
 			this.sqr = sqr;
+			
+			this.addMouseListener(this);
 		}
 
 		public void paintComponent(Graphics g) {
-			g.setColor(Color.black);
+			currentg = g;
 			if (sqr == null) {
+				g.setColor(Color.black);
 				g.fillRect(0, 0, getWidth(), getHeight());
 				return;
 			}
-			g.clearRect(0, 0, getWidth(), getHeight());
 
 			g.setColor(Color.lightGray);
 			g.fillRect(0, 0, getWidth(), getHeight());
@@ -118,6 +137,33 @@ public class TestingFrame extends JFrame {
 
 		}
 
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//pressed this button
+		}
+		
+		Graphics currentg;
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			currentg.drawOval(50, 50, 50, 50);
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+		}
+		
 	}
 
 }

@@ -18,8 +18,8 @@ public abstract class Unit {
 
 	protected Coordinate coor;
 	protected Direction directionFacing;
-	
-	protected int health, armor;
+
+	protected int currentHealth, currentArmor;
 
 	public Unit(Player playerOwner, Team teamOwner, Board board, Direction directionFacing, Coordinate coor) {
 		this.playerOwner = playerOwner;
@@ -29,11 +29,12 @@ public abstract class Unit {
 		this.directionFacing = directionFacing;
 	}
 
+	public Player getPlayerOwner() {
+		return playerOwner;
+	}
+
 	public Team getTeamOwner() {
 		return teamOwner;
-	}
-	public Player getPlayerOwner(){
-		return playerOwner;
 	}
 
 	public Board getBoard() {
@@ -48,18 +49,16 @@ public abstract class Unit {
 		this.coor = coor;
 	}
 
-	public abstract int getMoveRange();
+	public abstract int getDefaultHealth();
 
-	// TODO make sure all units should consider overriding these methods
-	public Path getPathTo(Coordinate moveToCoor) {
-		if (!(canMove() && isInRangeOfWalking(moveToCoor)))
-			return null;
-		return PathFinder.getPath(this, moveToCoor);
+	public int getCurrentHealth() {
+		return currentHealth;
 	}
 
-	public final boolean isInRangeOfWalking(Coordinate moveToCoor) {
-		int walkingdistance = Math.abs(moveToCoor.x() - coor.x()) + Math.abs(moveToCoor.y() - coor.y());
-		return walkingdistance <= getMoveRange();
+	public abstract int getDefaultArmor();
+
+	public int getCurrentArmor() {
+		return currentArmor;
 	}
 
 	// TODO make sure all units should consider overriding these methods
@@ -71,9 +70,23 @@ public abstract class Unit {
 	public boolean canSideStep() {
 		return true;
 	}
-	
-	public abstract boolean canUseAbilityOn(Object...args);
-	
+
+	public abstract int getMoveRange();
+
+	public boolean isInRangeOfWalking(Coordinate moveToCoor) {
+		int walkingdistance = Math.abs(moveToCoor.x() - coor.x()) + Math.abs(moveToCoor.y() - coor.y());
+		return walkingdistance <= getMoveRange();
+	}
+
+	// TODO make sure all units should consider overriding these methods
+	public Path getPathTo(Coordinate moveToCoor) {
+		if (!(canMove() && isInRangeOfWalking(moveToCoor)))
+			return null;
+		return PathFinder.getPath(this, moveToCoor);
+	}
+
+	public abstract boolean canUseAbilityOn(Object... args);
+
 	/**
 	 * Simply tells the unit to perform its ability given some arguments
 	 * 
@@ -89,12 +102,11 @@ public abstract class Unit {
 	 */
 	public abstract void abilityInteract(Square sqr);
 
-	public void takeDamage(int dmg){
-		//TODO make better health reduction algorithm obviously
-		health-=dmg;
+	public void takeDamage(int dmg) {
+		// TODO make better health reduction algorithm obviously
+		currentHealth -= dmg;
 	}
-	
-	
+
 	public static boolean areAllies(Unit unit1, Unit unit2) {
 		if (unit1.teamOwner == null) {
 			return unit1.playerOwner.equals(unit2.playerOwner);

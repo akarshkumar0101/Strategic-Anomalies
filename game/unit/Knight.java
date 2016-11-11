@@ -16,6 +16,8 @@ public class Knight extends Unit {
 	public Knight(Player playerOwner,Team teamOwner, Board board, Direction directionFacing, Coordinate coor) {
 		super(playerOwner,teamOwner,board, directionFacing, coor);
 	}
+	
+	
 
 	@Override
 	public int getMoveRange() {
@@ -61,7 +63,20 @@ public class Knight extends Unit {
 		unit.takeDamage(getCurrentAttackDamage());
 	}
 
-	
 
+
+	@Override
+	public int getDefaultHealth() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+
+
+	@Override
+	public int getDefaultArmor() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
 
 }
