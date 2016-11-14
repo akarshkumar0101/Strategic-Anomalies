@@ -1,23 +1,28 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Team {
-	
-	private final List<Player> players;
-	
-	public Team(Player...playersarr){
-		players = new ArrayList<>(playersarr.length);
-		for(Player player: playersarr){
-			players.add(player);
-		}
+
+	private final Player[] players;
+
+	public Team(Player... playersarr) {
+		if (playersarr == null || playersarr.length == 0)
+			throw new IllegalArgumentException("Attempted to create a team with null players or 0 players.");
+		players = playersarr;
 	}
-	public Team(List<Player> players){
-		this.players =players;
-	}
-	
-	public List<Player> getPlayers(){
+
+	public Player[] getPlayers() {
 		return players;
+	}
+
+	public boolean isMultiplayer() {
+		return players.length > 1;
+	}
+
+	public boolean contains(Player player) {
+		for (Player p : players) {
+			if (p.equals(player))
+				return true;
+		}
+		return false;
 	}
 }

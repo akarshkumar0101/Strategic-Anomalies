@@ -3,7 +3,7 @@ package game.board;
 import game.util.Direction;
 
 public class Coordinate {
-	private final byte x, y;
+	protected final byte x, y;
 
 	public Coordinate(byte x, byte y) {
 		this.x = x;

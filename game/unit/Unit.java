@@ -6,6 +6,8 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Path;
 import game.board.Square;
+import game.stat.CoordinateProperty;
+import game.stat.DirectionProperty;
 import game.util.Direction;
 import game.util.PathFinder;
 
@@ -16,8 +18,8 @@ public abstract class Unit {
 
 	protected final Board board;
 
-	protected Coordinate coor;
-	protected Direction directionFacing;
+	protected CoordinateProperty coorProp;
+	protected DirectionProperty dirFacingProp;
 
 	protected int currentHealth, currentArmor;
 
@@ -25,8 +27,8 @@ public abstract class Unit {
 		this.playerOwner = playerOwner;
 		this.teamOwner = teamOwner;
 		this.board = board;
-		this.coor = coor;
-		this.directionFacing = directionFacing;
+		this.coorProp = new CoordinateProperty(this, coor);
+		this.dirFacingProp = new DirectionProperty(this, directionFacing);
 	}
 
 	public Player getPlayerOwner() {
@@ -41,12 +43,8 @@ public abstract class Unit {
 		return board;
 	}
 
-	public Coordinate getCoor() {
-		return coor;
-	}
-
-	public void setCoor(Coordinate coor) {
-		this.coor = coor;
+	public CoordinateProperty getCoorProp() {
+		return coorProp;
 	}
 
 	public abstract int getDefaultHealth();
@@ -74,7 +72,8 @@ public abstract class Unit {
 	public abstract int getMoveRange();
 
 	public boolean isInRangeOfWalking(Coordinate moveToCoor) {
-		int walkingdistance = Math.abs(moveToCoor.x() - coor.x()) + Math.abs(moveToCoor.y() - coor.y());
+		int walkingdistance = Math.abs(moveToCoor.x() - coorProp.getCoor().x())
+				+ Math.abs(moveToCoor.y() - coorProp.getCoor().y());
 		return walkingdistance <= getMoveRange();
 	}
 
@@ -108,11 +107,7 @@ public abstract class Unit {
 	}
 
 	public static boolean areAllies(Unit unit1, Unit unit2) {
-		if (unit1.teamOwner == null) {
-			return unit1.playerOwner.equals(unit2.playerOwner);
-		} else {
-			return unit1.teamOwner.equals(unit2.teamOwner);
-		}
+		return unit1.teamOwner.equals(unit2.teamOwner);
 	}
 
 }

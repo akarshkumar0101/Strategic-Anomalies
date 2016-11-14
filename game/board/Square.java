@@ -17,8 +17,8 @@ public class Square {
 		this(null, coor);
 	}
 
-	public boolean isEmpty() {
-		return (unitOnTop == null);
+	public Coordinate getCoor() {
+		return coor;
 	}
 
 	public Unit getUnitOnTop() {
@@ -32,15 +32,15 @@ public class Square {
 	public void setUnitOnTop(Unit unitOnTop) {
 		this.unitOnTop = unitOnTop;
 		if (unitOnTop != null)
-			unitOnTop.setCoor(coor);
-	}
-	
-	public void removeUnitOnTop(){
-		setUnitOnTop(null);
+			unitOnTop.getCoorProp().setCoor(coor);
 	}
 
-	public Coordinate getCoordinate() {
-		return coor;
+	public void removeUnitOnTop() {
+		this.unitOnTop = null;
+	}
+
+	public boolean isEmpty() {
+		return (unitOnTop == null);
 	}
 
 }

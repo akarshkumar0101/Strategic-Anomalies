@@ -6,10 +6,11 @@ import game.board.Path;
 import game.unit.Unit;
 
 public class PathFinder {
+
 	public static Path getPath(Unit unit, Coordinate moveToCoor) {
 		Board board = unit.getBoard();
 		int moveRange = unit.getMoveRange();
-		Coordinate from = unit.getCoor();
+		Coordinate from = unit.getCoorProp().getCoor();
 
 		if (!board.isInBoard(moveToCoor))
 			return null;

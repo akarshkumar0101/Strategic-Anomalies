@@ -48,9 +48,9 @@ public abstract class Board {
 		return grid[coor.x()][coor.y()].getUnitOnTop();
 	}
 
-	public void placeUnit(Unit unit){
-		checkCoordinateRange(unit.getCoor());
-		grid[unit.getCoor().x()][unit.getCoor().y()].setUnitOnTop(unit);
+	public void placeUnit(Unit unit) {
+		checkCoordinateRange(unit.getCoorProp().getCoor());
+		grid[unit.getCoorProp().getCoor().x()][unit.getCoorProp().getCoor().y()].setUnitOnTop(unit);
 	}
 
 }

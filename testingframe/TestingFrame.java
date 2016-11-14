@@ -132,7 +132,7 @@ public class TestingFrame extends JFrame {
 				g.setColor(slightRed);
 				g.fillRect(2, 2, getWidth()-2, getHeight()-2);
 			}
-
+			
 			g.drawOval(0, 0, getWidth(), getHeight());
 
 		}
