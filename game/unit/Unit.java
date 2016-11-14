@@ -6,8 +6,11 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Path;
 import game.board.Square;
-import game.stat.CoordinateProperty;
-import game.stat.DirectionProperty;
+import game.interaction.Damage;
+import game.unit.properties.ArmorProperty;
+import game.unit.properties.CoordinateProperty;
+import game.unit.properties.DirectionProperty;
+import game.unit.properties.HealthProperty;
 import game.util.Direction;
 import game.util.PathFinder;
 
@@ -18,17 +21,20 @@ public abstract class Unit {
 
 	protected final Board board;
 
-	protected CoordinateProperty coorProp;
-	protected DirectionProperty dirFacingProp;
-
-	protected int currentHealth, currentArmor;
+	protected final CoordinateProperty coorProp;
+	protected final DirectionProperty dirFacingProp;
+	protected final HealthProperty healthProp;
+	protected final ArmorProperty armorProp;
 
 	public Unit(Player playerOwner, Team teamOwner, Board board, Direction directionFacing, Coordinate coor) {
 		this.playerOwner = playerOwner;
 		this.teamOwner = teamOwner;
 		this.board = board;
+
 		this.coorProp = new CoordinateProperty(this, coor);
 		this.dirFacingProp = new DirectionProperty(this, directionFacing);
+		this.healthProp = new HealthProperty(this, getDefaultHealth());
+		this.armorProp = new ArmorProperty(this);
 	}
 
 	public Player getPlayerOwner() {
@@ -47,16 +53,20 @@ public abstract class Unit {
 		return coorProp;
 	}
 
+	public DirectionProperty getDirFacingProp() {
+		return dirFacingProp;
+	}
+
 	public abstract int getDefaultHealth();
 
-	public int getCurrentHealth() {
-		return currentHealth;
+	public HealthProperty getHealthProp() {
+		return healthProp;
 	}
 
 	public abstract int getDefaultArmor();
 
-	public int getCurrentArmor() {
-		return currentArmor;
+	public ArmorProperty getArmorProp() {
+		return armorProp;
 	}
 
 	// TODO make sure all units should consider overriding these methods
@@ -101,9 +111,9 @@ public abstract class Unit {
 	 */
 	public abstract void abilityInteract(Square sqr);
 
-	public void takeDamage(int dmg) {
-		// TODO make better health reduction algorithm obviously
-		currentHealth -= dmg;
+	public void takeDamage(Damage damage) {
+		// determine if blocks
+		healthProp.takeDamage(damage);
 	}
 
 	public static boolean areAllies(Unit unit1, Unit unit2) {

@@ -44,9 +44,6 @@ public class Knight extends Unit {
 		abilityInteract(board.getSquare(coor));
 	}
 
-	public int getCurrentAttackDamage() {
-		return ATTACKDAMAGE;
-	}
 
 	@Override
 	public void abilityInteract(Square sqr) {
@@ -55,7 +52,7 @@ public class Knight extends Unit {
 		if (unit == null)
 			return;
 
-		unit.takeDamage(getCurrentAttackDamage());
+		//unit.takeDamage();
 	}
 
 	@Override

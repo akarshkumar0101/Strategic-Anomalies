@@ -1,4 +1,4 @@
-package game.stat;
+package game.interaction;
 
 public enum DamageType {
 	PHYSICAL, MAGIC;

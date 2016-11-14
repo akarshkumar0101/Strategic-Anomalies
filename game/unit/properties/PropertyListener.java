@@ -1,4 +1,4 @@
-package game.stat;
+package game.unit.properties;
 
 import game.unit.Unit;
 

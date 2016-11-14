@@ -1,4 +1,4 @@
-package game.stat;
+package game.interaction;
 
 import game.unit.Unit;
 

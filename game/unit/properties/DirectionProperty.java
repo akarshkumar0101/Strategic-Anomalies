@@ -1,14 +1,14 @@
-package game.stat;
+package game.unit.properties;
 
 import game.unit.Unit;
 import game.util.Direction;
 
 public class DirectionProperty extends Property<Direction> {
-	private final Unit unit;
+
 	private Direction direction;
 
 	public DirectionProperty(Unit unit, Direction Direction) {
-		this.unit = unit;
+		super(unit);
 		this.direction = Direction;
 	}
 
@@ -19,6 +19,6 @@ public class DirectionProperty extends Property<Direction> {
 	public void setDir(Direction direction) {
 		Direction oldDir = this.direction;
 		this.direction = direction;
-		super.propertyChanged(unit, oldDir, this.direction);
+		super.propertyChanged(oldDir, this.direction);
 	}
 }
