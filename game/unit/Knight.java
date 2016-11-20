@@ -1,8 +1,7 @@
 package game.unit;
 
+import game.Game;
 import game.Player;
-import game.Team;
-import game.board.Board;
 import game.board.Coordinate;
 import game.board.Square;
 import game.util.Direction;
@@ -11,8 +10,8 @@ public class Knight extends Unit {
 
 	public static final int MOVERANGE = 3, ATTACKRANGE = 1, ATTACKDAMAGE = 25;
 
-	public Knight(Player playerOwner, Team teamOwner, Board board, Direction directionFacing, Coordinate coor) {
-		super(playerOwner, teamOwner, board, directionFacing, coor);
+	public Knight(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+		super(game, playerOwner, directionFacing, coor);
 	}
 
 	@Override
@@ -29,10 +28,10 @@ public class Knight extends Unit {
 			return false;
 		}
 
-		if (Coordinate.walkDist(this.coorProp.getCoor(), coor) > ATTACKRANGE) {
+		if (Coordinate.walkDist(this.coorProp.getCoor(), coor) > ATTACKRANGE)
 			return false;
-		}
-		return true;
+		else
+			return true;
 	}
 
 	@Override
@@ -41,9 +40,8 @@ public class Knight extends Unit {
 			return;
 		}
 		Coordinate coor = (Coordinate) args[0];
-		abilityInteract(board.getSquare(coor));
+		abilityInteract(game.getBoard().getSquare(coor));
 	}
-
 
 	@Override
 	public void abilityInteract(Square sqr) {
@@ -52,7 +50,7 @@ public class Knight extends Unit {
 		if (unit == null)
 			return;
 
-		//unit.takeDamage();
+		// unit.takeDamage();
 	}
 
 	@Override
@@ -63,6 +61,18 @@ public class Knight extends Unit {
 
 	@Override
 	public int getDefaultArmor() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getDefaultSideBlock() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public double getDefaultFrontBlock() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

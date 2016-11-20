@@ -1,52 +1,48 @@
 package game.unit;
 
+import game.Game;
 import game.Player;
-import game.Team;
-import game.board.Board;
 import game.board.Coordinate;
 import game.board.Path;
 import game.board.Square;
 import game.interaction.Damage;
+import game.interaction.effect.Affectable;
 import game.unit.properties.ArmorProperty;
 import game.unit.properties.CoordinateProperty;
 import game.unit.properties.DirectionProperty;
 import game.unit.properties.HealthProperty;
+import game.unit.properties.OwnerProperty;
 import game.util.Direction;
 import game.util.PathFinder;
 
-public abstract class Unit {
+public abstract class Unit extends Affectable {
 
-	protected final Player playerOwner;
-	protected final Team teamOwner;
+	protected final Game game;
 
-	protected final Board board;
+	protected final OwnerProperty ownerProp;
 
 	protected final CoordinateProperty coorProp;
 	protected final DirectionProperty dirFacingProp;
+
 	protected final HealthProperty healthProp;
 	protected final ArmorProperty armorProp;
 
-	public Unit(Player playerOwner, Team teamOwner, Board board, Direction directionFacing, Coordinate coor) {
-		this.playerOwner = playerOwner;
-		this.teamOwner = teamOwner;
-		this.board = board;
+	public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+		this.game = game;
 
+		this.ownerProp = new OwnerProperty(this, playerOwner);
 		this.coorProp = new CoordinateProperty(this, coor);
 		this.dirFacingProp = new DirectionProperty(this, directionFacing);
 		this.healthProp = new HealthProperty(this, getDefaultHealth());
 		this.armorProp = new ArmorProperty(this);
 	}
 
-	public Player getPlayerOwner() {
-		return playerOwner;
+	public Game getGame() {
+		return game;
 	}
 
-	public Team getTeamOwner() {
-		return teamOwner;
-	}
-
-	public Board getBoard() {
-		return board;
+	public OwnerProperty getOwnerProp() {
+		return ownerProp;
 	}
 
 	public CoordinateProperty getCoorProp() {
@@ -64,6 +60,10 @@ public abstract class Unit {
 	}
 
 	public abstract int getDefaultArmor();
+
+	public abstract double getDefaultSideBlock();
+
+	public abstract double getDefaultFrontBlock();
 
 	public ArmorProperty getArmorProp() {
 		return armorProp;
@@ -91,7 +91,7 @@ public abstract class Unit {
 	public Path getPathTo(Coordinate moveToCoor) {
 		if (!(canMove() && isInRangeOfWalking(moveToCoor)))
 			return null;
-		return PathFinder.getPath(this, moveToCoor);
+		return PathFinder.getPath(game.getBoard(), this, moveToCoor);
 	}
 
 	public abstract boolean canUseAbilityOn(Object... args);
@@ -112,12 +112,13 @@ public abstract class Unit {
 	public abstract void abilityInteract(Square sqr);
 
 	public void takeDamage(Damage damage) {
-		// determine if blocks
-		healthProp.takeDamage(damage);
+		armorProp.filterDamage(damage);
+		if (!damage.wasBlocked())
+			healthProp.takeRawDamage(damage);
 	}
 
 	public static boolean areAllies(Unit unit1, Unit unit2) {
-		return unit1.teamOwner.equals(unit2.teamOwner);
+		return unit1.ownerProp.getTeam().equals(unit2.ownerProp.getTeam());
 	}
 
 }

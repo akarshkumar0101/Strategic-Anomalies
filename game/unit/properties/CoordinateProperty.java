@@ -5,20 +5,19 @@ import game.unit.Unit;
 
 public class CoordinateProperty extends Property<Coordinate> {
 
-	private Coordinate coor;
-
 	public CoordinateProperty(Unit unit, Coordinate coor) {
-		super(unit);
-		this.coor = coor;
+		super(unit,coor);
 	}
 
 	public Coordinate getCoor() {
-		return coor;
+		return property;
 	}
 
-	public void setCoor(Coordinate coor) {
-		Coordinate oldCoor = this.coor;
-		this.coor = coor;
-		super.propertyChanged(oldCoor, this.coor);
+	public void setCoor(Coordinate newcoor) {
+		if (property.equals(newcoor))
+			return;
+		Coordinate oldCoor = this.property;
+		this.property = newcoor;
+		super.propertyChanged(oldCoor, this.property);
 	}
 }

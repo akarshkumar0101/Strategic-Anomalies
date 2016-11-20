@@ -2,11 +2,11 @@ package main;
 
 import javax.swing.JFrame;
 
+import game.Game;
 import game.Player;
 import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
-import game.board.NormalBoard;
 import game.unit.Knight;
 import game.unit.Unit;
 import game.util.Direction;
@@ -16,15 +16,16 @@ import testingframe.TestingFrame;
 public class Main {
 
 	public static void main(String[] args) {
-		Player player1 = new Player(), player2 = new Player();
-		Team team1 = new Team(player1), team2 = new Team(player2);
+		Team team1 = new Team(1), team2 = new Team(2);
+		Player player1 = team1.getPlayers()[0], player2 = team2.getPlayers()[0];
 
-		Board board = new NormalBoard();
+		Game game = new Game();
+		Board board = game.getBoard();
 
-		Unit unit1 = new Knight(player1, team1, board, Direction.LEFT, null);
+		Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(0, 0));
 		board.getSquare(new Coordinate(5, 5)).setUnitOnTop(unit1);
 
-		Unit unit2 = new Knight(player2, team2, board, Direction.LEFT, null);
+		Unit unit2 = new Knight(game, player2, Direction.LEFT, new Coordinate(0, 0));
 		board.getSquare(new Coordinate(5, 6)).setUnitOnTop(unit2);
 
 		for (byte y = -1; y < 12; y++) {
@@ -36,7 +37,7 @@ public class Main {
 					System.out.print("1 ");
 				} else if (board.getUnitAt(coor) == unit2) {
 					System.out.print("2 ");
-				} else if (PathFinder.getPath(unit1, coor) != null) {
+				} else if (PathFinder.getPath(board, unit1, coor) != null) {
 					System.out.print("- ");
 				} else {
 					System.out.print("* ");

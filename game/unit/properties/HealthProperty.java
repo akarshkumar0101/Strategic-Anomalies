@@ -5,18 +5,33 @@ import game.unit.Unit;
 
 public class HealthProperty extends Property<Integer> {
 
-	private int health;
-
 	public HealthProperty(Unit unit, int startingHealth) {
-		super(unit);
-		this.health = startingHealth;
+		super(unit, startingHealth);
 	}
 
 	public double percentageHealth() {
-		return (double) (health / unit.getDefaultHealth());
+		return (double) (property / unit.getDefaultHealth());
 	}
 
-	public void takeDamage(Damage damage) {
+	public int getHealth() {
+		return property;
+	}
 
+	public void takeRawDamage(Damage damage) {
+		int damageAmount = damage.getDamageAmount();
+
+		if (damageAmount == 0)
+			return;
+		Integer oldVal = property;
+
+		if (damageAmount > property) {
+			// dies
+			property = 0;
+			propertyChanged(oldVal, property);
+			// TODO trigger death of unit
+		} else {
+			property -= damageAmount;
+			propertyChanged(oldVal, property);
+		}
 	}
 }

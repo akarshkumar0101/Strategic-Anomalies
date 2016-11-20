@@ -4,10 +4,13 @@ public class Team {
 
 	private final Player[] players;
 
-	public Team(Player... playersarr) {
-		if (playersarr == null || playersarr.length == 0)
-			throw new IllegalArgumentException("Attempted to create a team with null players or 0 players.");
-		players = playersarr;
+	// TODO replace int[] args with Account[] and send each account data to
+	// player creation
+	public Team(int... args) {
+		players = new Player[args.length];
+		for (int i = 0; i < args.length; i++) {
+			players[i] = new Player(this);
+		}
 	}
 
 	public Player[] getPlayers() {

@@ -5,20 +5,19 @@ import game.util.Direction;
 
 public class DirectionProperty extends Property<Direction> {
 
-	private Direction direction;
-
-	public DirectionProperty(Unit unit, Direction Direction) {
-		super(unit);
-		this.direction = Direction;
+	public DirectionProperty(Unit unit, Direction direction) {
+		super(unit, direction);
 	}
 
 	public Direction getDir() {
-		return direction;
+		return property;
 	}
 
-	public void setDir(Direction direction) {
-		Direction oldDir = this.direction;
-		this.direction = direction;
-		super.propertyChanged(oldDir, this.direction);
+	public void setDir(Direction newdir) {
+		if (property.equals(newdir))
+			return;
+		Direction oldDir = this.property;
+		this.property = newdir;
+		super.propertyChanged(oldDir, this.property);
 	}
 }
