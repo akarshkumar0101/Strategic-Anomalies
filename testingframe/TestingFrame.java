@@ -124,10 +124,10 @@ public class TestingFrame extends JFrame {
 			if (sqr.isEmpty())
 				return;
 			Unit unit = sqr.getUnitOnTop();
-			if (unit.getOwnerProp().getPlayer().equals(player1)) {
+			if (unit.getOwnerProp().getProp().equals(player1)) {
 				g.setColor(slightBlue);
 				g.fillRect(2, 2, getWidth() - 2, getHeight() - 2);
-			} else if (unit.getOwnerProp().getPlayer().equals(player2)) {
+			} else if (unit.getOwnerProp().getProp().equals(player2)) {
 				g.setColor(slightRed);
 				g.fillRect(2, 2, getWidth() - 2, getHeight() - 2);
 			}

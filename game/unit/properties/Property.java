@@ -19,6 +19,10 @@ public abstract class Property<T> extends AffectableProp<T> {
 		listeners = new ArrayList<>(2);
 	}
 
+	public T getProp() {
+		return getAffectedProp(property);
+	}
+
 	public void addPropertyListener(PropertyListener<T> pl) {
 		listeners.add(pl);
 	}

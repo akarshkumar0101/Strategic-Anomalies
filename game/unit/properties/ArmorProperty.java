@@ -1,30 +1,23 @@
 package game.unit.properties;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import game.Turn;
 import game.interaction.Damage;
 import game.interaction.DamageType;
+import game.interaction.incident.IncidentListeners;
 import game.unit.Unit;
-import game.util.IncidentListener;
 
 public class ArmorProperty extends Property<Integer> {
 
-	private final List<IncidentListener> blockListeners;
+	private final IncidentListeners blockListeners;
 
 	private Turn turnPreviouslyBlockedOn;
 
 	public ArmorProperty(Unit unit) {
 		super(unit, unit.getDefaultArmor());
 
-		blockListeners = new ArrayList<>(3);
+		blockListeners = new IncidentListeners();
 		turnPreviouslyBlockedOn = null;
 
-	}
-
-	public int getArmor() {
-		return property;
 	}
 
 	public Damage filterDamage(Damage damage) {
@@ -36,8 +29,8 @@ public class ArmorProperty extends Property<Integer> {
 				triggerBlock(damage, unit);
 				return new Damage(0, damage.getDamageType(), damage.getSource(), unit, true);
 			} else {
-				return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(), damage.getSource(),
-						unit);
+				return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(),
+						damage.getSource(), unit);
 			}
 		} else
 			return null;
@@ -55,9 +48,7 @@ public class ArmorProperty extends Property<Integer> {
 	}
 
 	private void triggerBlock(Damage damage, Unit target) {
-		for (IncidentListener il : blockListeners) {
-			il.incidentReported(damage, target);
-		}
+		blockListeners.triggerIncident(damage, target);
 		turnPreviouslyBlockedOn = unit.getGame().getCurrentTurn();
 	}
 

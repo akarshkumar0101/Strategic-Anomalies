@@ -1,6 +1,7 @@
 package game.interaction.effect;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class Affectable {
@@ -20,8 +21,12 @@ public abstract class Affectable {
 	}
 
 	public void updateEffectExistances() {
-		for (Effect effect : effects) {
-			effect.updateExistance();
+		Iterator<Effect> it = effects.iterator();
+		while(it.hasNext()) {
+			Effect effect = it.next();
+			if(!effect.shouldExistance()){
+				it.remove();
+			}
 		}
 	}
 

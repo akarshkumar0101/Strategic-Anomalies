@@ -9,10 +9,6 @@ public class DirectionProperty extends Property<Direction> {
 		super(unit, direction);
 	}
 
-	public Direction getDir() {
-		return property;
-	}
-
 	public void setDir(Direction newdir) {
 		if (property.equals(newdir))
 			return;

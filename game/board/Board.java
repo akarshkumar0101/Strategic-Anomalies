@@ -49,8 +49,8 @@ public abstract class Board {
 	}
 
 	public void placeUnit(Unit unit) {
-		checkCoordinateRange(unit.getCoorProp().getCoor());
-		grid[unit.getCoorProp().getCoor().x()][unit.getCoorProp().getCoor().y()].setUnitOnTop(unit);
+		checkCoordinateRange(unit.getCoorProp().getProp());
+		grid[unit.getCoorProp().getProp().x()][unit.getCoorProp().getProp().y()].setUnitOnTop(unit);
 	}
 
 }

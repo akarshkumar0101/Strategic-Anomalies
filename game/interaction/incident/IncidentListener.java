@@ -1,4 +1,4 @@
-package game.util;
+package game.interaction.incident;
 
 public interface IncidentListener {
 

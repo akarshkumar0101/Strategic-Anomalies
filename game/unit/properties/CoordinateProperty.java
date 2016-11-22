@@ -6,11 +6,7 @@ import game.unit.Unit;
 public class CoordinateProperty extends Property<Coordinate> {
 
 	public CoordinateProperty(Unit unit, Coordinate coor) {
-		super(unit,coor);
-	}
-
-	public Coordinate getCoor() {
-		return property;
+		super(unit, coor);
 	}
 
 	public void setCoor(Coordinate newcoor) {

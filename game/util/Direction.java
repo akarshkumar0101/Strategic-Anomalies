@@ -14,11 +14,7 @@ public enum Direction {
 	public int toInt() {
 		if (ordinal() > 1)
 			return -1;
-		return 1;
-	}
-
-	@Override
-	public String toString() {
-		return this.name();
+		else
+			return 1;
 	}
 }

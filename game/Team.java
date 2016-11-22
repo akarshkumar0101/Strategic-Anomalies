@@ -17,6 +17,10 @@ public class Team {
 		return players;
 	}
 
+	public int numPlayers() {
+		return players.length;
+	}
+
 	public boolean isMultiplayer() {
 		return players.length > 1;
 	}

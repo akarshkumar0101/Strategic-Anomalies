@@ -10,10 +10,6 @@ public class OwnerProperty extends Property<Player> {
 		super(unit, player);
 	}
 
-	public Player getPlayer() {
-		return property;
-	}
-
 	public Team getTeam() {
 		return property.getTeam();
 	}

@@ -13,10 +13,6 @@ public class HealthProperty extends Property<Integer> {
 		return (double) (property / unit.getDefaultHealth());
 	}
 
-	public int getHealth() {
-		return property;
-	}
-
 	public void takeRawDamage(Damage damage) {
 		int damageAmount = damage.getDamageAmount();
 

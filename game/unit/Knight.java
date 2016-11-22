@@ -15,6 +15,26 @@ public class Knight extends Unit {
 	}
 
 	@Override
+	public int getDefaultHealth() {
+		return 0;
+	}
+
+	@Override
+	public int getDefaultArmor() {
+		return 0;
+	}
+
+	@Override
+	public double getDefaultSideBlock() {
+		return 0;
+	}
+
+	@Override
+	public double getDefaultFrontBlock() {
+		return 0;
+	}
+
+	@Override
 	public int getMoveRange() {
 		return MOVERANGE;
 	}
@@ -28,7 +48,7 @@ public class Knight extends Unit {
 			return false;
 		}
 
-		if (Coordinate.walkDist(this.coorProp.getCoor(), coor) > ATTACKRANGE)
+		if (Coordinate.walkDist(this.coorProp.getProp(), coor) > ATTACKRANGE)
 			return false;
 		else
 			return true;
@@ -51,30 +71,6 @@ public class Knight extends Unit {
 			return;
 
 		// unit.takeDamage();
-	}
-
-	@Override
-	public int getDefaultHealth() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int getDefaultArmor() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getDefaultSideBlock() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public double getDefaultFrontBlock() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }

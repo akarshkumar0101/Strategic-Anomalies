@@ -1,6 +1,7 @@
 package game.interaction.effect;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class AffectableProp<T> {
@@ -27,8 +28,12 @@ public abstract class AffectableProp<T> {
 	}
 
 	public void updateEffectExistances() {
-		for (PropEffect<T> effect : propEffects) {
-			effect.updateExistance();
+		Iterator<PropEffect<T>> it = propEffects.iterator();
+		while (it.hasNext()) {
+			PropEffect<T> propEffect = it.next();
+			if (!propEffect.shouldExistance()) {
+				it.remove();
+			}
 		}
 	}
 }

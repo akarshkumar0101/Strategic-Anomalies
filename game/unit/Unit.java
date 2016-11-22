@@ -82,8 +82,8 @@ public abstract class Unit extends Affectable {
 	public abstract int getMoveRange();
 
 	public boolean isInRangeOfWalking(Coordinate moveToCoor) {
-		int walkingdistance = Math.abs(moveToCoor.x() - coorProp.getCoor().x())
-				+ Math.abs(moveToCoor.y() - coorProp.getCoor().y());
+		int walkingdistance = Math.abs(moveToCoor.x() - coorProp.getProp().x())
+				+ Math.abs(moveToCoor.y() - coorProp.getProp().y());
 		return walkingdistance <= getMoveRange();
 	}
 
@@ -93,6 +93,8 @@ public abstract class Unit extends Affectable {
 			return null;
 		return PathFinder.getPath(game.getBoard(), this, moveToCoor);
 	}
+
+	// TODO probably delete these out dated ability methods.
 
 	public abstract boolean canUseAbilityOn(Object... args);
 

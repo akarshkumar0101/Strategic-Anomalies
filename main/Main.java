@@ -19,7 +19,7 @@ public class Main {
 		Team team1 = new Team(1), team2 = new Team(2);
 		Player player1 = team1.getPlayers()[0], player2 = team2.getPlayers()[0];
 
-		Game game = new Game();
+		Game game = new Game(team1, team2);
 		Board board = game.getBoard();
 
 		Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(0, 0));
@@ -52,5 +52,4 @@ public class Main {
 		testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		testingFrame.setVisible(true);
 	}
-
 }

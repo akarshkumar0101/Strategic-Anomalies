@@ -9,7 +9,7 @@ public class PathFinder {
 
 	public static Path getPath(Board board, Unit unit, Coordinate moveToCoor) {
 		int moveRange = unit.getMoveRange();
-		Coordinate from = unit.getCoorProp().getCoor();
+		Coordinate from = unit.getCoorProp().getProp();
 
 		if (!board.isInBoard(moveToCoor))
 			return null;
