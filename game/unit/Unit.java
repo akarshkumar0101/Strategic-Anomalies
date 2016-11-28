@@ -5,9 +5,7 @@ import game.Player;
 import game.board.Coordinate;
 import game.board.Path;
 import game.board.Square;
-import game.interaction.Damage;
 import game.interaction.effect.Affectable;
-import game.unit.properties.ArmorProperty;
 import game.unit.properties.CoordinateProperty;
 import game.unit.properties.DirectionProperty;
 import game.unit.properties.HealthProperty;
@@ -25,7 +23,6 @@ public abstract class Unit extends Affectable {
 	protected final DirectionProperty dirFacingProp;
 
 	protected final HealthProperty healthProp;
-	protected final ArmorProperty armorProp;
 
 	public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 		this.game = game;
@@ -34,7 +31,6 @@ public abstract class Unit extends Affectable {
 		this.coorProp = new CoordinateProperty(this, coor);
 		this.dirFacingProp = new DirectionProperty(this, directionFacing);
 		this.healthProp = new HealthProperty(this, getDefaultHealth());
-		this.armorProp = new ArmorProperty(this);
 	}
 
 	public Game getGame() {
@@ -64,10 +60,6 @@ public abstract class Unit extends Affectable {
 	public abstract double getDefaultSideBlock();
 
 	public abstract double getDefaultFrontBlock();
-
-	public ArmorProperty getArmorProp() {
-		return armorProp;
-	}
 
 	// TODO make sure all units should consider overriding these methods
 	public boolean canMove() {
@@ -112,12 +104,6 @@ public abstract class Unit extends Affectable {
 	 * @param sqr
 	 */
 	public abstract void abilityInteract(Square sqr);
-
-	public void takeDamage(Damage damage) {
-		armorProp.filterDamage(damage);
-		if (!damage.wasBlocked())
-			healthProp.takeRawDamage(damage);
-	}
 
 	public static boolean areAllies(Unit unit1, Unit unit2) {
 		return unit1.ownerProp.getTeam().equals(unit2.ownerProp.getTeam());

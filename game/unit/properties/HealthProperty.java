@@ -5,15 +5,24 @@ import game.unit.Unit;
 
 public class HealthProperty extends Property<Integer> {
 
+	public final ArmorProperty armorProp;
+
 	public HealthProperty(Unit unit, int startingHealth) {
 		super(unit, startingHealth);
+		armorProp = new ArmorProperty(unit);
 	}
 
 	public double percentageHealth() {
 		return (double) (property / unit.getDefaultHealth());
 	}
 
-	public void takeRawDamage(Damage damage) {
+	public void takeDamage(Damage damage) {
+		armorProp.filterDamage(damage);
+		if (!damage.wasBlocked())
+			takeRawDamage(damage);
+	}
+
+	private void takeRawDamage(Damage damage) {
 		int damageAmount = damage.getDamageAmount();
 
 		if (damageAmount == 0)

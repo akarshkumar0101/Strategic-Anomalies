@@ -4,19 +4,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public abstract class AffectableProp<T> {
+public abstract class PropAffectable<T> {
 
 	private final List<PropEffect<T>> propEffects = new ArrayList<>(2);
 
-	public List<PropEffect<T>> getEffects() {
+	public List<PropEffect<T>> getPropEffects() {
 		return propEffects;
 	}
 
-	public void addEffect(PropEffect<T> effect) {
+	public void addPropEffect(PropEffect<T> effect) {
 		propEffects.add(effect);
 	}
 
-	public void removeEffect(PropEffect<T> effect) {
+	public void removePropEffect(PropEffect<T> effect) {
 		propEffects.remove(effect);
 	}
 
@@ -27,7 +27,7 @@ public abstract class AffectableProp<T> {
 		return prop;
 	}
 
-	public void updateEffectExistances() {
+	public void updatePropEffectExistances() {
 		Iterator<PropEffect<T>> it = propEffects.iterator();
 		while (it.hasNext()) {
 			PropEffect<T> propEffect = it.next();

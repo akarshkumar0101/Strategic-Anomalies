@@ -3,19 +3,19 @@ package game.unit.properties;
 import game.Turn;
 import game.interaction.Damage;
 import game.interaction.DamageType;
-import game.interaction.incident.IncidentListeners;
+import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
 public class ArmorProperty extends Property<Integer> {
 
-	private final IncidentListeners blockListeners;
+	private final IncidentReporter blockReporter;
 
 	private Turn turnPreviouslyBlockedOn;
 
 	public ArmorProperty(Unit unit) {
 		super(unit, unit.getDefaultArmor());
 
-		blockListeners = new IncidentListeners();
+		blockReporter = new IncidentReporter();
 		turnPreviouslyBlockedOn = null;
 
 	}
@@ -48,7 +48,7 @@ public class ArmorProperty extends Property<Integer> {
 	}
 
 	private void triggerBlock(Damage damage, Unit target) {
-		blockListeners.triggerIncident(damage, target);
+		blockReporter.reportIncident(damage, target);
 		turnPreviouslyBlockedOn = unit.getGame().getCurrentTurn();
 	}
 

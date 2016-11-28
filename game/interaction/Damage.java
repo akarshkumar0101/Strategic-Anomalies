@@ -1,11 +1,22 @@
 package game.interaction;
 
+import game.interaction.effect.Affectable;
 import game.unit.Unit;
 
-public class Damage {
+/**
+ * 
+ * The effects on the Damage object should only be altering the damage
+ * properties, passed the Object
+ * 
+ * @author akars
+ *
+ */
+public class Damage extends Affectable {
 
 	private int damageAmount;
+
 	private DamageType damageType;
+
 	private Unit source, target;
 
 	private boolean wasBlocked;
@@ -63,4 +74,14 @@ public class Damage {
 		return wasBlocked;
 	}
 
+	@Override
+	public boolean equals(Object another) {
+		if (!(another instanceof Damage))
+			return false;
+		Damage other = (Damage) another;
+		if (other.damageAmount == damageAmount && other.damageType.equals(damageType) && other.source.equals(source)
+				&& other.target.equals(target) && other.wasBlocked == wasBlocked)
+			return true;
+		return false;
+	}
 }

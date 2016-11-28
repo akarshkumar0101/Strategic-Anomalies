@@ -7,7 +7,7 @@ import java.util.List;
 public abstract class Affectable {
 
 	private final List<Effect> effects = new ArrayList<>(2);
-
+	
 	public List<Effect> getEffects() {
 		return effects;
 	}

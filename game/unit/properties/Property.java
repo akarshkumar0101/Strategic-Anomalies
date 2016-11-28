@@ -1,22 +1,47 @@
 package game.unit.properties;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import game.interaction.effect.AffectableProp;
+import game.interaction.effect.PropAffectable;
+import game.interaction.effect.PropEffect;
+import game.interaction.incident.IncidentListener;
+import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
-public abstract class Property<T> extends AffectableProp<T> {
+public abstract class Property<T> extends PropAffectable<T> {
 
 	protected final Unit unit;
-	private final List<PropertyListener<T>> listeners;
+
+	private final IncidentReporter changeReporter;
 
 	protected T property;
 
 	public Property(Unit unit, T initValue) {
 		this.unit = unit;
 		this.property = initValue;
-		listeners = new ArrayList<>(2);
+		changeReporter = new IncidentReporter();
+	}
+
+	public Unit getUnitOwner() {
+		return unit;
+	}
+
+	@Override
+	public void addPropEffect(PropEffect<T> effect) {
+		T before = getProp();
+		super.addPropEffect(effect);
+		T after = getProp();
+		if (!after.equals(before)) {
+			propertyChanged(before, after);
+		}
+	}
+
+	@Override
+	public void removePropEffect(PropEffect<T> effect) {
+		T before = getProp();
+		super.removePropEffect(effect);
+		T after = getProp();
+		if (!after.equals(before)) {
+			propertyChanged(before, after);
+		}
 	}
 
 	public T getProp() {
@@ -24,12 +49,12 @@ public abstract class Property<T> extends AffectableProp<T> {
 	}
 
 	public void addPropertyListener(PropertyListener<T> pl) {
-		listeners.add(pl);
+		changeReporter.add(pl);
 	}
 
-	protected void propertyChanged(T oldValue, T newValue) {
-		for (PropertyListener<T> pl : listeners) {
-			pl.propertyChanged(unit, this, oldValue, newValue);
+	protected void propertyChanged(T oldValue, T newValue, Object... specifications) {
+		for (IncidentListener il : changeReporter) {
+			il.incidentReported(oldValue, newValue, this, unit, specifications);
 		}
 	}
 }
