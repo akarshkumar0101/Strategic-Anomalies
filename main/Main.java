@@ -37,7 +37,7 @@ public class Main {
 					System.out.print("1 ");
 				} else if (board.getUnitAt(coor) == unit2) {
 					System.out.print("2 ");
-				} else if (PathFinder.getPath(board, unit1, coor) != null) {
+				} else if (PathFinder.getPath(unit1, coor) != null) {
 					System.out.print("- ");
 				} else {
 					System.out.print("* ");

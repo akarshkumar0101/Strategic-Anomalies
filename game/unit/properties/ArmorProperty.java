@@ -52,4 +52,8 @@ public class ArmorProperty extends Property<Integer> {
 		turnPreviouslyBlockedOn = unit.getGame().getCurrentTurn();
 	}
 
+	public IncidentReporter getBlockReporter() {
+		return blockReporter;
+	}
+
 }

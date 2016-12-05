@@ -6,6 +6,12 @@ import game.board.Coordinate;
 import game.board.Square;
 import game.util.Direction;
 
+/**
+ * The Knight Unit implementation.
+ * 
+ * @author Akarsh
+ *
+ */
 public class Knight extends Unit {
 
 	public static final int MOVERANGE = 3, ATTACKRANGE = 1, ATTACKDAMAGE = 25;

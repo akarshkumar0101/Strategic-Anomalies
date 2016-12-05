@@ -1,23 +1,50 @@
 package game.board;
 
+/**
+ * The original game implementation of the board.
+ * 
+ * @author Akarsh
+ *
+ */
 public class NormalBoard extends Board {
 
+	/**
+	 * Width and Height of the original board.
+	 */
 	public static final int WIDTH = 11, HEIGHT = 11;
 
+	/**
+	 * Initializes NormalBoard.
+	 */
 	public NormalBoard() {
 		super();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see game.board.Board#getWidth()
+	 */
 	@Override
 	public int getWidth() {
 		return WIDTH;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see game.board.Board#getHeight()
+	 */
 	@Override
 	public int getHeight() {
 		return HEIGHT;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see game.board.Board#isInBoard(game.board.Coordinate)
+	 */
 	@Override
 	public boolean isInBoard(Coordinate coor) {
 		byte x = coor.x(), y = coor.y();
