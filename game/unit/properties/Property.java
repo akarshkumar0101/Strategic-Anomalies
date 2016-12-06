@@ -1,7 +1,9 @@
 package game.unit.properties;
 
-import game.interaction.effect.PropAffectable;
-import game.interaction.effect.PropEffect;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
@@ -16,7 +18,7 @@ import game.unit.Unit;
  * @param <T>
  *            the type of property base. Example: Integer, Coordinate, etc.
  */
-public abstract class Property<T> extends PropAffectable<T> {
+public abstract class Property<T> {
 
 	/**
 	 * The Unit this Property is tied to.
@@ -33,6 +35,8 @@ public abstract class Property<T> extends PropAffectable<T> {
 	 * The current value of the property.
 	 */
 	protected T property;
+
+	private final List<PropertyEffect<T>> propEffects = new ArrayList<>(2);
 
 	/**
 	 * Initializes the Property with the given Unit and the given initial Value.
@@ -56,14 +60,17 @@ public abstract class Property<T> extends PropAffectable<T> {
 		return unit;
 	}
 
+	public List<PropertyEffect<T>> getPropEffects() {
+		return propEffects;
+	}
+
 	/**
 	 * TODO: Javadoc coming soon.
 	 */
-	@Override
-	public void addPropEffect(PropEffect<T> effect) {
-		T before = getProp();
-		super.addPropEffect(effect);
-		T after = getProp();
+	public void addPropEffect(PropertyEffect<T> effect) {
+		T before = getAffectedProp();
+		propEffects.add(effect);
+		T after = getAffectedProp();
 		if (!after.equals(before)) {
 			propertyChanged(before, after);
 		}
@@ -72,13 +79,33 @@ public abstract class Property<T> extends PropAffectable<T> {
 	/**
 	 * TODO: Javadoc coming soon.
 	 */
-	@Override
-	public void removePropEffect(PropEffect<T> effect) {
-		T before = getProp();
-		super.removePropEffect(effect);
-		T after = getProp();
+	public void removePropEffect(PropertyEffect<T> effect) {
+		T before = getAffectedProp();
+		propEffects.remove(effect);
+		T after = getAffectedProp();
 		if (!after.equals(before)) {
 			propertyChanged(before, after);
+		}
+	}
+
+	private T getAffectedProp(T prop) {
+		for (PropertyEffect<T> propEffect : propEffects) {
+			prop = propEffect.affectProperty(prop);
+		}
+		return prop;
+	}
+
+	private T getAffectedProp() {
+		return getAffectedProp(property);
+	}
+
+	public void updatePropEffectExistances() {
+		Iterator<PropertyEffect<T>> it = propEffects.iterator();
+		while (it.hasNext()) {
+			PropertyEffect<T> propEffect = it.next();
+			if (!propEffect.shouldExist()) {
+				it.remove();
+			}
 		}
 	}
 
@@ -86,7 +113,7 @@ public abstract class Property<T> extends PropAffectable<T> {
 	 * @return the current value of the property with effects.
 	 */
 	public T getProp() {
-		return getAffectedProp(property);
+		return getAffectedProp();
 	}
 
 	/**
