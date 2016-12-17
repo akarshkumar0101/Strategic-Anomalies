@@ -32,8 +32,9 @@ public class ArmorProperty extends Property<Integer> {
 				return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(),
 						damage.getSource(), unit);
 			}
-		} else
+		} else {
 			return null;
+		}
 	}
 
 	private double determineBlockPercentage(Damage damage) {
@@ -42,7 +43,7 @@ public class ArmorProperty extends Property<Integer> {
 		return .65;
 	}
 
-	private static int filterThroughArmor(int damageAmount) {
+	private int filterThroughArmor(int damageAmount) {
 		// TODO make algorithm for damage through armor
 		return damageAmount;
 	}
