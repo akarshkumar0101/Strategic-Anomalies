@@ -54,7 +54,7 @@ public class Knight extends Unit {
 			return false;
 		}
 
-		if (Coordinate.walkDist(this.coorProp.getProp(), coor) > ATTACKRANGE)
+		if (Coordinate.walkDist(this.posProp.getCurrentPropertyValue(), coor) > ATTACKRANGE)
 			return false;
 		else
 			return true;

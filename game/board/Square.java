@@ -66,7 +66,7 @@ public class Square {
 	public void setUnitOnTop(Unit unitOnTop) {
 		this.unitOnTop = unitOnTop;
 		if (unitOnTop != null)
-			unitOnTop.getCoorProp().setCoor(coor);
+			unitOnTop.getPosProp().setCoor(coor);
 	}
 
 	/**

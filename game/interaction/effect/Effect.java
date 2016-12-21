@@ -8,10 +8,11 @@ import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
 /**
- * Effect is the interface to perform an action in the future some time. The
- * performEffect() method will always be triggered by a IncidentListener. The
- * casts done inside of the performEffect() method should take into
- * consideration what will be calling the method and with what arguments.
+ * Effect is the interface to perform an action or series of actions some time
+ * in the future. The performEffect() method will always be triggered by a
+ * IncidentListener. The casts done inside of the performEffect() method should
+ * take into consideration what will be calling the method and with what
+ * arguments.
  *
  * @author akars
  *
@@ -37,7 +38,6 @@ public abstract class Effect extends EffectSkeleton {
 	public Effect(EffectType effectType, Unit source, Condition shouldExist) {
 		super(effectType, source, shouldExist);
 		triggers = new HashMap<>(1);
-
 	}
 
 	/**

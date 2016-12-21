@@ -27,7 +27,7 @@ public class PathFinder {
 	public static Path getPath(Unit unit, Coordinate moveToCoor) {
 		Board board = unit.getGame().getBoard();
 		int moveRange = unit.getMoveRange();
-		Coordinate from = unit.getCoorProp().getProp();
+		Coordinate from = unit.getPosProp().getProp();
 
 		if (!board.isInBoard(moveToCoor))
 			return null;

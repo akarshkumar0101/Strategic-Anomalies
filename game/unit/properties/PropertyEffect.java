@@ -16,9 +16,17 @@ import game.unit.Unit;
  * @author Akarsh
  *
  * @param <T>
- *            should match up with Property<T> in order to affect it.
+ *            should match up with the Property<T> in order to affect it.
  */
 public abstract class PropertyEffect<T> extends EffectSkeleton {
+
+	/**
+	 * This should be a value [0,10] basing on how important it is that this
+	 * effect have an effect on the property. The higher the priority, the more
+	 * "last say" this effect gets when affecting a property. Ex. if priority =
+	 * 10, then it will always get the last say when effecting the property.
+	 */
+	private double priority;
 
 	/**
 	 * Default initializer for PropertyEffect.
@@ -30,8 +38,12 @@ public abstract class PropertyEffect<T> extends EffectSkeleton {
 	 * @param shouldExist
 	 *            the Condition in which it will still exist.
 	 */
-	public PropertyEffect(EffectType effectType, Unit source, Condition shouldExist) {
+	public PropertyEffect(EffectType effectType, Unit source, Condition shouldExist, double priority) {
 		super(effectType, source, shouldExist);
+		this.priority = priority;
+
+		if (effectType == EffectType.PERMANENT)
+			priority = 0;
 	}
 
 	/**
@@ -42,5 +54,13 @@ public abstract class PropertyEffect<T> extends EffectSkeleton {
 	 * @return the affected value of the property.
 	 */
 	public abstract T affectProperty(T init);
+
+	public void setPriority(double priority) {
+		this.priority = priority;
+	}
+
+	public double getPriority() {
+		return priority;
+	}
 
 }

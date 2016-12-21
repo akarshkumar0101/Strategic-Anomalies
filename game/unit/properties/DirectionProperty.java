@@ -10,10 +10,10 @@ public class DirectionProperty extends Property<Direction> {
 	}
 
 	public void setDir(Direction newdir) {
-		if (property.equals(newdir))
+		if (getCurrentPropertyValue().equals(newdir))
 			return;
-		Direction oldDir = this.property;
-		this.property = newdir;
-		super.propertyChanged(oldDir, this.property);
+		Direction oldDir = getCurrentPropertyValue();
+		setDir(newdir);
+		super.propertyChanged(oldDir, getCurrentPropertyValue());
 	}
 }

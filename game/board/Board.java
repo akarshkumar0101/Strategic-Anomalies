@@ -87,8 +87,8 @@ public abstract class Board {
 	 *            to place
 	 */
 	public void placeUnit(Unit unit) {
-		checkCoordinateRange(unit.getCoorProp().getProp());
-		grid[unit.getCoorProp().getProp().x()][unit.getCoorProp().getProp().y()].setUnitOnTop(unit);
+		checkCoordinateRange(unit.getPosProp().getProp());
+		grid[unit.getPosProp().getProp().x()][unit.getPosProp().getProp().y()].setUnitOnTop(unit);
 	}
 
 }

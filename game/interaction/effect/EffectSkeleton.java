@@ -71,6 +71,14 @@ public abstract class EffectSkeleton {
 	}
 
 	/**
+	 * @return true if this effect has a condition of existence. If the
+	 *         condition is null, return false;
+	 */
+	public boolean hasExistenceCondition() {
+		return !(shouldExist == null);
+	}
+
+	/**
 	 * 
 	 * @return whether the effect should still exist
 	 */
