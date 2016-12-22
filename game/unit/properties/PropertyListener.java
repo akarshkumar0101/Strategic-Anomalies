@@ -16,32 +16,33 @@ import game.unit.Unit;
 @FunctionalInterface
 public interface PropertyListener<T> extends IncidentListener {
 
-	/**
-	 * Runs the implemented code when the property changes its value.
-	 * 
-	 * @param oldValue
-	 * @param newValue
-	 * @param property
-	 * @param unit
-	 * @param specifications
-	 */
-	public abstract void propertyChanged(T oldValue, T newValue, Property<T> property, Unit unit,
-			Object... specifications);
+    /**
+     * Runs the implemented code when the property changes its value.
+     * 
+     * @param oldValue
+     * @param newValue
+     * @param property
+     * @param unit
+     * @param specifications
+     */
+    public abstract void propertyChanged(T oldValue, T newValue, Property<T> property, Unit unit,
+	    Object... specifications);
 
-	/**
-	 * This method should be ignored, as it is only a gateway from an
-	 * IncidentListener to a PropertyListener. This method lets the Property
-	 * keep track of its PropertyListeners using a regular IncidentReporter.
-	 */
-	@SuppressWarnings("unchecked")
-	@Override
-	public default void incidentReported(Object... specifications) {
-		if (specifications.length > 4)
-			propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
-					(Unit) specifications[3], Arrays.copyOfRange(specifications, 4, specifications.length));
-		else
-			propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
-					(Unit) specifications[3]);
+    /**
+     * This method should be ignored, as it is only a gateway from an
+     * IncidentListener to a PropertyListener. This method lets the Property
+     * keep track of its PropertyListeners using a regular IncidentReporter.
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public default void incidentReported(Object... specifications) {
+	if (specifications.length > 4) {
+	    propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
+		    (Unit) specifications[3], Arrays.copyOfRange(specifications, 4, specifications.length));
+	} else {
+	    propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
+		    (Unit) specifications[3]);
 	}
+    }
 
 }

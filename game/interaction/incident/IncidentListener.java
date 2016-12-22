@@ -12,13 +12,13 @@ package game.interaction.incident;
 @FunctionalInterface
 public interface IncidentListener {
 
-	/**
-	 * Runs the implemented code when the incident is reported. Be careful when
-	 * casting the objects by knowing what will call it.
-	 * 
-	 * @param specifications
-	 *            the caller of the method will send these arguments to it
-	 */
-	public abstract void incidentReported(Object... specifications);
+    /**
+     * Runs the implemented code when the incident is reported. Be careful when
+     * casting the objects by knowing what will call it.
+     * 
+     * @param specifications
+     *            the caller of the method will send these arguments to it
+     */
+    public abstract void incidentReported(Object... specifications);
 
 }

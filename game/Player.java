@@ -10,24 +10,24 @@ package game;
  */
 public class Player {
 
-	/**
-	 * The team the player belongs to
-	 */
-	private final Team team;
+    /**
+     * The team the player belongs to
+     */
+    private final Team team;
 
-	/**
-	 * @param team
-	 *            the player will belong to
-	 */
-	public Player(Team team) {
-		this.team = team;
-	}
+    /**
+     * @param team
+     *            the player will belong to
+     */
+    public Player(Team team) {
+	this.team = team;
+    }
 
-	/**
-	 * @return team the player belongs to
-	 */
-	public Team getTeam() {
-		return team;
-	}
+    /**
+     * @return team the player belongs to
+     */
+    public Team getTeam() {
+	return team;
+    }
 
 }

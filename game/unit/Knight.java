@@ -4,79 +4,85 @@ import game.Game;
 import game.Player;
 import game.board.Coordinate;
 import game.board.Square;
+import game.unit.ability.AbilityType;
+import game.unit.properties.AbilityProperty;
 import game.util.Direction;
 
-/**
- * The Knight Unit implementation.
- * 
- * @author Akarsh
- *
- */
 public class Knight extends Unit {
 
-	public static final int MOVERANGE = 3, ATTACKRANGE = 1, ATTACKDAMAGE = 25;
+    public static final int DEFAULT_HEALTH = 50;
+    public static final int DEFAULT_ARMOR = 8;
+    public static final double DEFAULT_SIDE_BLOCK = 0.35;
+    public static final double DEFAULT_FRONT_BLOCK = 0.8;
+    public static final int DEFAULT_MOVE_RANGE = 3;
+    public static final int DEFAULT_ATTACK_RANGE = 1;
+    public static final int DEFAULT_POWER = 25;
 
-	public Knight(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
-		super(game, playerOwner, directionFacing, coor);
-	}
+    public Knight(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+	super(game, playerOwner, directionFacing, coor);
+    }
 
-	@Override
-	public int getDefaultHealth() {
-		return 0;
-	}
+    @Override
+    public int getDefaultHealth() {
+	return DEFAULT_HEALTH;
+    }
 
-	@Override
-	public int getDefaultArmor() {
-		return 0;
-	}
+    @Override
+    public int getDefaultArmor() {
+	return DEFAULT_ARMOR;
+    }
 
-	@Override
-	public double getDefaultSideBlock() {
-		return 0;
-	}
+    @Override
+    public double getDefaultSideBlock() {
+	return DEFAULT_SIDE_BLOCK;
+    }
 
-	@Override
-	public double getDefaultFrontBlock() {
-		return 0;
-	}
+    @Override
+    public double getDefaultFrontBlock() {
+	return DEFAULT_FRONT_BLOCK;
+    }
 
-	@Override
-	public int getMoveRange() {
-		return MOVERANGE;
-	}
+    @Override
+    public int getDefaultMoveRange() {
+	return DEFAULT_MOVE_RANGE;
+    }
 
-	@Override
-	public boolean canUseAbilityOn(Object... args) {
-		Coordinate coor;
-		try {
-			coor = (Coordinate) args[0];
-		} catch (Exception e) {
-			return false;
-		}
+    @Override
+    public int getDefaultAttackRange() {
+	return DEFAULT_ATTACK_RANGE;
+    }
 
-		if (Coordinate.walkDist(this.posProp.getCurrentPropertyValue(), coor) > ATTACKRANGE)
-			return false;
-		else
-			return true;
-	}
+    @Override
+    public int getDefaultPower() {
+	return DEFAULT_POWER;
+    }
 
-	@Override
-	public void performAbility(Object... args) {
-		if (!canUseAbilityOn(args)) {
-			return;
-		}
-		Coordinate coor = (Coordinate) args[0];
-		abilityInteract(game.getBoard().getSquare(coor));
-	}
+    @Override
+    public AbilityProperty getDefaultAbilityProperty() {
+	AbilityProperty abilityProp = new KnightAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
+	return abilityProp;
+    }
+}
 
-	@Override
-	public void abilityInteract(Square sqr) {
-		Unit unit = sqr.getUnitOnTop();
+class KnightAbilityProperty extends AbilityProperty {
 
-		if (unit == null)
-			return;
+    public KnightAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
+	super(unitOwner, initialPower, initialAttackRange);
+    }
 
-		// unit.takeDamage();
-	}
+    @Override
+    public AbilityType getAbilityType() {
+	return AbilityType.ACTIVE_TARGET;
+    }
 
+    @Override
+    public boolean canUseAbilityOn(Square target) {
+	return false;
+    }
+
+    @Override
+    public void performAbility(Square target) {
+	super.performAbility(target);
+
+    }
 }

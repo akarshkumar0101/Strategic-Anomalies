@@ -11,14 +11,14 @@ package game.interaction.incident;
 @FunctionalInterface
 public interface Condition {
 
-	/**
-	 * Performs calculations to determine whether the condition is being met. Be
-	 * careful when casting the objects by knowing what will call it.
-	 * 
-	 * @param args
-	 *            the caller of the method will send these arguments to it
-	 * @return true if the condition is met
-	 */
-	public abstract boolean performCondition(Object... args);
+    /**
+     * Performs calculations to determine whether the condition is being met. Be
+     * careful when casting the objects by knowing what will call it.
+     * 
+     * @param args
+     *            the caller of the method will send these arguments to it
+     * @return true if the condition is met
+     */
+    public abstract boolean performCondition(Object... args);
 
 }

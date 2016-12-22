@@ -14,76 +14,76 @@ import game.unit.Unit;
  */
 public abstract class EffectSkeleton {
 
-	/**
-	 * How the Effect will die out, or if it will at all.
-	 */
-	private final EffectType effectType;
+    /**
+     * How the Effect will die out, or if it will at all.
+     */
+    private final EffectType effectType;
 
-	/**
-	 * The source that generated this Effect.
-	 */
-	private final Unit source;
+    /**
+     * The source that generated this Effect.
+     */
+    private final Unit source;
 
-	/**
-	 * Tells when the Effect goes away.
-	 */
-	private final Condition shouldExist;
+    /**
+     * Tells when the Effect goes away.
+     */
+    private final Condition shouldExist;
 
-	/**
-	 * Default initializer for EffectSkeleton.
-	 * 
-	 * @param effectType
-	 *            the type of Effect it is.
-	 * @param source
-	 *            the source of the Effect.
-	 * @param shouldExist
-	 *            the Condition in which it will still exist.
-	 */
-	public EffectSkeleton(EffectType effectType, Unit source, Condition shouldExist) {
-		this.effectType = effectType;
-		this.source = source;
-		this.shouldExist = shouldExist;
-	}
+    /**
+     * Default initializer for EffectSkeleton.
+     * 
+     * @param effectType
+     *            the type of Effect it is.
+     * @param source
+     *            the source of the Effect.
+     * @param shouldExist
+     *            the Condition in which it will still exist.
+     */
+    public EffectSkeleton(EffectType effectType, Unit source, Condition shouldExist) {
+	this.effectType = effectType;
+	this.source = source;
+	this.shouldExist = shouldExist;
+    }
 
-	/**
-	 * If using this constructor to initialize the EffectSkeleton, then the
-	 * implementation of the EffectSkeleton should manually override and
-	 * implement the other methods of this class.
-	 */
-	public EffectSkeleton() {
-		this.effectType = null;
-		this.source = null;
-		this.shouldExist = null;
-	}
+    /**
+     * If using this constructor to initialize the EffectSkeleton, then the
+     * implementation of the EffectSkeleton should manually override and
+     * implement the other methods of this class.
+     */
+    public EffectSkeleton() {
+	effectType = null;
+	source = null;
+	shouldExist = null;
+    }
 
-	/**
-	 * @return the type of Effect
-	 */
-	public EffectType getEffectType() {
-		return effectType;
-	}
+    /**
+     * @return the type of Effect
+     */
+    public EffectType getEffectType() {
+	return effectType;
+    }
 
-	/**
-	 * @return the source of the Effect
-	 */
-	public Unit getSource() {
-		return source;
-	}
+    /**
+     * @return the source of the Effect
+     */
+    public Unit getSource() {
+	return source;
+    }
 
-	/**
-	 * @return true if this effect has a condition of existence. If the
-	 *         condition is null, return false;
-	 */
-	public boolean hasExistenceCondition() {
-		return !(shouldExist == null);
-	}
+    /**
+     * @return true if this effect has a condition of existence. If the
+     *         condition is null, return false;
+     */
+    public boolean hasExistenceCondition() {
+	return !(shouldExist == null);
+    }
 
-	/**
-	 * 
-	 * @return whether the effect should still exist
-	 */
-	public boolean shouldExist() {
-		return shouldExist.performCondition();
-	}
+    /**
+     * 
+     * @return whether the effect should still exist
+     */
+    public boolean shouldExist() {
+	return shouldExist.performCondition();
+    }
 
 }

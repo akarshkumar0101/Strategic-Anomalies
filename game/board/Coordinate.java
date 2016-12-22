@@ -14,110 +14,89 @@ import game.util.Direction;
  */
 public class Coordinate {
 
-	/**
-	 * x and y information.
-	 */
-	private final byte x, y;
+    /**
+     * x and y information.
+     */
+    private final byte x, y;
 
-	/**
-	 * Initializes coordinate with given values.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	public Coordinate(byte x, byte y) {
-		this.x = x;
-		this.y = y;
-	}
+    /**
+     * Initializes coordinate with given values.
+     * 
+     * @param x
+     * @param y
+     */
+    public Coordinate(byte x, byte y) {
+	this.x = x;
+	this.y = y;
+    }
 
-	/**
-	 * Initializes coordinate with given values.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	public Coordinate(int x, int y) {
-		this((byte) x, (byte) y);
-	}
+    /**
+     * Initializes coordinate with given values.
+     * 
+     * @param x
+     * @param y
+     */
+    public Coordinate(int x, int y) {
+	this((byte) x, (byte) y);
+    }
 
-	/**
-	 * @return the x value of the Coordinate.
-	 */
-	public byte x() {
-		return x;
-	}
+    /**
+     * @return the x value of the Coordinate.
+     */
+    public byte x() {
+	return x;
+    }
 
-	/**
-	 * @return the y value of the Coordinate.
-	 */
-	public byte y() {
-		return y;
-	}
+    /**
+     * @return the y value of the Coordinate.
+     */
+    public byte y() {
+	return y;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object another) {
-		try {
-			Coordinate coor = (Coordinate) another;
-			if (x == coor.x && y == coor.y)
-				return true;
-			return false;
-		} catch (Exception e) {
-			return false;
-		}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object another) {
+	try {
+	    Coordinate coor = (Coordinate) another;
+	    if (x == coor.x && y == coor.y) {
+		return true;
+	    }
+	    return false;
+	} catch (Exception e) {
+	    return false;
 	}
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "{" + x + ", " + y + "}";
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+	return "{" + x + ", " + y + "}";
+    }
 
-	/**
-	 * @param coor1
-	 *            first Coordinate
-	 * @param coor2
-	 *            second Coordinate
-	 * @return the sum of the horizontal distance and the vertical distance of
-	 *         between the two Coordinates
-	 */
-	public static int walkDist(Coordinate coor1, Coordinate coor2) {
-		return Math.abs(coor2.x - coor1.x) + Math.abs(coor2.y - coor1.y);
+    /**
+     * @param coor
+     *            to shift
+     * @param dir
+     *            direction to shift it in
+     * @return the Coordinate shifted one unit in the specified Direction
+     */
+    public static Coordinate shiftCoor(Coordinate coor, Direction dir) {
+	if (dir == Direction.RIGHT || dir == Direction.LEFT) {
+	    return new Coordinate(coor.x + dir.toInt(), coor.y);
+	} else if (dir == Direction.UP || dir == Direction.DOWN) {
+	    return new Coordinate(coor.x, coor.y + dir.toInt());
+	} else {
+	    return null;
 	}
-
-	/**
-	 * @param coor1
-	 *            first Coordinate
-	 * @param coor2
-	 *            second Coordinate
-	 * @return the actual air distance between the two Coordinates
-	 */
-	public static double absDist(Coordinate coor1, Coordinate coor2) {
-		return Math.sqrt(Math.pow(Math.abs(coor2.x - coor1.x), 2) + Math.pow(Math.abs(coor2.y - coor1.y), 2));
-	}
-
-	/**
-	 * @param coor
-	 *            to shift
-	 * @param dir
-	 *            direction to shift it in
-	 * @return the Coordinate shifted one unit in the specified Direction
-	 */
-	public static Coordinate shiftCoor(Coordinate coor, Direction dir) {
-		if (dir == Direction.RIGHT || dir == Direction.LEFT) {
-			return new Coordinate(coor.x + dir.toInt(), coor.y);
-		} else if (dir == Direction.UP || dir == Direction.DOWN) {
-			return new Coordinate(coor.x, coor.y + dir.toInt());
-		} else
-			return null;
-	}
+    }
 
 }

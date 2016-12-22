@@ -14,79 +14,79 @@ import game.unit.Unit;
  * take into consideration what will be calling the method and with what
  * arguments.
  *
- * @author akars
+ * @author Akarsh
  *
  */
 public abstract class Effect extends EffectSkeleton {
 
-	/**
-	 * The IncidentReporters and IncidentListeners that can currently trigger
-	 * this Effect.
-	 */
-	private final HashMap<IncidentReporter, IncidentListener> triggers;
+    /**
+     * The IncidentReporters and IncidentListeners that can currently trigger
+     * this Effect.
+     */
+    private final HashMap<IncidentReporter, IncidentListener> triggers;
 
-	/**
-	 * Default initializer for Effect.
-	 *
-	 * @param effectType
-	 *            the type of Effect it is.
-	 * @param source
-	 *            the source of the Effect.
-	 * @param shouldExist
-	 *            the Condition in which it will still exist.
-	 */
-	public Effect(EffectType effectType, Unit source, Condition shouldExist) {
-		super(effectType, source, shouldExist);
-		triggers = new HashMap<>(1);
+    /**
+     * Default initializer for Effect.
+     *
+     * @param effectType
+     *            the type of Effect it is.
+     * @param source
+     *            the source of the Effect.
+     * @param shouldExist
+     *            the Condition in which it will still exist.
+     */
+    public Effect(EffectType effectType, Unit source, Condition shouldExist) {
+	super(effectType, source, shouldExist);
+	triggers = new HashMap<>(1);
+    }
+
+    /**
+     * Runs the implemented code when the incident is reported. Be careful when
+     * casting the objects by knowing what will call it.
+     *
+     * @param args
+     *            the arguments sent to the Effect by a IncidentListener.
+     */
+    public abstract void performEffect(Object... args);
+
+    /**
+     * Removes all of the IncidentListeners that can trigger this effect from
+     * their respective IncidentReporters. The Effect object should be forgotten
+     * by the Affectable by removing it from the list.
+     */
+    public void deleteEffect() {
+	for (IncidentReporter reporter : triggers.keySet()) {
+	    reporter.remove(triggers.get(reporter));
 	}
+    }
 
-	/**
-	 * Runs the implemented code when the incident is reported. Be careful when
-	 * casting the objects by knowing what will call it.
-	 *
-	 * @param args
-	 *            the arguments sent to the Effect by a IncidentListener.
-	 */
-	public abstract void performEffect(Object... args);
+    /**
+     * Marks the reporter and listener as a type of trigger for this Effect.
+     *
+     * @param reporter
+     *            the IncidentReporter that reports to the IncidentListener that
+     *            triggers this
+     * @param listener
+     *            the IncidentListener that triggers this.
+     */
+    public void addTrigger(IncidentReporter reporter, IncidentListener listener) {
+	triggers.put(reporter, listener);
+    }
 
-	/**
-	 * Removes all of the IncidentListeners that can trigger this effect from
-	 * their respective IncidentReporters. The Effect object should be forgotten
-	 * by the Affectable by removing it from the list.
-	 */
-	public void deleteEffect() {
-		for (IncidentReporter reporter : triggers.keySet()) {
-			reporter.remove(triggers.get(reporter));
-		}
+    /**
+     * Removes the IncidentReporter from the list of triggers and removes the
+     * IncidentListener from the IncidentReporter.
+     *
+     * @param reporter
+     *            the IncidentReporter that reports to the IncidentListener that
+     *            triggers this
+     * @param listener
+     *            the IncidentListener that triggers this.
+     */
+    public void removeTrigger(IncidentReporter reporter, IncidentListener listener) {
+	if (triggers.remove(reporter, listener)) {
+	    reporter.remove(listener);
 	}
-
-	/**
-	 * Marks the reporter and listener as a type of trigger for this Effect.
-	 *
-	 * @param reporter
-	 *            the IncidentReporter that reports to the IncidentListener that
-	 *            triggers this
-	 * @param listener
-	 *            the IncidentListener that triggers this.
-	 */
-	public void addTrigger(IncidentReporter reporter, IncidentListener listener) {
-		triggers.put(reporter, listener);
-	}
-
-	/**
-	 * Removes the IncidentReporter from the list of triggers and removes the
-	 * IncidentListener from the IncidentReporter.
-	 *
-	 * @param reporter
-	 *            the IncidentReporter that reports to the IncidentListener that
-	 *            triggers this
-	 * @param listener
-	 *            the IncidentListener that triggers this.
-	 */
-	public void removeTrigger(IncidentReporter reporter, IncidentListener listener) {
-		if (triggers.remove(reporter, listener)) {
-			reporter.remove(listener);
-		}
-	}
+    }
 
 }

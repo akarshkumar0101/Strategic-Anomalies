@@ -11,25 +11,25 @@ import java.util.ArrayList;
  */
 public class IncidentReporter extends ArrayList<IncidentListener> {
 
-	private static final long serialVersionUID = -3561634928118509922L;
+    private static final long serialVersionUID = -3561634928118509922L;
 
-	/**
-	 * Initializes the IncidentReporter.
-	 */
-	public IncidentReporter() {
-		super(2);
-	}
+    /**
+     * Initializes the IncidentReporter.
+     */
+    public IncidentReporter() {
+	super(2);
+    }
 
-	/**
-	 * Notifies all of the IncidentListeners that a incident has been reported
-	 * with the given specifications.
-	 * 
-	 * @param specifications
-	 *            for the listeners
-	 */
-	public void reportIncident(Object... specifications) {
-		for (IncidentListener il : this) {
-			il.incidentReported(specifications);
-		}
+    /**
+     * Notifies all of the IncidentListeners that a incident has been reported
+     * with the given specifications.
+     * 
+     * @param specifications
+     *            for the listeners
+     */
+    public void reportIncident(Object... specifications) {
+	for (IncidentListener il : this) {
+	    il.incidentReported(specifications);
 	}
+    }
 }

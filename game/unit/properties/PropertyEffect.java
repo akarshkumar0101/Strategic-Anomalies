@@ -20,47 +20,48 @@ import game.unit.Unit;
  */
 public abstract class PropertyEffect<T> extends EffectSkeleton {
 
-	/**
-	 * This should be a value [0,10] basing on how important it is that this
-	 * effect have an effect on the property. The higher the priority, the more
-	 * "last say" this effect gets when affecting a property. Ex. if priority =
-	 * 10, then it will always get the last say when effecting the property.
-	 */
-	private double priority;
+    /**
+     * This should be a value [0,10] basing on how important it is that this
+     * effect have an effect on the property. The higher the priority, the more
+     * "last say" this effect gets when affecting a property. Ex. if priority =
+     * 10, then it will always get the last say when effecting the property.
+     */
+    private double priority;
 
-	/**
-	 * Default initializer for PropertyEffect.
-	 * 
-	 * @param effectType
-	 *            the type of Effect it is.
-	 * @param source
-	 *            the source of the Effect.
-	 * @param shouldExist
-	 *            the Condition in which it will still exist.
-	 */
-	public PropertyEffect(EffectType effectType, Unit source, Condition shouldExist, double priority) {
-		super(effectType, source, shouldExist);
-		this.priority = priority;
+    /**
+     * Default initializer for PropertyEffect.
+     * 
+     * @param effectType
+     *            the type of Effect it is.
+     * @param source
+     *            the source of the Effect.
+     * @param shouldExist
+     *            the Condition in which it will still exist.
+     */
+    public PropertyEffect(EffectType effectType, Unit source, Condition shouldExist, double priority) {
+	super(effectType, source, shouldExist);
+	this.priority = priority;
 
-		if (effectType == EffectType.PERMANENT)
-			priority = 0;
+	if (effectType == EffectType.PERMANENT) {
+	    priority = 0;
 	}
+    }
 
-	/**
-	 * Affects the property value in a certain way and hands it back.
-	 * 
-	 * @param init
-	 *            the given value of the property to alter.
-	 * @return the affected value of the property.
-	 */
-	public abstract T affectProperty(T init);
+    /**
+     * Affects the property value in a certain way and hands it back.
+     * 
+     * @param init
+     *            the given value of the property to alter.
+     * @return the affected value of the property.
+     */
+    public abstract T affectProperty(T init);
 
-	public void setPriority(double priority) {
-		this.priority = priority;
-	}
+    public void setPriority(double priority) {
+	this.priority = priority;
+    }
 
-	public double getPriority() {
-		return priority;
-	}
+    public double getPriority() {
+	return priority;
+    }
 
 }
