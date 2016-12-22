@@ -18,7 +18,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public double percentageHealth() {
-	return getCurrentPropertyValue() / defaultPropValue;
+	return (double) getCurrentPropertyValue() / defaultPropValue;
     }
 
     public void takeDamage(Damage damage) {

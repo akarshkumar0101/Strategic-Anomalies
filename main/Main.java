@@ -16,7 +16,6 @@ import testingframe.TestingFrame;
 public class Main {
 
     public static boolean test() {
-
 	return false;
     }
 
@@ -34,7 +33,7 @@ public class Main {
 	Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(0, 0));
 	board.getSquare(new Coordinate(5, 5)).setUnitOnTop(unit1);
 
-	Unit unit2 = new Knight(game, player2, Direction.LEFT, new Coordinate(0, 0));
+	Unit unit2 = new Knight(game, player2, Direction.RIGHT, new Coordinate(0, 0));
 	board.getSquare(new Coordinate(5, 6)).setUnitOnTop(unit2);
 
 	for (byte y = -1; y < 12; y++) {
@@ -60,5 +59,20 @@ public class Main {
 	testingFrame.setSize(900, 900);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	testingFrame.setVisible(true);
+
+	unit2.getHealthProp().setPropertyValue(20);
+
+	while (true) {
+	    try {
+		Thread.sleep(1000);
+	    } catch (InterruptedException e) {
+		e.printStackTrace();
+	    }
+	    int ordin = (unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue().ordinal() + 1)
+		    % Direction.values().length;
+	    unit1.getPosProp().getDirFacingProp().setPropertyValue(Direction.values()[ordin]);
+	    testingFrame.repaint();
+	}
+
     }
 }

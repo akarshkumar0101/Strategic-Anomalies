@@ -2,8 +2,11 @@ package game.unit;
 
 import game.Game;
 import game.Player;
+import game.board.Board;
 import game.board.Coordinate;
 import game.board.Square;
+import game.interaction.Damage;
+import game.interaction.DamageType;
 import game.unit.ability.AbilityType;
 import game.unit.properties.AbilityProperty;
 import game.util.Direction;
@@ -77,12 +80,23 @@ class KnightAbilityProperty extends AbilityProperty {
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	return false;
+	if (unitOwner.getStunnedProp().getCurrentPropertyValue() || target.getUnitOnTop() == null
+		|| Board.walkDist(unitOwner.getPosProp().getCurrentPropertyValue(),
+			target.getCoor()) > getAbilityRangeProperty().getCurrentPropertyValue()
+		|| Unit.areAllies(unitOwner, target.getUnitOnTop())) {
+	    return false;
+	} else {
+	    return true;
+	}
     }
 
     @Override
     public void performAbility(Square target) {
-	super.performAbility(target);
-
+	if (!canUseAbilityOn(target)) {
+	    return;
+	}
+	target.getUnitOnTop().healthProp.takeDamage(
+		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, unitOwner, target.getUnitOnTop()));
     }
+
 }

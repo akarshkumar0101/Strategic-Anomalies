@@ -23,9 +23,12 @@ public abstract class AbilityProperty extends Property<Integer> {
 
     public abstract boolean canUseAbilityOn(Square target);
 
-    public void performAbility(Square target) {
+    public final void useAbility(Square target) {
 	onUseReporter.reportIncident();
+	performAbility(target);
     }
+
+    public abstract void performAbility(Square target);
 
     public Property<Integer> getAbilityRangeProperty() {
 	return abilityRangeProp;
