@@ -9,4 +9,9 @@ public class DirectionProperty extends Property<Direction> {
 	super(unit, direction);
     }
 
+    @Override
+    protected void propertyChanged(Direction oldValue, Direction newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
+    }
+
 }

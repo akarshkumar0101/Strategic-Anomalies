@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import game.interaction.effect.EffectType;
-import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
@@ -25,12 +24,12 @@ import game.unit.Unit;
  * @param <T>
  *            the type of property base. Example: Integer, Coordinate, etc.
  */
-public class Property<T> {
+public abstract class Property<T> {
 
     /**
      * The Unit this Property is tied to.
      */
-    protected final Unit unitOwner;
+    private final Unit unitOwner;
 
     /**
      * The IncidentReporter used to track PropertyListeners listening to changes
@@ -41,19 +40,35 @@ public class Property<T> {
     /**
      * The original value of this property at the start of the game.
      */
-    protected final T defaultPropValue;
+    private final T defaultPropValue;
 
+    /**
+     * The PropertyEffects that have permanently affected the property. Just
+     * used to keep track of what has interacted with this property.
+     */
+    private final List<PropertyEffect<T>> permanentPropEffects = new ArrayList<>(5);
+    /**
+     * The PropertyEffects that are currently affecting the property.
+     */
+    private final List<PropertyEffect<T>> activePropEffects = new ArrayList<>(2);
+
+    /**
+     * The value of the property after permanent effects have been applied.
+     * Note*: needs to be updated.
+     */
+    private T currentBasePropValue;
     /**
      * The current value of the property, calculated after the effects of the
      * PropertyEffects affecting it. The value should be up to date before being
-     * used.
+     * used. Note*: needs to be updated.
      */
     private T currentPropValue;
 
     /**
-     * The PropertyEffects that are currently effecting the property.
+     * The last value of the property that the listeners were notified of. Used
+     * to tell if the value was changed. Note*: needs to be updated.
      */
-    private final List<PropertyEffect<T>> propEffects = new ArrayList<>(2);
+    private T lastCurrentPropValue;
 
     /**
      * This comparator orders the PropertyEffects in a higher priority gets more
@@ -73,7 +88,7 @@ public class Property<T> {
      */
     public Property(Unit unitOwner, T initValue) {
 	this.unitOwner = unitOwner;
-	this.currentPropValue = this.defaultPropValue = initValue;
+	this.lastCurrentPropValue = this.currentPropValue = this.currentBasePropValue = this.defaultPropValue = initValue;
 	changeReporter = new IncidentReporter();
     }
 
@@ -101,13 +116,27 @@ public class Property<T> {
     }
 
     /**
-     * Updates the current value of the property based on the PropertyEffects
-     * affecting the property.
+     * Updates the base value of the property T defaultPropValue and
+     * List<PropertyEffects<T>> permanentPropEffects. and permanent effects.
      */
-    private void updateCurrentPropertyValue() {
+    private void updateBasePropertyValue() {
 	T val = defaultPropValue;
 
-	for (PropertyEffect<T> propEffect : propEffects) {
+	for (PropertyEffect<T> propEffect : permanentPropEffects) {
+	    val = propEffect.affectProperty(val);
+	}
+	currentBasePropValue = val;
+
+    }
+
+    /**
+     * Updates the current value using the T currentBasePropValue and
+     * List<PropertyEffects<T>> activePropEffects.
+     */
+    private void updateCurrentPropertyValue() {
+	T val = currentBasePropValue;
+
+	for (PropertyEffect<T> propEffect : activePropEffects) {
 	    val = propEffect.affectProperty(val);
 	}
 	currentPropValue = val;
@@ -117,8 +146,8 @@ public class Property<T> {
      * @return the list of effects that are currently affecting the value of
      *         this property.
      */
-    public List<PropertyEffect<T>> getPropEffects() {
-	return propEffects;
+    public List<PropertyEffect<T>> getActivePropEffects() {
+	return activePropEffects;
     }
 
     /**
@@ -142,35 +171,39 @@ public class Property<T> {
      * time/another limit.
      */
     public void addPropEffect(PropertyEffect<T> effect) {
-	T before = currentPropValue;
+	if (effect.getEffectType() == EffectType.PERMANENT) {
+	    permanentPropEffects.add(effect);
 
-	propEffects.add(effect);
+	    updateBasePropertyValue();
+	    updateCurrentPropertyValue();
+	} else {
+	    activePropEffects.add(effect);
 
-	// only place needed to sort the properties, because properties are
-	// being added.
-	Collections.sort(propEffects, normalPropEffectComparator);
-	updateCurrentPropertyValue();
-	T after = currentPropValue;
-
-	if (!after.equals(before)) {
-	    propertyChanged(before, after);
+	    // only place needed to sort the properties, because properties are
+	    // being added.
+	    Collections.sort(activePropEffects, normalPropEffectComparator);
+	    updateCurrentPropertyValue();
 	}
+
+	valueUpdated();
     }
 
     /**
      * Remove an effect that is currently affecting the value of this property.
      */
     public void removePropEffect(PropertyEffect<T> effect) {
-	T before = currentPropValue;
+	if (effect.getEffectType() == EffectType.PERMANENT) {
+	    permanentPropEffects.remove(effect);
 
-	propEffects.remove(effect);
+	    updateBasePropertyValue();
+	    updateCurrentPropertyValue();
+	} else {
+	    activePropEffects.remove(effect);
 
-	updateCurrentPropertyValue();
-	T after = currentPropValue;
-
-	if (!after.equals(before)) {
-	    propertyChanged(before, after);
+	    updateCurrentPropertyValue();
 	}
+
+	valueUpdated();
     }
 
     /**
@@ -178,9 +211,7 @@ public class Property<T> {
      * property.
      */
     public void updatePropEffectExistances() {
-	T before = currentPropValue;
-
-	Iterator<PropertyEffect<T>> it = propEffects.iterator();
+	Iterator<PropertyEffect<T>> it = activePropEffects.iterator();
 	while (it.hasNext()) {
 	    PropertyEffect<T> propEffect = it.next();
 	    if (propEffect.hasExistenceCondition() && !propEffect.shouldExist()) {
@@ -189,12 +220,8 @@ public class Property<T> {
 	}
 
 	updateCurrentPropertyValue();
-	T after = currentPropValue;
 
-	if (!after.equals(before)) {
-	    propertyChanged(before, after);
-	}
-
+	valueUpdated();
     }
 
     /**
@@ -220,8 +247,36 @@ public class Property<T> {
     }
 
     /**
+     * Runs when it is suggested that the property value may have changed. If it
+     * did change, then run the code for it to register the change and notify
+     * the listeners.
+     */
+    protected void valueUpdated() {
+	if (!currentPropValue.equals(lastCurrentPropValue)) {
+	    propertyChanged(lastCurrentPropValue, currentPropValue);
+	    lastCurrentPropValue = currentPropValue;
+	}
+    }
+
+    /**
+     * Subclasses should implement this method in order to call
+     * propertyChanged(T oldValue, T newValue, Object... specifications) with
+     * the PROPER SPECIFICATIONS. Since the specifications depend on the
+     * property, the subclass will decide what to send. <br>
+     * <br>
+     * This method MUST call the this class's method notifyPropertyChanged(T
+     * oldValue, T newValue, Object... specifications).
+     * 
+     */
+    protected abstract void propertyChanged(T oldValue, T newValue);
+
+    /**
      * Internal method that will be called by the subclass when the value of the
-     * property is changed.
+     * property is changed. <br>
+     * <br>
+     * The property listeners will be notified with the following arguments:
+     * incidentReported(T oldValue, T newValue, Unit unit, Property<T>
+     * changedProperty, Object[] specifications);
      * 
      * @param oldValue
      *            the old value of the property
@@ -231,9 +286,7 @@ public class Property<T> {
      *            additional specifications about the circumstances of the
      *            property change
      */
-    protected void propertyChanged(T oldValue, T newValue, Object... specifications) {
-	for (IncidentListener il : changeReporter) {
-	    il.incidentReported(oldValue, newValue, this, unitOwner, specifications);
-	}
+    protected void notifyPropertyChanged(T oldValue, T newValue, Object... specifications) {
+	changeReporter.reportIncident(oldValue, newValue, unitOwner, this, specifications);
     }
 }

@@ -14,7 +14,12 @@ public abstract class AbilityProperty extends Property<Integer> {
 
     public AbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
 	super(unitOwner, initialPower);
-	abilityRangeProp = new Property<>(unitOwner, initialAttackRange);
+	abilityRangeProp = new Property<Integer>(unitOwner, initialAttackRange) {
+	    @Override
+	    protected void propertyChanged(Integer oldValue, Integer newValue) {
+		super.notifyPropertyChanged(oldValue, newValue);
+	    }
+	};
 
 	onUseReporter = new IncidentReporter();
     }
@@ -36,6 +41,11 @@ public abstract class AbilityProperty extends Property<Integer> {
 
     public IncidentReporter getOnUseReporter() {
 	return onUseReporter;
+    }
+
+    @Override
+    public void propertyChanged(Integer oldValue, Integer newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
     }
 
 }

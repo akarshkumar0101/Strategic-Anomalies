@@ -14,13 +14,8 @@ public class OwnerProperty extends Property<Player> {
 	return getCurrentPropertyValue().getTeam();
     }
 
-    /**
-     * This will call the propertyChanged() method with the following arguments:
-     * Player oldPropertyValue, Player newPropertyValue, boolean on whether or
-     * not the team changed.
-     */
     @Override
-    protected void propertyChanged(Player oldValue, Player newValue, Object... specifications) {
-	super.propertyChanged(oldValue, newValue, !newValue.getTeam().equals(oldValue.getTeam()));
+    protected void propertyChanged(Player oldValue, Player newValue) {
+	super.notifyPropertyChanged(oldValue, newValue, !newValue.getTeam().equals(oldValue.getTeam()));
     }
 }

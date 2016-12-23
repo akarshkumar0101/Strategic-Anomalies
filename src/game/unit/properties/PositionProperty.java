@@ -17,4 +17,9 @@ public class PositionProperty extends Property<Coordinate> {
 	return dirFacingProp;
     }
 
+    @Override
+    protected void propertyChanged(Coordinate oldValue, Coordinate newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
+    }
+
 }

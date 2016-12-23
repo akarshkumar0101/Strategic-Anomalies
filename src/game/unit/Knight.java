@@ -80,10 +80,10 @@ class KnightAbilityProperty extends AbilityProperty {
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (unitOwner.getStunnedProp().getCurrentPropertyValue() || target.getUnitOnTop() == null
-		|| Board.walkDist(unitOwner.getPosProp().getCurrentPropertyValue(),
+	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || target.getUnitOnTop() == null
+		|| Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
 			target.getCoor()) > getAbilityRangeProperty().getCurrentPropertyValue()
-		|| Unit.areAllies(unitOwner, target.getUnitOnTop())) {
+		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
 	    return false;
 	} else {
 	    return true;
@@ -96,7 +96,6 @@ class KnightAbilityProperty extends AbilityProperty {
 	    return;
 	}
 	target.getUnitOnTop().healthProp.takeDamage(
-		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, unitOwner, target.getUnitOnTop()));
+		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
     }
-
 }

@@ -9,17 +9,23 @@ public class MovingProperty extends Property<Integer> {
     }
 
     public boolean canCurrentlyMove() {
-	if (unitOwner.getStunnedProp().getCurrentPropertyValue()) {
+	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
 	    return false;
 	}
-	return unitOwner.canDefaultMove();
+	return getUnitOwner().canDefaultMove();
     }
 
     public boolean isCurrentlyStoic() {
-	if (unitOwner.getStunnedProp().getCurrentPropertyValue()) {
+	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
 	    return true;
 	}
-	return unitOwner.isDefaultStoic();
+	return getUnitOwner().isDefaultStoic();
+    }
+
+    @Override
+    protected void propertyChanged(Integer oldValue, Integer newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
+
     }
 
 }

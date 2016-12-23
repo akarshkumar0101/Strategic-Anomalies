@@ -26,11 +26,11 @@ public class ArmorProperty extends Property<Integer> {
 	} else if (damage.getDamageType() == DamageType.PHYSICAL) {
 	    double blockPercent = determineBlockPercentage(damage);
 	    if (Math.random() < blockPercent) {
-		triggerBlock(damage, unitOwner);
-		return new Damage(0, damage.getDamageType(), damage.getSource(), unitOwner, true);
+		triggerBlock(damage, getUnitOwner());
+		return new Damage(0, damage.getDamageType(), damage.getSource(), getUnitOwner(), true);
 	    } else {
 		return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(),
-			damage.getSource(), unitOwner);
+			damage.getSource(), getUnitOwner());
 	    }
 	} else {
 	    return null;
@@ -50,11 +50,16 @@ public class ArmorProperty extends Property<Integer> {
 
     private void triggerBlock(Damage damage, Unit target) {
 	blockReporter.reportIncident(damage, target);
-	turnPreviouslyBlockedOn = unitOwner.getGame().getCurrentTurn();
+	turnPreviouslyBlockedOn = getUnitOwner().getGame().getCurrentTurn();
     }
 
     public IncidentReporter getBlockReporter() {
 	return blockReporter;
+    }
+
+    @Override
+    protected void propertyChanged(Integer oldValue, Integer newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
     }
 
 }

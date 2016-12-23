@@ -69,6 +69,8 @@ public class TestingFrame extends JFrame {
 	private GridLayout gridLayout;
 	private SquareLabel[][] labels;
 
+	private Square mouseInSquare;
+
 	public GamePainter() {
 	    super();
 	    labels = new SquareLabel[board.getWidth()][board.getHeight()];
@@ -248,16 +250,25 @@ public class TestingFrame extends JFrame {
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+	    setMouseInSquare(sqr);
 	    mouseIn = true;
 	    repaint();
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
+	    setMouseInSquare(null);
 	    mouseIn = false;
 	    repaint();
 	}
 
+	public void setMouseInSquare(Square sqr) {
+	    if (gamePainter.mouseInSquare == sqr) {
+		return;
+	    }
+	    gamePainter.mouseInSquare = sqr;
+	    System.out.println("Mouse is now in: " + (sqr == null ? "null" : sqr.getCoor()));
+	}
     }
 
 }

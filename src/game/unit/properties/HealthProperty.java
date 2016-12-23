@@ -18,7 +18,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public double percentageHealth() {
-	return (double) getCurrentPropertyValue() / defaultPropValue;
+	return (double) getCurrentPropertyValue() / getDefaultPropertyValue();
     }
 
     public void takeDamage(Damage damage) {
@@ -44,5 +44,10 @@ public class HealthProperty extends Property<Integer> {
 	if (damageAmount > getCurrentPropertyValue()) {
 	    // TODO trigger death of unit
 	}
+    }
+
+    @Override
+    protected void propertyChanged(Integer oldValue, Integer newValue) {
+	super.notifyPropertyChanged(oldValue, newValue);
     }
 }
