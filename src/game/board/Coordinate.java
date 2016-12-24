@@ -93,7 +93,7 @@ public class Coordinate {
 	if (dir == Direction.RIGHT || dir == Direction.LEFT) {
 	    return new Coordinate(coor.x + dir.toInt(), coor.y);
 	} else if (dir == Direction.UP || dir == Direction.DOWN) {
-	    return new Coordinate(coor.x, coor.y + dir.toInt());
+	    return new Coordinate(coor.x, coor.y - dir.toInt());
 	} else {
 	    return null;
 	}

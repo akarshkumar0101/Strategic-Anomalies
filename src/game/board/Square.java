@@ -58,22 +58,20 @@ public class Square {
     }
 
     /**
-     * Places the given Unit on this square and sets the Unit's coordinate to
-     * the Square coordinate.
+     * Places the given Unit on this square and but does not update the Unit's
+     * location because it should be updated anyways in order for the board to
+     * call this.
      * 
      * @param unitOnTop
      */
-    public void setUnitOnTop(Unit unitOnTop) {
+    void setUnitOnTop(Unit unitOnTop) {
 	this.unitOnTop = unitOnTop;
-	if (unitOnTop != null) {
-	    unitOnTop.getPosProp().setPropertyValue(coor);
-	}
     }
 
     /**
      * Discards the unit on top of the Square.
      */
-    public void removeUnitOnTop() {
+    void removeUnitOnTop() {
 	unitOnTop = null;
     }
 

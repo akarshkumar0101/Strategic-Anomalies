@@ -72,7 +72,7 @@ public class PathFinder {
 
 	    // TODO edit this to make it go through side step but not
 	    // enemies
-	    Unit intersecting = board.getUnitAt(newcoor);
+	    Unit intersecting = board.isInBoard(newcoor) ? board.getUnitAt(newcoor) : null;
 	    if (intersecting != null) {
 		if (Unit.areAllies(intersecting, unit)) {
 		    if (intersecting.getMovingProp().isCurrentlyStoic()) {

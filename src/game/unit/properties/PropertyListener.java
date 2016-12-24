@@ -25,7 +25,7 @@ public interface PropertyListener<T> extends IncidentListener {
      * @param unit
      * @param specifications
      */
-    public abstract void propertyChanged(T oldValue, T newValue, Property<T> property, Unit unit,
+    public abstract void propertyChanged(T oldValue, T newValue, Unit unitOwner, Property<T> property,
 	    Object... specifications);
 
     /**
@@ -37,12 +37,12 @@ public interface PropertyListener<T> extends IncidentListener {
     @Override
     public default void incidentReported(Object... specifications) {
 	if (specifications.length > 4) {
-	    propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
-		    (Unit) specifications[3], Arrays.copyOfRange(specifications, 4, specifications.length));
+	    propertyChanged((T) specifications[0], (T) specifications[1], (Unit) specifications[2],
+		    (Property<T>) specifications[3], Arrays.copyOfRange(specifications, 4, specifications.length));
 	} else {
-	    propertyChanged((T) specifications[0], (T) specifications[1], (Property<T>) specifications[2],
-		    (Unit) specifications[3]);
+	    propertyChanged((T) specifications[0], (T) specifications[1], (Unit) specifications[2],
+		    (Property<T>) specifications[3]);
 	}
     }
-
+    // oldValue, newValue, unitOwner, this, specifications
 }

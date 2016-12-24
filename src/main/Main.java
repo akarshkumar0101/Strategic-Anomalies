@@ -7,6 +7,9 @@ import game.Player;
 import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
+import game.interaction.effect.Effect;
+import game.interaction.effect.EffectType;
+import game.interaction.incident.IncidentReporter;
 import game.unit.Knight;
 import game.unit.Unit;
 import game.util.Direction;
@@ -14,6 +17,7 @@ import game.util.PathFinder;
 import testingframe.TestingFrame;
 
 public class Main {
+    public static Unit unit1;
 
     public static boolean test() {
 	return false;
@@ -30,11 +34,11 @@ public class Main {
 	Game game = new Game(team1, team2);
 	Board board = game.getBoard();
 
-	Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(0, 0));
-	board.getSquare(new Coordinate(5, 5)).setUnitOnTop(unit1);
+	unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(1, 1));
+	Unit unit2 = new Knight(game, player2, Direction.RIGHT, new Coordinate(5, 6));
 
-	Unit unit2 = new Knight(game, player2, Direction.RIGHT, new Coordinate(0, 0));
-	board.getSquare(new Coordinate(5, 6)).setUnitOnTop(unit2);
+	board.linkBoardToUnit(unit1);
+	board.linkBoardToUnit(unit2);
 
 	for (byte y = -1; y < 12; y++) {
 	    for (byte x = -1; x < 12; x++) {
@@ -62,15 +66,37 @@ public class Main {
 
 	unit2.getHealthProp().setPropertyValue(20);
 
+	IncidentReporter randomReporter = new IncidentReporter();
+	Effect moveEffect = new Effect(EffectType.OTHER, unit2, null) {
+	    @Override
+	    public void performEffect(Object... args) {
+
+		Coordinate toCoor = null;
+		int i = 0;
+		do {
+		    if (i > 0) {
+			int ordin = (unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue().ordinal() + 1)
+				% Direction.values().length;
+			unit1.getPosProp().getDirFacingProp().setPropertyValue(Direction.values()[ordin]);
+		    }
+		    toCoor = Coordinate.shiftCoor(unit1.getPosProp().getCurrentPropertyValue(),
+			    unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue());
+		} while (i++ < -5 || !board.isInBoard(toCoor) || board.getUnitAt(toCoor) != null);
+
+		unit1.getPosProp().setPropertyValue(toCoor);
+	    }
+	};
+	unit1.addEffect(moveEffect, randomReporter);
+
 	while (true) {
 	    try {
-		Thread.sleep(100);
+		Thread.sleep(300);
 	    } catch (InterruptedException e) {
 		e.printStackTrace();
 	    }
-	    int ordin = (unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue().ordinal() + 1)
-		    % Direction.values().length;
-	    unit1.getPosProp().getDirFacingProp().setPropertyValue(Direction.values()[ordin]);
+	    randomReporter.reportIncident();
+
+	    testingFrame.updateInformation();
 	    testingFrame.repaint();
 	}
 

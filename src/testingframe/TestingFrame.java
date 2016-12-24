@@ -6,8 +6,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -23,6 +21,7 @@ import game.board.Square;
 import game.unit.Knight;
 import game.unit.Unit;
 import game.util.Direction;
+import main.Main;
 
 public class TestingFrame extends JFrame {
 
@@ -55,6 +54,10 @@ public class TestingFrame extends JFrame {
 
 	getContentPane().add(gamePainter);
 
+    }
+
+    public void updateInformation() {
+	gamePainter.updateInformation();
     }
 
     public static double scale(double num, double ori1, double ori2, double new1, double new2) {
@@ -91,6 +94,13 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 
+	public void updateInformation() {
+	    for (int y = 0; y < board.getHeight(); y++) {
+		for (int x = 0; x < board.getWidth(); x++) {
+		    labels[x][y].updateInformation();
+		}
+	    }
+	}
     }
 
     private static final Color slightBlue = new Color(192, 192, 220), slightRed = new Color(220, 192, 192);
@@ -101,7 +111,7 @@ public class TestingFrame extends JFrame {
 		amount > col.getBlue() ? 0 : col.getBlue() - amount);
     }
 
-    class SquareLabel extends JComponent implements ActionListener, MouseListener {
+    class SquareLabel extends JComponent implements MouseListener {
 
 	private static final long serialVersionUID = 7959593291619934967L;
 
@@ -161,8 +171,6 @@ public class TestingFrame extends JFrame {
 
 	@Override
 	public void paintComponent(Graphics g) {
-	    currentg = g;
-
 	    currentBackgroundColor = determineBackgroundColor();
 	    // clear
 	    g.setColor(currentBackgroundColor);
@@ -182,57 +190,57 @@ public class TestingFrame extends JFrame {
 		return;
 	    }
 
-	    // draw image in the center
-	    int imgWidth = (int) (percentageIconWidth * getWidth()),
-		    imgHeight = (int) (percentageIconHeight * getHeight());
-	    g.drawImage(img, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight, null);
+	    try {
 
-	    // draw health bar
-	    double healthPercentage = unitOnTop.getHealthProp().percentageHealth();
-	    int healthBarHeight = getHeight() / 15;
-	    g.setColor(Color.green);
-	    g.fillRect(1, 1, (int) (healthPercentage * getWidth()) - 1, healthBarHeight);
+		// draw image in the center
+		int imgWidth = (int) (percentageIconWidth * getWidth()),
+			imgHeight = (int) (percentageIconHeight * getHeight());
+		g.drawImage(img, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight, null);
 
-	    // draw direction facing arrow
-	    Direction dir = unitOnTop.getPosProp().getDirFacingProp().getCurrentPropertyValue();
-	    int arrowWidth = (int) (.5 * getWidth()), arrowHeight = (int) (.2 * getHeight());
-	    g.setColor(Color.red);
-	    if (dir == Direction.UP) {
-		g.fillPolygon(
-			new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
-			new int[] { arrowHeight + healthBarHeight, healthBarHeight, arrowHeight + healthBarHeight }, 3);
-	    } else if (dir == Direction.DOWN) {
-		g.fillPolygon(
-			new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
-			new int[] { getHeight() - arrowHeight, getHeight(), getHeight() - arrowHeight }, 3);
+		// draw health bar
+		double healthPercentage = unitOnTop.getHealthProp().percentageHealth();
+		int healthBarHeight = getHeight() / 15;
+		g.setColor(Color.green);
+		g.fillRect(1, 1, (int) (healthPercentage * getWidth()) - 1, healthBarHeight);
+
+		// draw direction facing arrow
+		Direction dir = unitOnTop.getPosProp().getDirFacingProp().getCurrentPropertyValue();
+		int arrowWidth = (int) (.5 * getWidth()), arrowHeight = (int) (.2 * getHeight());
+		g.setColor(Color.red);
+		if (dir == Direction.UP) {
+		    g.fillPolygon(
+			    new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
+			    new int[] { arrowHeight + healthBarHeight, healthBarHeight, arrowHeight + healthBarHeight },
+			    3);
+		} else if (dir == Direction.DOWN) {
+		    g.fillPolygon(
+			    new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
+			    new int[] { getHeight() - arrowHeight, getHeight(), getHeight() - arrowHeight }, 3);
+		}
+		arrowHeight = (int) (.2 * getWidth());
+		arrowWidth = (int) (.5 * getHeight());
+		if (dir == Direction.LEFT) {
+		    g.fillPolygon(new int[] { arrowHeight, 0, arrowHeight }, new int[] { (getHeight() - arrowWidth) / 2,
+			    getHeight() / 2, (getHeight() + arrowWidth) / 2 }, 3);
+		} else if (dir == Direction.RIGHT) {
+		    g.fillPolygon(
+			    new int[] { getWidth() - arrowHeight, getWidth(), getWidth() - arrowHeight }, new int[] {
+				    (getHeight() - arrowWidth) / 2, getHeight() / 2, (getHeight() + arrowWidth) / 2 },
+			    3);
+		}
+	    } catch (Exception e) {
+		e.printStackTrace();
 	    }
-	    arrowHeight = (int) (.2 * getWidth());
-	    arrowWidth = (int) (.5 * getHeight());
-	    if (dir == Direction.LEFT) {
-		g.fillPolygon(new int[] { arrowHeight, 0, arrowHeight },
-			new int[] { (getHeight() - arrowWidth) / 2, getHeight() / 2, (getHeight() + arrowWidth) / 2 },
-			3);
-	    } else if (dir == Direction.RIGHT) {
-		g.fillPolygon(new int[] { getWidth() - arrowHeight, getWidth(), getWidth() - arrowHeight },
-			new int[] { (getHeight() - arrowWidth) / 2, getHeight() / 2, (getHeight() + arrowWidth) / 2 },
-			3);
-	    }
-
 	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-
-	}
-
-	public void onClick() {
-	    System.out.println("press");
-	}
-
-	Graphics currentg;
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+	    System.out.println("click");
+	    if (sqr != null) {
+		Main.unit1.getPosProp().setPropertyValue(sqr.getCoor());
+		TestingFrame.this.updateInformation();
+		TestingFrame.this.repaint();
+	    }
 	}
 
 	@Override
@@ -244,7 +252,6 @@ public class TestingFrame extends JFrame {
 	@Override
 	public void mouseReleased(MouseEvent e) {
 	    mousePressing = false;
-	    onClick();
 	    repaint();
 	}
 
@@ -267,7 +274,8 @@ public class TestingFrame extends JFrame {
 		return;
 	    }
 	    gamePainter.mouseInSquare = sqr;
-	    System.out.println("Mouse is now in: " + (sqr == null ? "null" : sqr.getCoor()));
+	    // System.out.println("Mouse is now in: " + (sqr == null ? "null" :
+	    // sqr.getCoor()));
 	}
     }
 

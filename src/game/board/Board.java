@@ -1,5 +1,7 @@
 package game.board;
 
+import java.util.List;
+
 import game.unit.Unit;
 import game.util.InvalidCoordinateException;
 
@@ -25,10 +27,9 @@ public abstract class Board {
 	for (byte x = 0; x < getWidth(); x++) {
 	    for (byte y = 0; y < getHeight(); y++) {
 		Coordinate coor = new Coordinate(x, y);
-		try {
-		    checkCoordinateRange(coor);
+		if (isInBoard(coor)) {
 		    grid[x][y] = new Square(coor);
-		} catch (InvalidCoordinateException e) {
+		} else {
 		    grid[x][y] = null;
 		}
 	    }
@@ -81,16 +82,27 @@ public abstract class Board {
 	return grid[coor.x()][coor.y()].getUnitOnTop();
     }
 
-    /**
-     * Places the unit at the unit's x and y coordinates.
-     * 
-     * @param unit
-     *            to place
-     */
-    public void placeUnit(Unit unit) {
-	checkCoordinateRange(unit.getPosProp().getCurrentPropertyValue());
-	grid[unit.getPosProp().getCurrentPropertyValue().x()][unit.getPosProp().getCurrentPropertyValue().y()]
-		.setUnitOnTop(unit);
+    public void linkBoardToUnit(Unit unit) {
+	Coordinate coor = unit.getPosProp().getCurrentPropertyValue();
+	checkCoordinateRange(coor);
+	getSquare(coor).setUnitOnTop(unit);
+
+	unit.getPosProp().addPropertyListener((oldValue, newValue, unit1, property, specifications) -> {
+	    checkCoordinateRange(oldValue);
+	    checkCoordinateRange(newValue);
+
+	    Square oldsqr = getSquare(oldValue);
+	    Square newsqr = getSquare(newValue);
+	    oldsqr.removeUnitOnTop();
+	    newsqr.setUnitOnTop(unit1);
+	});
+	// TODO add an onDeath listener to the unit to remove it from board
+    }
+
+    public void linkBoardToUnits(List<Unit> units) {
+	for (Unit unit : units) {
+	    linkBoardToUnit(unit);
+	}
     }
 
     /**
