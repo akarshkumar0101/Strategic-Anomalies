@@ -22,8 +22,8 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public void takeDamage(Damage damage) {
-	armorProp.filterDamage(damage);
-	if (!damage.wasBlocked()) {
+	if (!armorProp.attemptBlock(damage)) {
+	    damage = armorProp.filterDamage(damage);
 	    takeRawDamage(damage);
 	}
     }
@@ -41,8 +41,8 @@ public class HealthProperty extends Property<Integer> {
 		return initHealth - damageAmount;
 	    }
 	});
-	if (damageAmount > getCurrentPropertyValue()) {
-	    // TODO trigger death of unit
+	if (getCurrentPropertyValue() <= 0) {
+	    getUnitOwner().triggerDeath();
 	}
     }
 

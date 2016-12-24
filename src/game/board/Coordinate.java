@@ -61,13 +61,13 @@ public class Coordinate {
      */
     @Override
     public boolean equals(Object another) {
-	try {
-	    Coordinate coor = (Coordinate) another;
-	    if (x == coor.x && y == coor.y) {
-		return true;
-	    }
+	if (!(another instanceof Coordinate)) {
 	    return false;
-	} catch (Exception e) {
+	}
+	Coordinate coor = (Coordinate) another;
+	if (x == coor.x && y == coor.y) {
+	    return true;
+	} else {
 	    return false;
 	}
     }

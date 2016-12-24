@@ -256,7 +256,7 @@ public class TestingFrame extends JFrame {
 	    public void mouseClicked(MouseEvent e) {
 		System.out.println("click");
 		if (sqr != null) {
-		    Main.unit1.getPosProp().setPropertyValue(sqr.getCoor());
+		    Main.movableUnit.getPosProp().setPropertyValue(sqr.getCoor());
 		    TestingFrame.this.updateInformation();
 		    TestingFrame.this.repaint();
 		}

@@ -7,6 +7,7 @@ import game.Player;
 import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
+import game.interaction.effect.Affectable;
 import game.interaction.effect.Effect;
 import game.interaction.effect.EffectType;
 import game.interaction.incident.IncidentReporter;
@@ -18,7 +19,7 @@ import testingframe.TestingFrame;
 
 public class Main {
 
-    public static Unit unit1;
+    public static Unit movableUnit;
 
     public static boolean test() {
 	return false;
@@ -35,8 +36,9 @@ public class Main {
 	Game game = new Game(team1, team2);
 	Board board = game.getBoard();
 
-	unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(1, 1));
+	Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(1, 1));
 	Unit unit2 = new Knight(game, player2, Direction.RIGHT, new Coordinate(5, 6));
+	movableUnit = unit1;
 
 	board.linkBoardToUnit(unit1);
 	board.linkBoardToUnit(unit2);
@@ -70,24 +72,25 @@ public class Main {
 	IncidentReporter randomReporter = new IncidentReporter();
 	Effect moveEffect = new Effect(EffectType.OTHER, unit2, null) {
 	    @Override
-	    public void performEffect(Object... args) {
-
+	    public void performEffect(Affectable affectbleObject, Object... args) {
+		Unit unit = (Unit) affectbleObject;
 		Coordinate toCoor = null;
 		int i = 0;
 		do {
 		    if (i > 0) {
-			int ordin = (unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue().ordinal() + 1)
+			int ordin = (unit.getPosProp().getDirFacingProp().getCurrentPropertyValue().ordinal() + 1)
 				% Direction.values().length;
-			unit1.getPosProp().getDirFacingProp().setPropertyValue(Direction.values()[ordin]);
+			unit.getPosProp().getDirFacingProp().setPropertyValue(Direction.values()[ordin]);
 		    }
-		    toCoor = Coordinate.shiftCoor(unit1.getPosProp().getCurrentPropertyValue(),
-			    unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue());
+		    toCoor = Coordinate.shiftCoor(unit.getPosProp().getCurrentPropertyValue(),
+			    unit.getPosProp().getDirFacingProp().getCurrentPropertyValue());
 		} while (i++ < -1 || !board.isInBoard(toCoor) || board.getUnitAt(toCoor) != null);
 
-		unit1.getPosProp().setPropertyValue(toCoor);
+		unit.getPosProp().setPropertyValue(toCoor);
 	    }
 	};
 	unit1.addEffect(moveEffect, randomReporter);
+	unit2.addEffect(moveEffect, randomReporter);
 
 	while (true) {
 	    try {

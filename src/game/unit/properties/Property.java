@@ -179,15 +179,14 @@ public abstract class Property<T> {
 	    permanentPropEffects.add(effect);
 
 	    updateBasePropertyValue();
-	    updateCurrentPropertyValue();
 	} else {
 	    activePropEffects.add(effect);
 
 	    // only place needed to sort the properties, because properties are
 	    // being added.
 	    Collections.sort(activePropEffects, normalPropEffectComparator);
-	    updateCurrentPropertyValue();
 	}
+	updateCurrentPropertyValue();
 
 	valueUpdated();
     }

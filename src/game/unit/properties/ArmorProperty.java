@@ -2,7 +2,6 @@ package game.unit.properties;
 
 import game.Turn;
 import game.interaction.Damage;
-import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
@@ -17,29 +16,28 @@ public class ArmorProperty extends Property<Integer> {
 
 	blockReporter = new IncidentReporter();
 	turnPreviouslyBlockedOn = null;
+    }
 
+    public boolean attemptBlock(Damage damage) {
+	// determine if it blocked the damage
+	double blockPercent = determineBlockPercentage(damage);
+	if (Math.random() < blockPercent) {
+	    triggerBlock(damage);
+	    return true;
+	}
+
+	return false;
     }
 
     public Damage filterDamage(Damage damage) {
-	if (damage.getDamageType() == DamageType.MAGIC) {
-	    return damage;
-	} else if (damage.getDamageType() == DamageType.PHYSICAL) {
-	    double blockPercent = determineBlockPercentage(damage);
-	    if (Math.random() < blockPercent) {
-		triggerBlock(damage, getUnitOwner());
-		return new Damage(0, damage.getDamageType(), damage.getSource(), getUnitOwner(), true);
-	    } else {
-		return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(),
-			damage.getSource(), getUnitOwner());
-	    }
-	} else {
-	    return null;
-	}
+	return new Damage(filterThroughArmor(damage.getDamageAmount()), damage.getDamageType(), damage.getSource(),
+		getUnitOwner());
     }
 
     private double determineBlockPercentage(Damage damage) {
 	// TODO make algorithm for determining whether it blocks it based on
-	// previous blocks, direction of incoming damage, etc.
+	// damage type,previous blocks, direction of incoming damage, whether it
+	// is stunned, etc.
 	return .65;
     }
 
@@ -48,8 +46,8 @@ public class ArmorProperty extends Property<Integer> {
 	return damageAmount;
     }
 
-    private void triggerBlock(Damage damage, Unit target) {
-	blockReporter.reportIncident(damage, target);
+    private void triggerBlock(Damage damage) {
+	blockReporter.reportIncident(damage);
 	turnPreviouslyBlockedOn = getUnitOwner().getGame().getCurrentTurn();
     }
 

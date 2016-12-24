@@ -6,6 +6,8 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Path;
 import game.interaction.effect.Affectable;
+import game.interaction.incident.IncidentListener;
+import game.interaction.incident.IncidentReporter;
 import game.unit.properties.AbilityProperty;
 import game.unit.properties.HealthProperty;
 import game.unit.properties.MovingProperty;
@@ -18,7 +20,10 @@ import game.util.PathFinder;
 
 public abstract class Unit extends Affectable implements UnitDefaults {
 
-    protected final Game game;
+    // TODO go through and document EVERYTHING
+    // TODO go through and determine visibility of ALL members in every class.
+
+    private final Game game;
 
     protected final OwnerProperty ownerProp;
 
@@ -32,6 +37,8 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 
     protected final AbilityProperty abilityProp;
 
+    private final IncidentReporter deathReporter;
+
     public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	this.game = game;
 
@@ -41,6 +48,13 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	stunnedProp = new StunnedProperty(this, false);
 	movingProp = new MovingProperty(this, getDefaultMoveRange());
 	abilityProp = getDefaultAbilityProperty();
+
+	deathReporter = new IncidentReporter() {
+	    @Override
+	    public void add(IncidentListener listener, boolean onlyOnce) {
+		super.add(listener, true);
+	    }
+	};
     }
 
     public Game getGame() {
@@ -71,10 +85,15 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	return abilityProp;
     }
 
+    public IncidentReporter getDeathReporter() {
+	return deathReporter;
+    }
+
     public void runOnStart() {
     }
 
-    public void runOnDeath() {
+    public void triggerDeath() {
+	deathReporter.reportIncident(this);
     }
 
     public boolean isInRangeOfWalking(Coordinate moveToCoor) {

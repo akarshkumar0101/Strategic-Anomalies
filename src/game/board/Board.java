@@ -96,7 +96,8 @@ public abstract class Board {
 	    oldsqr.removeUnitOnTop();
 	    newsqr.setUnitOnTop(unit1);
 	});
-	// TODO add an onDeath listener to the unit to remove it from board
+	unit.getDeathReporter()
+		.add(specifications -> getSquare(unit.getPosProp().getCurrentPropertyValue()).removeUnitOnTop());
     }
 
     public void linkBoardToUnits(List<Unit> units) {

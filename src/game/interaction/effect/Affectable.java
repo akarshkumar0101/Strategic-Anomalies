@@ -120,7 +120,7 @@ public abstract class Affectable {
 	}
     }
 
-    static class EffectTrigger {
+    class EffectTrigger {
 
 	private final Condition conditionToRunOn;
 
@@ -133,7 +133,7 @@ public abstract class Affectable {
 	    conditionToRunOn = condRunOn;
 	    listener = specifications -> {
 		if (conditionToRunOn.performCondition(specifications)) {
-		    effect.performEffect(specifications);
+		    effect.performEffect(Affectable.this, specifications);
 		}
 	    };
 

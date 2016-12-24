@@ -11,10 +11,9 @@ import game.unit.Unit;
  * arguments.<br>
  * <br>
  * 
- * An Effect should only be tied to one Affectable object because the Effect
- * keeps track of triggers. If the same effect needs to be applied to two
- * Affectable, clone the Effect and apply it to the other one.
- *
+ * The same Effect can be tied to different Affectable objects because
+ * Affectable now keeps track of the triggers.
+ * 
  * @author Akarsh
  *
  */
@@ -41,6 +40,6 @@ public abstract class Effect extends EffectSkeleton {
      * @param args
      *            the arguments sent to the Effect by a IncidentListener.
      */
-    public abstract void performEffect(Object... args);
+    public abstract void performEffect(Affectable affectableObject, Object... args);
 
 }
