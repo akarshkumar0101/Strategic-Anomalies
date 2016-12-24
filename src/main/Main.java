@@ -17,6 +17,7 @@ import game.util.PathFinder;
 import testingframe.TestingFrame;
 
 public class Main {
+
     public static Unit unit1;
 
     public static boolean test() {
@@ -60,7 +61,7 @@ public class Main {
 
 	TestingFrame testingFrame = new TestingFrame(board, player1, player2);
 
-	testingFrame.setSize(900, 900);
+	testingFrame.setSize(1400, 1000);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	testingFrame.setVisible(true);
 
@@ -81,7 +82,7 @@ public class Main {
 		    }
 		    toCoor = Coordinate.shiftCoor(unit1.getPosProp().getCurrentPropertyValue(),
 			    unit1.getPosProp().getDirFacingProp().getCurrentPropertyValue());
-		} while (i++ < -5 || !board.isInBoard(toCoor) || board.getUnitAt(toCoor) != null);
+		} while (i++ < -1 || !board.isInBoard(toCoor) || board.getUnitAt(toCoor) != null);
 
 		unit1.getPosProp().setPropertyValue(toCoor);
 	    }

@@ -1,6 +1,7 @@
 package testingframe;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,7 +31,8 @@ public class TestingFrame extends JFrame {
     private Board board;
     private Player player1, player2;
 
-    private GamePainter gamePainter;
+    private final GamePainter gamePainter;
+    private final GameInformation gameInformation;
 
     private GridBagLayout gbLayout;
     private GridBagConstraints gbConstrains;
@@ -41,6 +43,7 @@ public class TestingFrame extends JFrame {
 	this.player2 = player2;
 
 	gamePainter = new GamePainter();
+	gameInformation = new GameInformation();
 
 	gbLayout = new GridBagLayout();
 	gbConstrains = new GridBagConstraints();
@@ -50,9 +53,25 @@ public class TestingFrame extends JFrame {
 
     public void organizeComponents() {
 
-	// getContentPane().setLayout(gbLayout);
+	getContentPane().setLayout(gbLayout);
 
-	getContentPane().add(gamePainter);
+	gbConstrains.gridx = 0;
+	gbConstrains.gridy = 0;
+	gbConstrains.weightx = 0;
+	gbConstrains.weighty = 1;
+	gbConstrains.fill = GridBagConstraints.BOTH;
+	gbConstrains.anchor = GridBagConstraints.CENTER;
+
+	getContentPane().add(gamePainter, gbConstrains);
+
+	gbConstrains.gridx = 1;
+	gbConstrains.gridy = 0;
+	gbConstrains.weightx = 1;
+	gbConstrains.weighty = 1;
+	gbConstrains.fill = GridBagConstraints.BOTH;
+	gbConstrains.anchor = GridBagConstraints.CENTER;
+
+	getContentPane().add(gameInformation, gbConstrains);
 
     }
 
@@ -63,6 +82,14 @@ public class TestingFrame extends JFrame {
     public static double scale(double num, double ori1, double ori2, double new1, double new2) {
 	double scale = (new1 - new2) / (ori1 - ori2);
 	return num * scale + new1;
+    }
+
+    private static final Color slightBlue = new Color(192, 192, 220), slightRed = new Color(220, 192, 192);
+
+    private static Color darkerColor(Color col, int amount) {
+	return new Color(amount > col.getRed() ? 0 : col.getRed() - amount,
+		amount > col.getGreen() ? 0 : col.getGreen() - amount,
+		amount > col.getBlue() ? 0 : col.getBlue() - amount);
     }
 
     class GamePainter extends JPanel {
@@ -94,6 +121,11 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 
+	@Override
+	public Dimension getPreferredSize() {
+	    return new Dimension(900, 900);
+	}
+
 	public void updateInformation() {
 	    for (int y = 0; y < board.getHeight(); y++) {
 		for (int x = 0; x < board.getWidth(); x++) {
@@ -101,96 +133,85 @@ public class TestingFrame extends JFrame {
 		}
 	    }
 	}
-    }
 
-    private static final Color slightBlue = new Color(192, 192, 220), slightRed = new Color(220, 192, 192);
+	class SquareLabel extends JComponent implements MouseListener {
 
-    private static Color darkerColor(Color col, int amount) {
-	return new Color(amount > col.getRed() ? 0 : col.getRed() - amount,
-		amount > col.getGreen() ? 0 : col.getGreen() - amount,
-		amount > col.getBlue() ? 0 : col.getBlue() - amount);
-    }
+	    private static final long serialVersionUID = 7959593291619934967L;
 
-    class SquareLabel extends JComponent implements MouseListener {
+	    private static final double percentageIconHeight = 1, percentageIconWidth = percentageIconHeight;
 
-	private static final long serialVersionUID = 7959593291619934967L;
+	    private boolean mouseIn;
+	    private boolean mousePressing;
 
-	private static final double percentageIconHeight = 1, percentageIconWidth = percentageIconHeight;
+	    private Color currentBackgroundColor;
 
-	private boolean mouseIn;
-	private boolean mousePressing;
+	    private final Square sqr;
+	    private Unit unitOnTop;
+	    private Image img;
 
-	private Color currentBackgroundColor;
+	    public SquareLabel(Square sqr) {
+		this.sqr = sqr;
+		addMouseListener(this);
 
-	private final Square sqr;
-	private Unit unitOnTop;
-	private Image img;
-
-	public SquareLabel(Square sqr) {
-	    this.sqr = sqr;
-	    addMouseListener(this);
-
-	    updateInformation();
-	}
-
-	public void updateInformation() {
-
-	    unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
-	    if (unitOnTop == null) {
-		img = null;
-	    } else if (unitOnTop.getClass() == Knight.class) {
-		img = new ImageIcon(getClass().getResource("/temp_pics/warrior.png")).getImage();
-	    }
-	}
-
-	public Color determineBackgroundColor() {
-	    if (sqr == null) {
-		return Color.black;
+		updateInformation();
 	    }
 
-	    Color col = Color.lightGray;
+	    public void updateInformation() {
 
-	    if (unitOnTop != null) {
-		Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
-
-		if (owner.equals(player1)) {
-		    col = slightBlue;
-		} else if (owner.equals(player2)) {
-		    col = slightRed;
+		unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
+		if (unitOnTop == null) {
+		    img = null;
+		} else if (unitOnTop.getClass() == Knight.class) {
+		    img = new ImageIcon(getClass().getResource("/temp_pics/warrior.png")).getImage();
 		}
 	    }
 
-	    if (mousePressing) {
-		col = darkerColor(col, 50);
-	    } else if (mouseIn) {
-		col = darkerColor(col, 25);
-	    }
-	    return col;
+	    public Color determineBackgroundColor() {
+		if (sqr == null) {
+		    return Color.black;
+		}
 
-	}
+		Color col = Color.lightGray;
 
-	@Override
-	public void paintComponent(Graphics g) {
-	    currentBackgroundColor = determineBackgroundColor();
-	    // clear
-	    g.setColor(currentBackgroundColor);
-	    g.fillRect(0, 0, getWidth(), getHeight());
+		if (unitOnTop != null) {
+		    Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
 
-	    // if outside of board
-	    if (sqr == null) {
-		return;
-	    }
+		    if (owner.equals(player1)) {
+			col = slightBlue;
+		    } else if (owner.equals(player2)) {
+			col = slightRed;
+		    }
+		}
 
-	    // border
-	    g.setColor(Color.black);
-	    g.drawRect(0, 0, getWidth(), getHeight());
+		if (mousePressing) {
+		    col = darkerColor(col, 50);
+		} else if (mouseIn) {
+		    col = darkerColor(col, 25);
+		}
+		return col;
 
-	    // if empty square, end it
-	    if (sqr.isEmpty()) {
-		return;
 	    }
 
-	    try {
+	    @Override
+	    public void paintComponent(Graphics g) {
+		currentBackgroundColor = determineBackgroundColor();
+		// clear
+		g.setColor(currentBackgroundColor);
+		g.fillRect(0, 0, getWidth(), getHeight());
+
+		// if outside of board
+		if (sqr == null) {
+		    return;
+		}
+
+		// border
+		g.setColor(Color.black);
+		g.drawRect(0, 0, getWidth(), getHeight());
+
+		// if empty square, end it
+		if (sqr.isEmpty()) {
+		    return;
+		}
 
 		// draw image in the center
 		int imgWidth = (int) (percentageIconWidth * getWidth()),
@@ -228,55 +249,76 @@ public class TestingFrame extends JFrame {
 				    (getHeight() - arrowWidth) / 2, getHeight() / 2, (getHeight() + arrowWidth) / 2 },
 			    3);
 		}
-	    } catch (Exception e) {
-		e.printStackTrace();
+
+	    }
+
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		System.out.println("click");
+		if (sqr != null) {
+		    Main.unit1.getPosProp().setPropertyValue(sqr.getCoor());
+		    TestingFrame.this.updateInformation();
+		    TestingFrame.this.repaint();
+		}
+	    }
+
+	    @Override
+	    public void mousePressed(MouseEvent e) {
+		mousePressing = true;
+		repaint();
+	    }
+
+	    @Override
+	    public void mouseReleased(MouseEvent e) {
+		mousePressing = false;
+		repaint();
+	    }
+
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		setMouseInSquare(sqr);
+		mouseIn = true;
+		repaint();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		setMouseInSquare(null);
+		mouseIn = false;
+		repaint();
+	    }
+
+	    public void setMouseInSquare(Square sqr) {
+		if (gamePainter.mouseInSquare == sqr) {
+		    return;
+		}
+		gamePainter.mouseInSquare = sqr;
+		// System.out.println("Mouse is now in: " + (sqr == null ?
+		// "null" :
+		// sqr.getCoor()));
 	    }
 	}
+    }
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-	    System.out.println("click");
-	    if (sqr != null) {
-		Main.unit1.getPosProp().setPropertyValue(sqr.getCoor());
-		TestingFrame.this.updateInformation();
-		TestingFrame.this.repaint();
-	    }
+    class GameInformation extends JPanel {
+
+	private static final long serialVersionUID = 1L;
+
+	private Square mouseInSquare;
+
+	public GameInformation() {
+
+	}
+
+	public void updateInformation() {
+	    mouseInSquare = gamePainter.mouseInSquare;
+
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e) {
-	    mousePressing = true;
-	    repaint();
+	public void paintComponent(Graphics g) {
 	}
 
-	@Override
-	public void mouseReleased(MouseEvent e) {
-	    mousePressing = false;
-	    repaint();
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-	    setMouseInSquare(sqr);
-	    mouseIn = true;
-	    repaint();
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-	    setMouseInSquare(null);
-	    mouseIn = false;
-	    repaint();
-	}
-
-	public void setMouseInSquare(Square sqr) {
-	    if (gamePainter.mouseInSquare == sqr) {
-		return;
-	    }
-	    gamePainter.mouseInSquare = sqr;
-	    // System.out.println("Mouse is now in: " + (sqr == null ? "null" :
-	    // sqr.getCoor()));
-	}
     }
 
 }

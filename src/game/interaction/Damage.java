@@ -1,6 +1,5 @@
 package game.interaction;
 
-import game.interaction.effect.Affectable;
 import game.unit.Unit;
 
 /**
@@ -11,7 +10,7 @@ import game.unit.Unit;
  * @author akars
  *
  */
-public class Damage extends Affectable {
+public class Damage {
 
     private int damageAmount;
 

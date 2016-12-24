@@ -42,7 +42,7 @@ public abstract class EffectSkeleton {
     public EffectSkeleton(EffectType effectType, Unit source, Condition shouldExist) {
 	this.effectType = effectType;
 	this.source = source;
-	this.shouldExist = shouldExist;
+	this.shouldExist = shouldExist == null ? args -> true : shouldExist;
     }
 
     /**

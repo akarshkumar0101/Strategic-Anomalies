@@ -46,11 +46,11 @@ public abstract class Property<T> {
      * The PropertyEffects that have permanently affected the property. Just
      * used to keep track of what has interacted with this property.
      */
-    private final List<PropertyEffect<T>> permanentPropEffects = new ArrayList<>(5);
+    private final List<PropertyEffect<T>> permanentPropEffects;
     /**
      * The PropertyEffects that are currently affecting the property.
      */
-    private final List<PropertyEffect<T>> activePropEffects = new ArrayList<>(2);
+    private final List<PropertyEffect<T>> activePropEffects;
 
     /**
      * The value of the property after permanent effects have been applied.
@@ -89,7 +89,11 @@ public abstract class Property<T> {
     public Property(Unit unitOwner, T initValue) {
 	this.unitOwner = unitOwner;
 	this.lastCurrentPropValue = this.currentPropValue = this.currentBasePropValue = this.defaultPropValue = initValue;
+
 	changeReporter = new IncidentReporter();
+
+	permanentPropEffects = new ArrayList<>(5);
+	activePropEffects = new ArrayList<>(2);
     }
 
     /**
