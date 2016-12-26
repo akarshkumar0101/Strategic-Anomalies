@@ -1,5 +1,8 @@
 package game.unit;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import game.Game;
 import game.Player;
 import game.board.Board;
@@ -7,8 +10,8 @@ import game.board.Coordinate;
 import game.board.Square;
 import game.interaction.Damage;
 import game.interaction.DamageType;
-import game.unit.ability.AbilityType;
-import game.unit.properties.AbilityProperty;
+import game.unit.ability.AbilityProperty;
+import game.unit.ability.ActiveTargetAbilityProperty;
 import game.util.Direction;
 
 public class Knight extends Unit {
@@ -67,15 +70,10 @@ public class Knight extends Unit {
     }
 }
 
-class KnightAbilityProperty extends AbilityProperty {
+class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 
     public KnightAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
 	super(unitOwner, initialPower, initialAttackRange);
-    }
-
-    @Override
-    public AbilityType getAbilityType() {
-	return AbilityType.ACTIVE_TARGET;
     }
 
     @Override
@@ -88,6 +86,13 @@ class KnightAbilityProperty extends AbilityProperty {
 	} else {
 	    return true;
 	}
+    }
+
+    @Override
+    public List<Square> getAOESqaures(Square target) {
+	List<Square> list = new ArrayList<>(1);
+	list.add(target);
+	return list;
     }
 
     @Override

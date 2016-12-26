@@ -1,7 +1,11 @@
 package game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import game.board.Board;
 import game.board.NormalBoard;
+import game.unit.Unit;
 
 public class Game {
 
@@ -59,6 +63,8 @@ public class Game {
 
     private final PlayerTurnOrder playerTurnOrder;
 
+    private final List<Unit> allUnits;
+
     public Game(Team team1, Team team2) {
 	board = new NormalBoard();
 	currentTurn = new Turn(null);
@@ -67,6 +73,7 @@ public class Game {
 	this.team2 = team2;
 	playerTurnOrder = new PlayerTurnOrder(team1, team2);
 
+	allUnits = new ArrayList<>(30);
     }
 
     public void determinePlayerTurnOrder() {
@@ -79,5 +86,9 @@ public class Game {
 
     public Turn getCurrentTurn() {
 	return currentTurn;
+    }
+
+    public List<Unit> getAllUnits() {
+	return allUnits;
     }
 }

@@ -8,7 +8,7 @@ import game.board.Path;
 import game.interaction.effect.Affectable;
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
-import game.unit.properties.AbilityProperty;
+import game.unit.ability.AbilityProperty;
 import game.unit.properties.HealthProperty;
 import game.unit.properties.MovingProperty;
 import game.unit.properties.OwnerProperty;
@@ -46,7 +46,7 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	posProp = new PositionProperty(this, coor, directionFacing);
 	healthProp = new HealthProperty(this, getDefaultHealth(), getDefaultArmor());
 	stunnedProp = new StunnedProperty(this, false);
-	movingProp = new MovingProperty(this, getDefaultMoveRange());
+	movingProp = new MovingProperty(this, getDefaultMoveRange(), canDefaultTeleport());
 	abilityProp = getDefaultAbilityProperty();
 
 	deathReporter = new IncidentReporter() {
@@ -104,8 +104,11 @@ public abstract class Unit extends Affectable implements UnitDefaults {
     public Path getPathTo(Coordinate moveToCoor) {
 	if (!(movingProp.canCurrentlyMove() && isInRangeOfWalking(moveToCoor))) {
 	    return null;
+	} else if (movingProp.getTeleportingProp().getCurrentPropertyValue()) {
+	    return PathFinder.getTeleportedPath(this, moveToCoor);
+	} else {
+	    return PathFinder.getPath(this, moveToCoor);
 	}
-	return PathFinder.getPath(this, moveToCoor);
     }
 
     public static boolean areAllies(Unit unit1, Unit unit2) {

@@ -1,5 +1,6 @@
 package game.board;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import game.unit.Unit;
@@ -104,6 +105,19 @@ public abstract class Board {
 	for (Unit unit : units) {
 	    linkBoardToUnit(unit);
 	}
+    }
+
+    public List<Square> squaresInRange(Square sqr, int range) {
+	List<Square> squares = new ArrayList<>(range * range * 4);
+	for (int x = sqr.getCoor().x() - range; x <= sqr.getCoor().x() + range; x++) {
+	    for (int y = sqr.getCoor().y() - range; y <= sqr.getCoor().y() + range; y++) {
+		Coordinate coor = new Coordinate(x, y);
+		if (!(walkDist(sqr.getCoor(), coor) > range || !isInBoard(coor))) {
+		    squares.add(getSquare(coor));
+		}
+	    }
+	}
+	return squares;
     }
 
     /**

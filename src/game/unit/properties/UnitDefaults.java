@@ -1,5 +1,7 @@
 package game.unit.properties;
 
+import game.unit.ability.AbilityProperty;
+
 public interface UnitDefaults {
 
     public abstract int getDefaultHealth();
@@ -13,6 +15,10 @@ public interface UnitDefaults {
     // TODO make sure all units should consider overriding these methods
     public default boolean canDefaultMove() {
 	return true;
+    }
+
+    public default boolean canDefaultTeleport() {
+	return false;
     }
 
     // side stepping is when it can move out of way to let friendly piece pass

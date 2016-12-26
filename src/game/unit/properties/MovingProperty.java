@@ -4,8 +4,22 @@ import game.unit.Unit;
 
 public class MovingProperty extends Property<Integer> {
 
-    public MovingProperty(Unit unitOwner, Integer initValue) {
-	super(unitOwner, initValue);
+    private final Property<Boolean> teleportingProp;
+
+    public MovingProperty(Unit unitOwner, Integer initMoveRange, Boolean initTeleportingValue) {
+	super(unitOwner, initMoveRange);
+
+	teleportingProp = new Property<Boolean>(unitOwner, initTeleportingValue) {
+
+	    @Override
+	    protected void propertyChanged(Boolean oldValue, Boolean newValue) {
+		notifyPropertyChanged(oldValue, newValue);
+	    }
+	};
+    }
+
+    public Property<Boolean> getTeleportingProp() {
+	return teleportingProp;
     }
 
     public boolean canCurrentlyMove() {

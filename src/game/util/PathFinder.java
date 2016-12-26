@@ -16,6 +16,16 @@ import game.unit.Unit;
 public class PathFinder {
 
     /**
+     * @param unit
+     * @param moveToCoor
+     * @return the Path the given Unit will take to the given Coordinate if it
+     *         can teleport to it.
+     */
+    public static Path getTeleportedPath(Unit unit, Coordinate moveToCoor) {
+	return new Path(unit.getPosProp().getCurrentPropertyValue(), true, moveToCoor);
+    }
+
+    /**
      * Returns the path the given Unit will take to the given Coordinate.
      * 
      * @param unit
