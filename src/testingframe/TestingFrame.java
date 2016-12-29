@@ -9,8 +9,12 @@ import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
-import javax.swing.ImageIcon;
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -167,7 +171,7 @@ public class TestingFrame extends JFrame {
 		if (unitOnTop == null) {
 		    img = null;
 		} else if (unitOnTop.getClass() == Knight.class) {
-		    img = new ImageIcon(getClass().getResource("/temp_pics/warrior.png")).getImage();
+		    img = Images.warriorImage;
 		}
 	    }
 
@@ -234,25 +238,20 @@ public class TestingFrame extends JFrame {
 		int arrowWidth = (int) (.5 * getWidth()), arrowHeight = (int) (.2 * getHeight());
 		g.setColor(Color.red);
 		if (dir == Direction.UP) {
-		    g.fillPolygon(
-			    new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
-			    new int[] { arrowHeight + healthBarHeight, healthBarHeight, arrowHeight + healthBarHeight },
-			    3);
+		    g.drawImage(Images.upArrowImage, (getWidth() - arrowWidth) / 2, 0, arrowWidth, arrowHeight, null);
 		} else if (dir == Direction.DOWN) {
-		    g.fillPolygon(
-			    new int[] { (getWidth() - arrowWidth) / 2, getWidth() / 2, (getWidth() + arrowWidth) / 2 },
-			    new int[] { getHeight() - arrowHeight, getHeight(), getHeight() - arrowHeight }, 3);
+		    g.drawImage(Images.downArrowImage, (getWidth() - arrowWidth) / 2, getHeight() - arrowHeight,
+			    arrowWidth, arrowHeight, null);
 		}
 		arrowHeight = (int) (.2 * getWidth());
 		arrowWidth = (int) (.5 * getHeight());
 		if (dir == Direction.LEFT) {
-		    g.fillPolygon(new int[] { arrowHeight, 0, arrowHeight }, new int[] { (getHeight() - arrowWidth) / 2,
-			    getHeight() / 2, (getHeight() + arrowWidth) / 2 }, 3);
+		    g.drawImage(Images.leftArrowImage, 0, (getHeight() - arrowWidth) / 2, arrowHeight, arrowWidth,
+			    null);
+
 		} else if (dir == Direction.RIGHT) {
-		    g.fillPolygon(
-			    new int[] { getWidth() - arrowHeight, getWidth(), getWidth() - arrowHeight }, new int[] {
-				    (getHeight() - arrowWidth) / 2, getHeight() / 2, (getHeight() + arrowWidth) / 2 },
-			    3);
+		    g.drawImage(Images.rightArrowImage, getWidth() - arrowHeight, (getHeight() - arrowWidth) / 2,
+			    arrowHeight, arrowWidth, null);
 		}
 
 	    }
@@ -326,4 +325,76 @@ public class TestingFrame extends JFrame {
 
     }
 
+}
+
+class Images {
+
+    public static Image warriorImage;
+    public static Image upArrowImage;
+    public static Image rightArrowImage;
+    public static Image downArrowImage;
+    public static Image leftArrowImage;
+
+    static {
+	try {
+	    warriorImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png"));
+	    upArrowImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/redarrow.png"));
+	    rightArrowImage = rotate((BufferedImage) upArrowImage, 90);
+	    downArrowImage = rotate((BufferedImage) upArrowImage, 180);
+	    leftArrowImage = rotate((BufferedImage) upArrowImage, 270);
+
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+    }
+
+    private static BufferedImage rotate(BufferedImage image, int _thetaInDegrees) {
+	double _theta = Math.toRadians(_thetaInDegrees);
+
+	AffineTransform xform = new AffineTransform();
+
+	if (image.getWidth() > image.getHeight()) {
+	    xform.setToTranslation(0.5 * image.getWidth(), 0.5 * image.getWidth());
+	    xform.rotate(_theta);
+
+	    int diff = image.getWidth() - image.getHeight();
+
+	    switch (_thetaInDegrees) {
+	    case 90:
+		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth() + diff);
+		break;
+	    case 180:
+		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth() + diff);
+		break;
+	    default:
+		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth());
+		break;
+	    }
+	} else if (image.getHeight() > image.getWidth()) {
+	    xform.setToTranslation(0.5 * image.getHeight(), 0.5 * image.getHeight());
+	    xform.rotate(_theta);
+
+	    int diff = image.getHeight() - image.getWidth();
+
+	    switch (_thetaInDegrees) {
+	    case 180:
+		xform.translate(-0.5 * image.getHeight() + diff, -0.5 * image.getHeight());
+		break;
+	    case 270:
+		xform.translate(-0.5 * image.getHeight() + diff, -0.5 * image.getHeight());
+		break;
+	    default:
+		xform.translate(-0.5 * image.getHeight(), -0.5 * image.getHeight());
+		break;
+	    }
+	} else {
+	    xform.setToTranslation(0.5 * image.getWidth(), 0.5 * image.getHeight());
+	    xform.rotate(_theta);
+	    xform.translate(-0.5 * image.getHeight(), -0.5 * image.getWidth());
+	}
+
+	AffineTransformOp op = new AffineTransformOp(xform, AffineTransformOp.TYPE_BILINEAR);
+
+	return op.filter(image, null);
+    }
 }
