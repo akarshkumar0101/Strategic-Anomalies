@@ -1,7 +1,7 @@
 package game.unit.properties;
 
+import game.board.Direction;
 import game.unit.Unit;
-import game.util.Direction;
 
 public class DirectionProperty extends Property<Direction> {
 

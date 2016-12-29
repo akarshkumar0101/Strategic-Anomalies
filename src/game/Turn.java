@@ -3,6 +3,7 @@ package game;
 public class Turn {
 
     public final int turnNumber;
+
     public final Player playerTurn;
 
     public Turn(Player playerTurn) {

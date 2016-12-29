@@ -7,13 +7,13 @@ import game.Player;
 import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
+import game.board.Direction;
 import game.interaction.effect.Affectable;
 import game.interaction.effect.Effect;
 import game.interaction.effect.EffectType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Knight;
 import game.unit.Unit;
-import game.util.Direction;
 import game.util.PathFinder;
 import testingframe.TestingFrame;
 
@@ -30,10 +30,11 @@ public class Main {
 	    return;
 	}
 
-	Team team1 = new Team(1), team2 = new Team(2);
+	Game game = new Game(new Account[] { new Account() }, new Account[] { new Account() });
+
+	Team team1 = game.getTeam1(), team2 = game.getTeam2();
 	Player player1 = team1.getPlayers()[0], player2 = team2.getPlayers()[0];
 
-	Game game = new Game(team1, team2);
 	Board board = game.getBoard();
 
 	Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(1, 1));
@@ -61,7 +62,7 @@ public class Main {
 	    System.out.println();
 	}
 
-	TestingFrame testingFrame = new TestingFrame(board, player1, player2);
+	TestingFrame testingFrame = new TestingFrame(game);
 
 	testingFrame.setSize(1400, 1000);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -94,7 +95,7 @@ public class Main {
 
 	while (true) {
 	    try {
-		Thread.sleep(300);
+		Thread.sleep(1000);
 	    } catch (InterruptedException e) {
 		e.printStackTrace();
 	    }

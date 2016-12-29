@@ -1,7 +1,5 @@
 package game.board;
 
-import game.util.Direction;
-
 /**
  * Coordinate is used to track location on the board for pieces and squares.
  * Pieces implement this by having a CoordinateProperty that tracks Coordinate

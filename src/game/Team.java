@@ -1,5 +1,7 @@
 package game;
 
+import main.Account;
+
 public class Team {
 
     /**
@@ -7,11 +9,10 @@ public class Team {
      */
     private final Player[] players;
 
-    // TODO replace int[] args with Account[] and send each account data to
-    // player creation
-    public Team(int... args) {
-	players = new Player[args.length];
-	for (int i = 0; i < args.length; i++) {
+    public Team(Account[] accounts) {
+	players = new Player[accounts.length];
+	for (int i = 0; i < accounts.length; i++) {
+	    // TODO manage stuff
 	    players[i] = new Player(this);
 	}
     }

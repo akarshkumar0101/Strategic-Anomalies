@@ -24,7 +24,7 @@ public abstract class ActiveAbilityProperty extends AbilityProperty {
 
     public final void useAbility(Square target) {
 	performAbility(target);
-	onAbilityUseReporter.reportIncident(target);
+	onAbilityUseReporter.reportIncident(this, target);
     }
 
     public abstract void performAbility(Square target);

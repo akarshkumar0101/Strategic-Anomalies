@@ -7,12 +7,12 @@ import game.Game;
 import game.Player;
 import game.board.Board;
 import game.board.Coordinate;
+import game.board.Direction;
 import game.board.Square;
 import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.unit.ability.AbilityProperty;
 import game.unit.ability.ActiveTargetAbilityProperty;
-import game.util.Direction;
 
 public class Knight extends Unit {
 
@@ -103,4 +103,5 @@ class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 	target.getUnitOnTop().healthProp.takeDamage(
 		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
     }
+
 }

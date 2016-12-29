@@ -15,13 +15,15 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import game.Game;
 import game.Player;
+import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
+import game.board.Direction;
 import game.board.Square;
 import game.unit.Knight;
 import game.unit.Unit;
-import game.util.Direction;
 import main.Main;
 
 public class TestingFrame extends JFrame {
@@ -29,6 +31,7 @@ public class TestingFrame extends JFrame {
     private static final long serialVersionUID = 5606773788174572563L;
 
     private Board board;
+    private Team team1, team2;
     private Player player1, player2;
 
     private final GamePainter gamePainter;
@@ -37,10 +40,12 @@ public class TestingFrame extends JFrame {
     private GridBagLayout gbLayout;
     private GridBagConstraints gbConstrains;
 
-    public TestingFrame(Board board, Player player1, Player player2) {
-	this.board = board;
-	this.player1 = player1;
-	this.player2 = player2;
+    public TestingFrame(Game game) {
+	board = game.getBoard();
+	team1 = game.getTeam1();
+	team2 = game.getTeam2();
+	player1 = team1.getPlayers()[0];
+	player2 = team2.getPlayers()[0];
 
 	gamePainter = new GamePainter();
 	gameInformation = new GameInformation();

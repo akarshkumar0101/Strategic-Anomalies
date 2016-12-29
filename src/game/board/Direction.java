@@ -1,4 +1,4 @@
-package game.util;
+package game.board;
 
 /**
  * Direction on the 2D Board that are possible: UP, DOWN, LEFT, RIGHT.

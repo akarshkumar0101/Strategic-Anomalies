@@ -1,8 +1,8 @@
 package game.unit.properties;
 
 import game.board.Coordinate;
+import game.board.Direction;
 import game.unit.Unit;
-import game.util.Direction;
 
 public class PositionProperty extends Property<Coordinate> {
 
