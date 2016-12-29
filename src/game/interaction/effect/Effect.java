@@ -1,7 +1,6 @@
 package game.interaction.effect;
 
 import game.interaction.incident.Condition;
-import game.unit.Unit;
 
 /**
  * Effect is the interface to perform an action or series of actions some time
@@ -29,7 +28,7 @@ public abstract class Effect extends EffectSkeleton {
      * @param shouldExist
      *            the Condition in which it will still exist.
      */
-    public Effect(EffectType effectType, Unit source, Condition shouldExist) {
+    public Effect(EffectType effectType, Object source, Condition shouldExist) {
 	super(effectType, source, shouldExist);
     }
 

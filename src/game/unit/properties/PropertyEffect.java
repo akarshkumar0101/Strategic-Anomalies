@@ -3,7 +3,6 @@ package game.unit.properties;
 import game.interaction.effect.EffectSkeleton;
 import game.interaction.effect.EffectType;
 import game.interaction.incident.Condition;
-import game.unit.Unit;
 
 /**
  * PropertyEffects are used to add an effect that is altering the value of a
@@ -38,7 +37,7 @@ public abstract class PropertyEffect<T> extends EffectSkeleton {
      * @param shouldExist
      *            the Condition in which it will still exist.
      */
-    public PropertyEffect(EffectType effectType, Unit source, Condition shouldExist, double priority) {
+    public PropertyEffect(EffectType effectType, Object source, Condition shouldExist, double priority) {
 	super(effectType, source, shouldExist);
 	this.priority = priority;
 

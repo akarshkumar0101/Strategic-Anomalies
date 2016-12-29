@@ -1,7 +1,6 @@
 package game.interaction.effect;
 
 import game.interaction.incident.Condition;
-import game.unit.Unit;
 
 /**
  * EffectSkeleton is a skeleton backbone that all effects have, such as an
@@ -22,7 +21,7 @@ public abstract class EffectSkeleton {
     /**
      * The source that generated this Effect.
      */
-    private final Unit source;
+    private final Object source;
 
     /**
      * Tells when the Effect goes away.
@@ -39,7 +38,7 @@ public abstract class EffectSkeleton {
      * @param shouldExist
      *            the Condition in which it will still exist.
      */
-    public EffectSkeleton(EffectType effectType, Unit source, Condition shouldExist) {
+    public EffectSkeleton(EffectType effectType, Object source, Condition shouldExist) {
 	this.effectType = effectType;
 	this.source = source;
 	this.shouldExist = shouldExist == null ? args -> true : shouldExist;
@@ -66,16 +65,8 @@ public abstract class EffectSkeleton {
     /**
      * @return the source of the Effect
      */
-    public Unit getSource() {
+    public Object getSource() {
 	return source;
-    }
-
-    /**
-     * @return true if this effect has a condition of existence. If the
-     *         condition is null, return false;
-     */
-    public boolean hasExistenceCondition() {
-	return !(shouldExist == null);
     }
 
     /**

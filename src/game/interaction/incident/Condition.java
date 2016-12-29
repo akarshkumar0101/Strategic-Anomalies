@@ -11,6 +11,10 @@ package game.interaction.incident;
 @FunctionalInterface
 public interface Condition {
 
+    public static final Condition trueCondition = args -> true;
+    public static final Condition falseCondition = args -> false;
+    public static final Condition randomCondition = args -> Math.random() > .5 ? true : false;
+
     /**
      * Performs calculations to determine whether the condition is being met. Be
      * careful when casting the objects by knowing what will call it.

@@ -170,6 +170,15 @@ public abstract class Property<T> {
 	});
     }
 
+    public void setPropertyValue(T value, Object source) {
+	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT, source, null, 0) {
+	    @Override
+	    public T affectProperty(T init) {
+		return value;
+	    }
+	});
+    }
+
     /**
      * Add an effect to the property that affects the value of the property over
      * time/another limit.
@@ -186,6 +195,7 @@ public abstract class Property<T> {
 	    // being added.
 	    Collections.sort(activePropEffects, normalPropEffectComparator);
 	}
+
 	updateCurrentPropertyValue();
 
 	valueUpdated();
@@ -199,12 +209,11 @@ public abstract class Property<T> {
 	    permanentPropEffects.remove(effect);
 
 	    updateBasePropertyValue();
-	    updateCurrentPropertyValue();
 	} else {
 	    activePropEffects.remove(effect);
-
-	    updateCurrentPropertyValue();
 	}
+
+	updateCurrentPropertyValue();
 
 	valueUpdated();
     }
@@ -217,7 +226,7 @@ public abstract class Property<T> {
 	Iterator<PropertyEffect<T>> it = activePropEffects.iterator();
 	while (it.hasNext()) {
 	    PropertyEffect<T> propEffect = it.next();
-	    if (propEffect.hasExistenceCondition() && !propEffect.shouldExist()) {
+	    if (!propEffect.shouldExist()) {
 		it.remove();
 	    }
 	}

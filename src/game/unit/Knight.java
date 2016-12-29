@@ -23,6 +23,7 @@ public class Knight extends Unit {
     public static final int DEFAULT_MOVE_RANGE = 3;
     public static final int DEFAULT_ATTACK_RANGE = 1;
     public static final int DEFAULT_POWER = 25;
+    public static final int MAX_WAIT_TIME = 1;
 
     public Knight(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
@@ -68,6 +69,11 @@ public class Knight extends Unit {
 	AbilityProperty abilityProp = new KnightAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
 	return abilityProp;
     }
+
+    @Override
+    public int getMaxWaitTime() {
+	return MAX_WAIT_TIME;
+    }
 }
 
 class KnightAbilityProperty extends ActiveTargetAbilityProperty {
@@ -100,7 +106,7 @@ class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	target.getUnitOnTop().healthProp.takeDamage(
+	target.getUnitOnTop().getHealthProp().takeDamage(
 		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
     }
 

@@ -23,7 +23,7 @@ public class MovingProperty extends Property<Integer> {
     }
 
     public boolean canCurrentlyMove() {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
+	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting()) {
 	    return false;
 	}
 	return getUnitOwner().canDefaultMove();

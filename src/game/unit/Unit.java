@@ -16,6 +16,7 @@ import game.unit.properties.OwnerProperty;
 import game.unit.properties.PositionProperty;
 import game.unit.properties.StunnedProperty;
 import game.unit.properties.UnitDefaults;
+import game.unit.properties.WaitProperty;
 import game.util.PathFinder;
 
 public abstract class Unit extends Affectable implements UnitDefaults {
@@ -25,17 +26,19 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 
     private final Game game;
 
-    protected final OwnerProperty ownerProp;
+    private final OwnerProperty ownerProp;
 
-    protected final PositionProperty posProp;
+    private final PositionProperty posProp;
 
-    protected final HealthProperty healthProp;
+    private final HealthProperty healthProp;
 
-    protected final MovingProperty movingProp;
+    private final MovingProperty movingProp;
 
-    protected final StunnedProperty stunnedProp;
+    private final AbilityProperty abilityProp;
 
-    protected final AbilityProperty abilityProp;
+    private final StunnedProperty stunnedProp;
+
+    private final WaitProperty waitProp;
 
     private final IncidentReporter deathReporter;
 
@@ -45,9 +48,10 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	ownerProp = new OwnerProperty(this, playerOwner);
 	posProp = new PositionProperty(this, coor, directionFacing);
 	healthProp = new HealthProperty(this, getDefaultHealth(), getDefaultArmor());
-	stunnedProp = new StunnedProperty(this, false);
 	movingProp = new MovingProperty(this, getDefaultMoveRange(), canDefaultTeleport());
 	abilityProp = getDefaultAbilityProperty();
+	stunnedProp = new StunnedProperty(this, false);
+	waitProp = new WaitProperty(this, 0, getMaxWaitTime());
 
 	deathReporter = new IncidentReporter() {
 	    @Override
@@ -55,6 +59,7 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 		super.add(listener, true);
 	    }
 	};
+	// TODO add the inital wait time if going first etc.
     }
 
     public Game getGame() {
@@ -73,16 +78,20 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	return healthProp;
     }
 
-    public StunnedProperty getStunnedProp() {
-	return stunnedProp;
-    }
-
     public MovingProperty getMovingProp() {
 	return movingProp;
     }
 
     public AbilityProperty getAbilityProp() {
 	return abilityProp;
+    }
+
+    public StunnedProperty getStunnedProp() {
+	return stunnedProp;
+    }
+
+    public WaitProperty getWaitProp() {
+	return waitProp;
     }
 
     public IncidentReporter getDeathReporter() {

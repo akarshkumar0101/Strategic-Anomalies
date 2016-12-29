@@ -11,6 +11,7 @@ import game.board.Direction;
 import game.interaction.effect.Affectable;
 import game.interaction.effect.Effect;
 import game.interaction.effect.EffectType;
+import game.interaction.incident.Condition;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Knight;
 import game.unit.Unit;
@@ -71,7 +72,7 @@ public class Main {
 	unit2.getHealthProp().setPropertyValue(20);
 
 	IncidentReporter randomReporter = new IncidentReporter();
-	Effect moveEffect = new Effect(EffectType.OTHER, unit2, null) {
+	Effect moveEffect = new Effect(EffectType.OTHER, game, Condition.trueCondition) {
 	    @Override
 	    public void performEffect(Affectable affectbleObject, Object... args) {
 		Unit unit = (Unit) affectbleObject;

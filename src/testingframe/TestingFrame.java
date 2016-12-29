@@ -156,7 +156,7 @@ public class TestingFrame extends JFrame {
 
 	    private final Square sqr;
 	    private Unit unitOnTop;
-	    private Image img;
+	    private Image unitImg;
 
 	    public SquareLabel(Square sqr) {
 		this.sqr = sqr;
@@ -169,9 +169,9 @@ public class TestingFrame extends JFrame {
 
 		unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
 		if (unitOnTop == null) {
-		    img = null;
+		    unitImg = null;
 		} else if (unitOnTop.getClass() == Knight.class) {
-		    img = Images.warriorImage;
+		    unitImg = Images.warriorImage;
 		}
 	    }
 
@@ -225,7 +225,8 @@ public class TestingFrame extends JFrame {
 		// draw image in the center
 		int imgWidth = (int) (percentageIconWidth * getWidth()),
 			imgHeight = (int) (percentageIconHeight * getHeight());
-		g.drawImage(img, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight, null);
+		g.drawImage(unitImg, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight,
+			null);
 
 		// draw health bar
 		double healthPercentage = unitOnTop.getHealthProp().percentageHealth();
@@ -330,18 +331,23 @@ public class TestingFrame extends JFrame {
 class Images {
 
     public static Image warriorImage;
+
     public static Image upArrowImage;
     public static Image rightArrowImage;
     public static Image downArrowImage;
     public static Image leftArrowImage;
 
+    public static Image dizzyImage;
     static {
 	try {
 	    warriorImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png"));
+
 	    upArrowImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/redarrow.png"));
 	    rightArrowImage = rotate((BufferedImage) upArrowImage, 90);
 	    downArrowImage = rotate((BufferedImage) upArrowImage, 180);
 	    leftArrowImage = rotate((BufferedImage) upArrowImage, 270);
+
+	    dizzyImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/dizzy.png"));
 
 	} catch (IOException e) {
 	    e.printStackTrace();

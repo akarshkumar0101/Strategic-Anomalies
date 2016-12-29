@@ -34,4 +34,6 @@ public interface UnitDefaults {
 
     public abstract AbilityProperty getDefaultAbilityProperty();
 
+    public abstract int getMaxWaitTime();
+
 }
