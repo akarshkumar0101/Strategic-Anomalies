@@ -1,7 +1,7 @@
-package game.unit.properties;
+package game.unit.property;
 
 import game.unit.UnitClass;
-import game.unit.ability.AbilityProperty;
+import game.unit.property.ability.AbilityProperty;
 
 public interface UnitDefaults {
 

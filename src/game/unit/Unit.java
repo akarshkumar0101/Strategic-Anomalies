@@ -10,14 +10,14 @@ import game.board.PathFinder;
 import game.interaction.effect.Affectable;
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
-import game.unit.ability.AbilityProperty;
-import game.unit.properties.HealthProperty;
-import game.unit.properties.MovingProperty;
-import game.unit.properties.OwnerProperty;
-import game.unit.properties.PositionProperty;
-import game.unit.properties.StunnedProperty;
-import game.unit.properties.UnitDefaults;
-import game.unit.properties.WaitProperty;
+import game.unit.property.HealthProperty;
+import game.unit.property.MovingProperty;
+import game.unit.property.OwnerProperty;
+import game.unit.property.PositionProperty;
+import game.unit.property.StunnedProperty;
+import game.unit.property.UnitDefaults;
+import game.unit.property.WaitProperty;
+import game.unit.property.ability.AbilityProperty;
 
 public abstract class Unit extends Affectable implements UnitDefaults {
 

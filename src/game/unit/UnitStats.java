@@ -2,9 +2,12 @@ package game.unit;
 
 import java.util.HashMap;
 
+import game.unit.listofunits.Guardian;
+import game.unit.listofunits.Warrior;
+
 public class UnitStats {
 
-    public static final HashMap<Class<? extends Unit>, PieceStats> unitStats;
+    public static final HashMap<Class<? extends Unit>, UnitStat> unitStats;
 
     static {
 	unitStats = new HashMap<>();
@@ -17,9 +20,9 @@ public class UnitStats {
 	double defaultFrontBlock = .8;
 	int defaultMoveRange = 3;
 	int maxWaitTime = 1;
-	PieceStats stats = new PieceStats(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange,
-		defaultPower, maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Warrior.class, stats);
+	UnitStat stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
+		maxWaitTime, defaultSideBlock, defaultFrontBlock);
+	unitStats.put(Warrior.class, stat);
 
 	defaultHealth = 50;
 	defaultArmor = 25;
@@ -29,9 +32,9 @@ public class UnitStats {
 	defaultFrontBlock = .9;
 	defaultMoveRange = 3;
 	maxWaitTime = 1;
-	stats = new PieceStats(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
+	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
 		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Guardian.class, stats);
+	unitStats.put(Guardian.class, stat);
 
 	defaultHealth = 50;
 	defaultArmor = 25;
@@ -41,35 +44,9 @@ public class UnitStats {
 	defaultFrontBlock = .9;
 	defaultMoveRange = 3;
 	maxWaitTime = 1;
-	stats = new PieceStats(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
+	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
 		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Guardian.class, stats);
+	unitStats.put(Guardian.class, stat);
 
-    }
-}
-
-class PieceStats {
-
-    public final int defaultHealth;
-    public final int defaultArmor;
-    public final int defaultMoveRange;
-    public final int defaultAttackRange;
-    public final int defaultPower;
-    public final int maxWaitTime;
-
-    public final double defaultSideBlock;
-    public final double defaultFrontBlock;
-
-    public PieceStats(int defaultHealth, int defaultArmor, int defaultMoveRange, int defaultAttackRange,
-	    int defaultPower, int maxWaitTime, double defaultSideBlock, double defaultFrontBlock) {
-	this.defaultHealth = defaultHealth;
-	this.defaultArmor = defaultArmor;
-	this.defaultMoveRange = defaultMoveRange;
-	this.defaultAttackRange = defaultAttackRange;
-	this.defaultPower = defaultPower;
-	this.maxWaitTime = maxWaitTime;
-
-	this.defaultSideBlock = defaultSideBlock;
-	this.defaultFrontBlock = defaultFrontBlock;
     }
 }

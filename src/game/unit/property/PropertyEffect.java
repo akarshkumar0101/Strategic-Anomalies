@@ -1,4 +1,4 @@
-package game.unit.properties;
+package game.unit.property;
 
 import game.interaction.effect.EffectSkeleton;
 import game.interaction.effect.EffectType;

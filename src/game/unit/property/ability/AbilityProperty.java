@@ -1,7 +1,7 @@
-package game.unit.ability;
+package game.unit.property.ability;
 
 import game.unit.Unit;
-import game.unit.properties.Property;
+import game.unit.property.Property;
 
 //the value of the property IS the power.
 public abstract class AbilityProperty extends Property<Integer> {

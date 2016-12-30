@@ -1,4 +1,4 @@
-package game.unit;
+package game.unit.listofunits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +11,14 @@ import game.board.Direction;
 import game.board.Square;
 import game.interaction.Damage;
 import game.interaction.DamageType;
-import game.unit.ability.AbilityProperty;
-import game.unit.ability.ActiveTargetAbilityProperty;
+import game.unit.Unit;
+import game.unit.UnitClass;
+import game.unit.UnitStat;
+import game.unit.UnitStats;
+import game.unit.property.ability.AbilityProperty;
+import game.unit.property.ability.ActiveTargetAbilityProperty;
 
-public class Pyromancer extends Unit {
+public class Warrior extends Unit {
 
     public static final int DEFAULT_HEALTH;
     public static final int DEFAULT_ARMOR;
@@ -26,18 +30,18 @@ public class Pyromancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	PieceStats stats = UnitStats.unitStats.get(Pyromancer.class);
-	DEFAULT_HEALTH = stats.defaultHealth;
-	DEFAULT_ARMOR = stats.defaultArmor;
-	DEFAULT_POWER = stats.defaultPower;
-	DEFAULT_MOVE_RANGE = stats.defaultMoveRange;
-	DEFAULT_ATTACK_RANGE = stats.defaultAttackRange;
-	MAX_WAIT_TIME = stats.maxWaitTime;
-	DEFAULT_SIDE_BLOCK = stats.defaultSideBlock;
-	DEFAULT_FRONT_BLOCK = stats.defaultFrontBlock;
+	UnitStat stat = UnitStats.unitStats.get(Warrior.class);
+	DEFAULT_HEALTH = stat.defaultHealth;
+	DEFAULT_ARMOR = stat.defaultArmor;
+	DEFAULT_POWER = stat.defaultPower;
+	DEFAULT_MOVE_RANGE = stat.defaultMoveRange;
+	DEFAULT_ATTACK_RANGE = stat.defaultAttackRange;
+	MAX_WAIT_TIME = stat.maxWaitTime;
+	DEFAULT_SIDE_BLOCK = stat.defaultSideBlock;
+	DEFAULT_FRONT_BLOCK = stat.defaultFrontBlock;
     }
 
-    public Pyromancer(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+    public Warrior(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
     }
 
@@ -78,7 +82,7 @@ public class Pyromancer extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
+	AbilityProperty abilityProp = new KnightAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
 	return abilityProp;
     }
 
@@ -89,13 +93,13 @@ public class Pyromancer extends Unit {
 
     @Override
     public UnitClass getUnitClass() {
-	return UnitClass.MAGE;
+	return UnitClass.KNIGHT;
     }
 }
 
-class MageAbiltyProperty extends ActiveTargetAbilityProperty {
+class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 
-    public MageAbiltyProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
+    public KnightAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
 	super(unitOwner, initialPower, initialAttackRange);
     }
 
@@ -115,26 +119,6 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
     public List<Square> getAOESqaures(Square target) {
 	List<Square> list = new ArrayList<>(1);
 	list.add(target);
-
-	Board board = getUnitOwner().getGame().getBoard();
-	Square left = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.LEFT));
-	Square up = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.UP));
-	Square right = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.RIGHT));
-	Square down = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.DOWN));
-
-	if (left != null) {
-	    list.add(left);
-	}
-	if (up != null) {
-	    list.add(up);
-	}
-	if (right != null) {
-	    list.add(right);
-	}
-	if (down != null) {
-	    list.add(down);
-	}
-
 	return list;
     }
 
@@ -146,8 +130,7 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
 	List<Square> targets = getAOESqaures(target);
 	for (Square ss : targets) {
 	    ss.getUnitOnTop().getHealthProp().takeDamage(
-		    new Damage(getCurrentPropertyValue(), DamageType.MAGIC, getUnitOwner(), target.getUnitOnTop()));
+		    new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
 	}
     }
-
 }

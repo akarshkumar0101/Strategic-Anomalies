@@ -1,4 +1,4 @@
-package game.unit.ability;
+package game.unit.property.ability;
 
 import game.unit.Unit;
 

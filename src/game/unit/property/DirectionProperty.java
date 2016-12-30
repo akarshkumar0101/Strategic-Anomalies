@@ -1,4 +1,4 @@
-package game.unit.properties;
+package game.unit.property;
 
 import game.board.Direction;
 import game.unit.Unit;

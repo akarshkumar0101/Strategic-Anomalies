@@ -1,10 +1,14 @@
-package game.unit;
+package game.unit.listofunits;
 
 import game.Game;
 import game.Player;
 import game.board.Coordinate;
 import game.board.Direction;
-import game.unit.ability.AbilityProperty;
+import game.unit.Unit;
+import game.unit.UnitClass;
+import game.unit.UnitStat;
+import game.unit.UnitStats;
+import game.unit.property.ability.AbilityProperty;
 
 public class Guardian extends Unit {
 
@@ -18,15 +22,15 @@ public class Guardian extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	PieceStats stats = UnitStats.unitStats.get(Guardian.class);
-	DEFAULT_HEALTH = stats.defaultHealth;
-	DEFAULT_ARMOR = stats.defaultArmor;
-	DEFAULT_POWER = stats.defaultPower;
-	DEFAULT_MOVE_RANGE = stats.defaultMoveRange;
-	DEFAULT_ATTACK_RANGE = stats.defaultAttackRange;
-	MAX_WAIT_TIME = stats.maxWaitTime;
-	DEFAULT_SIDE_BLOCK = stats.defaultSideBlock;
-	DEFAULT_FRONT_BLOCK = stats.defaultFrontBlock;
+	UnitStat stat = UnitStats.unitStats.get(Guardian.class);
+	DEFAULT_HEALTH = stat.defaultHealth;
+	DEFAULT_ARMOR = stat.defaultArmor;
+	DEFAULT_POWER = stat.defaultPower;
+	DEFAULT_MOVE_RANGE = stat.defaultMoveRange;
+	DEFAULT_ATTACK_RANGE = stat.defaultAttackRange;
+	MAX_WAIT_TIME = stat.maxWaitTime;
+	DEFAULT_SIDE_BLOCK = stat.defaultSideBlock;
+	DEFAULT_FRONT_BLOCK = stat.defaultFrontBlock;
     }
 
     public Guardian(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {

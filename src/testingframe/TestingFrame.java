@@ -27,7 +27,7 @@ import game.board.Coordinate;
 import game.board.Direction;
 import game.board.Square;
 import game.unit.Unit;
-import game.unit.Warrior;
+import game.unit.listofunits.Warrior;
 import main.Main;
 
 public class TestingFrame extends JFrame {
