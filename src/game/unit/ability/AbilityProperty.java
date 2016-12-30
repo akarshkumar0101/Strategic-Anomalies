@@ -16,7 +16,6 @@ public abstract class AbilityProperty extends Property<Integer> {
 		super.notifyPropertyChanged(oldValue, newValue);
 	    }
 	};
-
     }
 
     public Property<Integer> getAbilityRangeProperty() {

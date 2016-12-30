@@ -14,18 +14,30 @@ import game.interaction.DamageType;
 import game.unit.ability.AbilityProperty;
 import game.unit.ability.ActiveTargetAbilityProperty;
 
-public class Knight extends Unit {
+public class Warrior extends Unit {
 
-    public static final int DEFAULT_HEALTH = 50;
-    public static final int DEFAULT_ARMOR = 8;
-    public static final double DEFAULT_SIDE_BLOCK = 0.35;
-    public static final double DEFAULT_FRONT_BLOCK = 0.8;
-    public static final int DEFAULT_MOVE_RANGE = 3;
-    public static final int DEFAULT_ATTACK_RANGE = 1;
-    public static final int DEFAULT_POWER = 25;
-    public static final int MAX_WAIT_TIME = 1;
+    public static final int DEFAULT_HEALTH;
+    public static final int DEFAULT_ARMOR;
+    public static final int DEFAULT_POWER;
+    public static final int DEFAULT_MOVE_RANGE;
+    public static final int DEFAULT_ATTACK_RANGE;
+    public static final int MAX_WAIT_TIME;
+    public static final double DEFAULT_SIDE_BLOCK;
+    public static final double DEFAULT_FRONT_BLOCK;
 
-    public Knight(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+    static {
+	PieceStats stats = UnitStats.unitStats.get(Warrior.class);
+	DEFAULT_HEALTH = stats.defaultHealth;
+	DEFAULT_ARMOR = stats.defaultArmor;
+	DEFAULT_POWER = stats.defaultPower;
+	DEFAULT_MOVE_RANGE = stats.defaultMoveRange;
+	DEFAULT_ATTACK_RANGE = stats.defaultAttackRange;
+	MAX_WAIT_TIME = stats.maxWaitTime;
+	DEFAULT_SIDE_BLOCK = stats.defaultSideBlock;
+	DEFAULT_FRONT_BLOCK = stats.defaultFrontBlock;
+    }
+
+    public Warrior(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
     }
 
@@ -74,6 +86,11 @@ public class Knight extends Unit {
     public int getMaxWaitTime() {
 	return MAX_WAIT_TIME;
     }
+
+    @Override
+    public UnitClass getUnitClass() {
+	return UnitClass.KNIGHT;
+    }
 }
 
 class KnightAbilityProperty extends ActiveTargetAbilityProperty {
@@ -84,7 +101,7 @@ class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || target.getUnitOnTop() == null
+	if (!canCurrentlyUseAbility() || target.getUnitOnTop() == null
 		|| Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
 			target.getCoor()) > getAbilityRangeProperty().getCurrentPropertyValue()
 		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
@@ -106,8 +123,10 @@ class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	target.getUnitOnTop().getHealthProp().takeDamage(
-		new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
+	List<Square> targets = getAOESqaures(target);
+	for (Square ss : targets) {
+	    ss.getUnitOnTop().getHealthProp().takeDamage(
+		    new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
+	}
     }
-
 }

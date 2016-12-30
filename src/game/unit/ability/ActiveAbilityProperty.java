@@ -20,6 +20,10 @@ public abstract class ActiveAbilityProperty extends AbilityProperty {
 	return onAbilityUseReporter;
     }
 
+    public boolean canCurrentlyUseAbility() {
+	return !(getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting());
+    }
+
     public abstract List<Square> getAOESqaures(Square target);
 
     public final void useAbility(Square target) {

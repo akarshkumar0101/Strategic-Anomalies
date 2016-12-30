@@ -1,9 +1,5 @@
-package game.util;
+package game.board;
 
-import game.board.Board;
-import game.board.Coordinate;
-import game.board.Direction;
-import game.board.Path;
 import game.unit.Unit;
 
 /**

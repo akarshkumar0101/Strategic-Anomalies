@@ -8,26 +8,30 @@ import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
+import game.board.PathFinder;
 import game.interaction.effect.Affectable;
 import game.interaction.effect.Effect;
 import game.interaction.effect.EffectType;
 import game.interaction.incident.Condition;
 import game.interaction.incident.IncidentReporter;
-import game.unit.Knight;
 import game.unit.Unit;
-import game.util.PathFinder;
+import game.unit.Warrior;
 import testingframe.TestingFrame;
 
 public class Main {
 
     public static Unit movableUnit;
 
-    public static boolean test() {
+    public static boolean test() throws Exception {
 	return false;
     }
 
     public static void main(String[] args) {
-	if (test()) {
+	try {
+	    if (test()) {
+		return;
+	    }
+	} catch (Exception e) {
 	    return;
 	}
 
@@ -38,8 +42,8 @@ public class Main {
 
 	Board board = game.getBoard();
 
-	Unit unit1 = new Knight(game, player1, Direction.LEFT, new Coordinate(1, 1));
-	Unit unit2 = new Knight(game, player2, Direction.RIGHT, new Coordinate(5, 6));
+	Unit unit1 = new Warrior(game, player1, Direction.LEFT, new Coordinate(1, 1));
+	Unit unit2 = new Warrior(game, player2, Direction.RIGHT, new Coordinate(5, 6));
 	movableUnit = unit1;
 
 	board.linkBoardToUnit(unit1);
@@ -65,7 +69,6 @@ public class Main {
 
 	TestingFrame testingFrame = new TestingFrame(game);
 
-	testingFrame.setSize(1400, 1000);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	testingFrame.setVisible(true);
 
@@ -105,6 +108,5 @@ public class Main {
 	    testingFrame.updateInformation();
 	    testingFrame.repaint();
 	}
-
     }
 }

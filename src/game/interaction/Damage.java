@@ -16,9 +16,10 @@ public class Damage {
 
     private final DamageType damageType;
 
-    private final Unit source, target;
+    private final Object source;
+    private final Unit target;
 
-    public Damage(int damageAmount, DamageType damageType, Unit source, Unit target) {
+    public Damage(int damageAmount, DamageType damageType, Object source, Unit target) {
 	this.damageAmount = damageAmount;
 	this.damageType = damageType;
 	this.source = source;
@@ -34,7 +35,7 @@ public class Damage {
 	return damageType;
     }
 
-    public Unit getSource() {
+    public Object getSource() {
 	return source;
     }
 

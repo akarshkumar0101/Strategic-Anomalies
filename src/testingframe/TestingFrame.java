@@ -26,8 +26,8 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.Square;
-import game.unit.Knight;
 import game.unit.Unit;
+import game.unit.Warrior;
 import main.Main;
 
 public class TestingFrame extends JFrame {
@@ -45,6 +45,7 @@ public class TestingFrame extends JFrame {
     private GridBagConstraints gbConstrains;
 
     public TestingFrame(Game game) {
+
 	board = game.getBoard();
 	team1 = game.getTeam1();
 	team2 = game.getTeam2();
@@ -58,6 +59,9 @@ public class TestingFrame extends JFrame {
 	gbConstrains = new GridBagConstraints();
 
 	organizeComponents();
+
+	setSize(1400, 1000);
+	setResizable(false);
     }
 
     public void organizeComponents() {
@@ -170,7 +174,7 @@ public class TestingFrame extends JFrame {
 		unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
 		if (unitOnTop == null) {
 		    unitImg = null;
-		} else if (unitOnTop.getClass() == Knight.class) {
+		} else if (unitOnTop.getClass() == Warrior.class) {
 		    unitImg = Images.warriorImage;
 		}
 	    }

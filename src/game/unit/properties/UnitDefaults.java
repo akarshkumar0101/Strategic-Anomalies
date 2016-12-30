@@ -1,5 +1,6 @@
 package game.unit.properties;
 
+import game.unit.UnitClass;
 import game.unit.ability.AbilityProperty;
 
 public interface UnitDefaults {
@@ -35,5 +36,7 @@ public interface UnitDefaults {
     public abstract AbilityProperty getDefaultAbilityProperty();
 
     public abstract int getMaxWaitTime();
+
+    public abstract UnitClass getUnitClass();
 
 }

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import game.unit.Unit;
-import game.util.InvalidCoordinateException;
 
 /**
  * Board holds squares that can hold pieces on them. Contains information about
@@ -59,7 +58,7 @@ public abstract class Board {
     // TODO go through everything in game package to see visibility
     final void checkCoordinateRange(Coordinate coor) {
 	if (coor == null || !isInBoard(coor)) {
-	    throw new InvalidCoordinateException(coor);
+	    throw new RuntimeException("Invalid Coordinate: " + coor);
 	}
     }
 
@@ -69,7 +68,9 @@ public abstract class Board {
      * @return the Square that is at the Coordinate
      */
     public Square getSquare(Coordinate coor) {
-	checkCoordinateRange(coor);
+	if (!isInBoard(coor)) {
+	    return null;
+	}
 	return grid[coor.x()][coor.y()];
     }
 

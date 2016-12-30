@@ -2,6 +2,7 @@ package game.unit.properties;
 
 import game.Turn;
 import game.interaction.Damage;
+import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
@@ -21,7 +22,7 @@ public class ArmorProperty extends Property<Integer> {
     public boolean attemptBlock(Damage damage) {
 	// determine if it blocked the damage
 	double blockPercent = determineBlockPercentage(damage);
-	if (Math.random() < blockPercent) {
+	if (damage.getDamageType().equals(DamageType.PHYSICAL) && Math.random() < blockPercent) {
 	    triggerBlock(damage);
 	    return true;
 	}

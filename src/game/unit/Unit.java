@@ -6,6 +6,7 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.Path;
+import game.board.PathFinder;
 import game.interaction.effect.Affectable;
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
@@ -17,7 +18,6 @@ import game.unit.properties.PositionProperty;
 import game.unit.properties.StunnedProperty;
 import game.unit.properties.UnitDefaults;
 import game.unit.properties.WaitProperty;
-import game.util.PathFinder;
 
 public abstract class Unit extends Affectable implements UnitDefaults {
 
