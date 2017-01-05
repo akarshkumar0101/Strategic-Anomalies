@@ -28,6 +28,7 @@ public class Communication {
 	try {
 	    objin = new ObjectInputStream(in);
 	    objout = new ObjectOutputStream(out);
+	    objout.flush();
 	    connected = true;
 	} catch (IOException e) {
 	    throw new RuntimeException("Something went wrong connecting the object streams to socket streams");
@@ -50,10 +51,12 @@ public class Communication {
 	    otherout.connect(thisin);
 	    thisout.connect(otherin);
 
-	    objin = new ObjectInputStream(thisin);
 	    objout = new ObjectOutputStream(thisout);
+	    objout.flush();
 
 	    Communication comm = new Communication(otherin, otherout);
+
+	    objin = new ObjectInputStream(thisin);
 
 	    connected = true;
 
