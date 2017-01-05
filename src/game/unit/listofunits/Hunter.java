@@ -10,7 +10,7 @@ import game.unit.UnitStat;
 import game.unit.UnitStats;
 import game.unit.property.ability.AbilityProperty;
 
-public class Aquamancer extends Unit {
+public class Hunter extends Unit {
 
     public static final int DEFAULT_HEALTH;
     public static final int DEFAULT_ARMOR;
@@ -22,7 +22,7 @@ public class Aquamancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Aquamancer.class);
+	UnitStat stat = UnitStats.unitStats.get(Hunter.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;
@@ -33,7 +33,7 @@ public class Aquamancer extends Unit {
 	DEFAULT_FRONT_BLOCK = stat.defaultFrontBlock;
     }
 
-    public Aquamancer(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+    public Hunter(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
     }
 
@@ -74,7 +74,8 @@ public class Aquamancer extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE, MAX_WAIT_TIME);
+	AbilityProperty abilityProp = new BowmenAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE,
+		MAX_WAIT_TIME);
 	return abilityProp;
     }
 
@@ -85,6 +86,6 @@ public class Aquamancer extends Unit {
 
     @Override
     public UnitClass getUnitClass() {
-	return UnitClass.MAGE;
+	return UnitClass.BOWMEN;
     }
 }

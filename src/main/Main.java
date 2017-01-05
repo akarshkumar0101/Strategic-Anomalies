@@ -16,7 +16,7 @@ import game.interaction.incident.Condition;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 import game.unit.listofunits.Warrior;
-import testingframe.TestingFrame;
+import testing.TestingFrame;
 
 public class Main {
 

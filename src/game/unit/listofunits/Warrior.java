@@ -82,7 +82,8 @@ public class Warrior extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new KnightAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
+	AbilityProperty abilityProp = new KnightAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE,
+		MAX_WAIT_TIME);
 	return abilityProp;
     }
 
@@ -99,8 +100,8 @@ public class Warrior extends Unit {
 
 class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 
-    public KnightAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
-	super(unitOwner, initialPower, initialAttackRange);
+    public KnightAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
+	super(unitOwner, initialPower, initialAttackRange, maxWaitTime);
     }
 
     @Override
@@ -129,8 +130,9 @@ class KnightAbilityProperty extends ActiveTargetAbilityProperty {
 	}
 	List<Square> targets = getAOESqaures(target);
 	for (Square ss : targets) {
-	    ss.getUnitOnTop().getHealthProp().takeDamage(
-		    new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(), target.getUnitOnTop()));
+	    Damage damage = new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(),
+		    ss.getUnitOnTop());
+	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
 	}
     }
 }

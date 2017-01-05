@@ -121,6 +121,27 @@ public abstract class Board {
 	return squares;
     }
 
+    public Square locationOf(Unit unit) {
+	if (unit == null) {
+	    return null;
+	}
+	for (int x = 0; x < getWidth(); x++) {
+	    for (int y = 0; y < getHeight(); y++) {
+		Coordinate coor = new Coordinate(x, y);
+		if (isInBoard(coor)) {
+		    Square sqr = grid[x][y];
+		    if (sqr.getUnitOnTop() == null) {
+			continue;
+		    }
+		    if (unit.equals(sqr.getUnitOnTop())) {
+			return sqr;
+		    }
+		}
+	    }
+	}
+	return null;
+    }
+
     /**
      * @param coor1
      *            first Coordinate

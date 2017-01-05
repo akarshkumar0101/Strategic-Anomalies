@@ -74,7 +74,7 @@ public class Lightningmancer extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE);
+	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE, MAX_WAIT_TIME);
 	return abilityProp;
     }
 

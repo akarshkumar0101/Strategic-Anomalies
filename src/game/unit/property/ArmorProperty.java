@@ -1,6 +1,8 @@
 package game.unit.property;
 
 import game.Turn;
+import game.board.Coordinate;
+import game.board.Direction;
 import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
@@ -37,7 +39,7 @@ public class ArmorProperty extends Property<Integer> {
 
     private double determineBlockPercentage(Damage damage) {
 	// TODO make algorithm for determining whether it blocks it based on
-	// damage type,previous blocks, direction of incoming damage, whether it
+	// previous blocks, direction of incoming damage, whether it
 	// is stunned, etc.
 	return .65;
     }
@@ -48,8 +50,18 @@ public class ArmorProperty extends Property<Integer> {
     }
 
     private void triggerBlock(Damage damage) {
-	blockReporter.reportIncident(damage);
+	// turn this unit to block
+	if (damage.getSource() instanceof Unit) {
+	    Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	    Coordinate othercoor = getUnitOwner().getGame().getBoard().locationOf((Unit) damage.getSource()).getCoor();
+
+	    Direction damageDir = Coordinate.inGeneralDirection(thiscoor, othercoor);
+
+	    getUnitOwner().getPosProp().getDirFacingProp().setPropertyValue(damageDir, this);
+
+	}
 	turnPreviouslyBlockedOn = getUnitOwner().getGame().getCurrentTurn();
+	blockReporter.reportIncident(damage);
     }
 
     public IncidentReporter getBlockReporter() {

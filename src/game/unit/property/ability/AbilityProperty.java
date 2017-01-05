@@ -22,6 +22,10 @@ public abstract class AbilityProperty extends Property<Integer> {
 	return abilityRangeProp;
     }
 
+    public boolean isActiveAbility() {
+	return this instanceof ActiveAbilityProperty;
+    }
+
     @Override
     public void propertyChanged(Integer oldValue, Integer newValue) {
 	super.notifyPropertyChanged(oldValue, newValue);

@@ -18,7 +18,7 @@ import game.unit.UnitStats;
 import game.unit.property.ability.AbilityProperty;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
 
-public class Pyromancer extends Unit {
+public class DarkMagicWitch extends Unit {
 
     public static final int DEFAULT_HEALTH;
     public static final int DEFAULT_ARMOR;
@@ -30,7 +30,7 @@ public class Pyromancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Pyromancer.class);
+	UnitStat stat = UnitStats.unitStats.get(DarkMagicWitch.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;
@@ -41,7 +41,7 @@ public class Pyromancer extends Unit {
 	DEFAULT_FRONT_BLOCK = stat.defaultFrontBlock;
     }
 
-    public Pyromancer(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+    public DarkMagicWitch(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
     }
 
@@ -82,7 +82,8 @@ public class Pyromancer extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE, MAX_WAIT_TIME);
+	AbilityProperty abilityProp = new WitchAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE,
+		MAX_WAIT_TIME);
 	return abilityProp;
     }
 
@@ -93,22 +94,27 @@ public class Pyromancer extends Unit {
 
     @Override
     public UnitClass getUnitClass() {
-	return UnitClass.MAGE;
+	return UnitClass.WITCH;
     }
 }
 
-class MageAbiltyProperty extends ActiveTargetAbilityProperty {
+class WitchAbilityProperty extends ActiveTargetAbilityProperty {
+    // TODO set ability range property to permanently be 3
 
-    public MageAbiltyProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
+    public WitchAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
 	super(unitOwner, initialPower, initialAttackRange, maxWaitTime);
     }
 
+    // TODO look at whether target can be empty/ be friendly, etc
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (!canCurrentlyUseAbility() || target.getUnitOnTop() == null
-		|| Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
-			target.getCoor()) > getAbilityRangeProperty().getCurrentPropertyValue()
-		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	Coordinate targetcoor = target.getCoor();
+
+	boolean inRange = Coordinate.inDirectDirection(thiscoor, targetcoor) != null
+		&& Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getCurrentPropertyValue();
+
+	if (!canCurrentlyUseAbility() || !inRange) {
 	    return false;
 	} else {
 	    return true;
@@ -118,27 +124,23 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
     @Override
     public List<Square> getAOESqaures(Square target) {
 	List<Square> list = new ArrayList<>(1);
-	list.add(target);
 
-	Board board = getUnitOwner().getGame().getBoard();
-	Square left = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.LEFT));
-	Square up = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.UP));
-	Square right = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.RIGHT));
-	Square down = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.DOWN));
+	Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	Coordinate targetcoor = target.getCoor();
 
-	if (left != null) {
-	    list.add(left);
-	}
-	if (up != null) {
-	    list.add(up);
-	}
-	if (right != null) {
-	    list.add(right);
-	}
-	if (down != null) {
-	    list.add(down);
-	}
+	if (Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getCurrentPropertyValue()) {
 
+	    Direction dir = Coordinate.inDirectDirection(thiscoor, targetcoor);
+	    Coordinate current = thiscoor;
+	    for (int i = 0; i < 3; i++) {
+		current = Coordinate.shiftCoor(current, dir);
+		Square sqr = getUnitOwner().getGame().getBoard().getSquare(current);
+		if (sqr != null) {
+		    list.add(sqr);
+		}
+	    }
+
+	}
 	return list;
     }
 

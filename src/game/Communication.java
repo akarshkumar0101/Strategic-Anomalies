@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 
-public class GameComm {
+public class Communication {
 
     private static final RuntimeException notConnectedException = new RuntimeException("Not connected");
 
@@ -17,14 +17,14 @@ public class GameComm {
     private ObjectInputStream objin;
     private ObjectOutputStream objout;
 
-    public GameComm() {
+    public Communication() {
 	connected = false;
 
 	objin = null;
 	objout = null;
     }
 
-    public GameComm(InputStream in, OutputStream out) {
+    public Communication(InputStream in, OutputStream out) {
 	try {
 	    objin = new ObjectInputStream(in);
 	    objout = new ObjectOutputStream(out);
@@ -35,7 +35,7 @@ public class GameComm {
 
     }
 
-    public GameComm connectLocally() {
+    public Communication connectLocally() {
 	if (connected) {
 	    throw new RuntimeException("Already connected");
 	}
@@ -53,11 +53,11 @@ public class GameComm {
 	    objin = new ObjectInputStream(thisin);
 	    objout = new ObjectOutputStream(thisout);
 
-	    GameComm gc = new GameComm(otherin, otherout);
+	    Communication comm = new Communication(otherin, otherout);
 
 	    connected = true;
 
-	    return gc;
+	    return comm;
 	} catch (IOException e) {
 	    throw new RuntimeException("Something went wrong connecting game communications");
 	}
@@ -74,7 +74,7 @@ public class GameComm {
 	}
     }
 
-    public void writeObject(Object obj) {
+    public void sendObject(Object obj) {
 	checkConnection();
 	try {
 	    objout.writeObject(obj);
@@ -83,7 +83,7 @@ public class GameComm {
 	}
     }
 
-    public Object readObject() {
+    public Object recieveObject() {
 	checkConnection();
 	try {
 	    return objin.readObject();

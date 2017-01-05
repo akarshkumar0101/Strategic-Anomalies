@@ -18,6 +18,7 @@ import game.unit.property.StunnedProperty;
 import game.unit.property.UnitDefaults;
 import game.unit.property.WaitProperty;
 import game.unit.property.ability.AbilityProperty;
+import game.unit.property.ability.ActiveAbilityProperty;
 
 public abstract class Unit extends Affectable implements UnitDefaults {
 
@@ -38,8 +39,6 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 
     private final StunnedProperty stunnedProp;
 
-    private final WaitProperty waitProp;
-
     private final IncidentReporter deathReporter;
 
     public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
@@ -51,7 +50,6 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	movingProp = new MovingProperty(this, getDefaultMoveRange(), canDefaultTeleport());
 	abilityProp = getDefaultAbilityProperty();
 	stunnedProp = new StunnedProperty(this, false);
-	waitProp = new WaitProperty(this, 0, getMaxWaitTime());
 
 	deathReporter = new IncidentReporter() {
 	    @Override
@@ -91,7 +89,7 @@ public abstract class Unit extends Affectable implements UnitDefaults {
     }
 
     public WaitProperty getWaitProp() {
-	return waitProp;
+	return abilityProp.isActiveAbility() ? ((ActiveAbilityProperty) abilityProp).getWaitProp() : null;
     }
 
     public IncidentReporter getDeathReporter() {
@@ -121,6 +119,9 @@ public abstract class Unit extends Affectable implements UnitDefaults {
     }
 
     public static boolean areAllies(Unit unit1, Unit unit2) {
+	if (unit1 == null || unit2 == null) {
+	    return false;
+	}
 	return unit1.ownerProp.getTeam().equals(unit2.ownerProp.getTeam());
     }
 

@@ -1,4 +1,4 @@
-package testingframe;
+package testing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,9 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import game.Game;
 import game.Player;
-import game.Team;
 import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
@@ -34,26 +32,23 @@ public class TestingFrame extends JFrame {
 
     private static final long serialVersionUID = 5606773788174572563L;
 
-    private Board board;
-    private Team team1, team2;
-    private Player player1, player2;
+    private final TestingGame game;
+    private final Board board;
+    private final TestingPlayer[] localFramePlayers;
 
-    private final GamePainter gamePainter;
-    private final GameInformation gameInformation;
+    private final GamePanel gamePanel;
+    private final GameInformationPanel gameInformationPanel;
 
     private GridBagLayout gbLayout;
     private GridBagConstraints gbConstrains;
 
-    public TestingFrame(Game game) {
-
+    public TestingFrame(TestingGame game, TestingPlayer... localFramePlayers) {
+	this.game = game;
 	board = game.getBoard();
-	team1 = game.getTeam1();
-	team2 = game.getTeam2();
-	player1 = team1.getPlayers()[0];
-	player2 = team2.getPlayers()[0];
+	this.localFramePlayers = localFramePlayers;
 
-	gamePainter = new GamePainter();
-	gameInformation = new GameInformation();
+	gamePanel = new GamePanel();
+	gameInformationPanel = new GameInformationPanel();
 
 	gbLayout = new GridBagLayout();
 	gbConstrains = new GridBagConstraints();
@@ -62,6 +57,15 @@ public class TestingFrame extends JFrame {
 
 	setSize(1400, 1000);
 	setResizable(false);
+    }
+
+    public boolean playerIsUsingThisFrame(TestingPlayer player) {
+	for (TestingPlayer p : localFramePlayers) {
+	    if (p.equals(player)) {
+		return true;
+	    }
+	}
+	return false;
     }
 
     public void organizeComponents() {
@@ -75,7 +79,7 @@ public class TestingFrame extends JFrame {
 	gbConstrains.fill = GridBagConstraints.BOTH;
 	gbConstrains.anchor = GridBagConstraints.CENTER;
 
-	getContentPane().add(gamePainter, gbConstrains);
+	getContentPane().add(gamePanel, gbConstrains);
 
 	gbConstrains.gridx = 1;
 	gbConstrains.gridy = 0;
@@ -84,12 +88,12 @@ public class TestingFrame extends JFrame {
 	gbConstrains.fill = GridBagConstraints.BOTH;
 	gbConstrains.anchor = GridBagConstraints.CENTER;
 
-	getContentPane().add(gameInformation, gbConstrains);
+	getContentPane().add(gameInformationPanel, gbConstrains);
 
     }
 
     public void updateInformation() {
-	gamePainter.updateInformation();
+	gamePanel.updateInformation();
     }
 
     public static double scale(double num, double ori1, double ori2, double new1, double new2) {
@@ -105,7 +109,7 @@ public class TestingFrame extends JFrame {
 		amount > col.getBlue() ? 0 : col.getBlue() - amount);
     }
 
-    class GamePainter extends JPanel {
+    class GamePanel extends JPanel {
 
 	private static final long serialVersionUID = 7783998123812310360L;
 
@@ -114,7 +118,7 @@ public class TestingFrame extends JFrame {
 
 	private Square mouseInSquare;
 
-	public GamePainter() {
+	public GamePanel() {
 	    super();
 	    labels = new SquareLabel[board.getWidth()][board.getHeight()];
 
@@ -189,9 +193,9 @@ public class TestingFrame extends JFrame {
 		if (unitOnTop != null) {
 		    Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
 
-		    if (owner.equals(player1)) {
+		    if (owner.equals(game.getPlayer1())) {
 			col = slightBlue;
-		    } else if (owner.equals(player2)) {
+		    } else if (owner.equals(game.getPlayer2())) {
 			col = slightRed;
 		    }
 		}
@@ -298,10 +302,10 @@ public class TestingFrame extends JFrame {
 	    }
 
 	    public void setMouseInSquare(Square sqr) {
-		if (gamePainter.mouseInSquare == sqr) {
+		if (gamePanel.mouseInSquare == sqr) {
 		    return;
 		}
-		gamePainter.mouseInSquare = sqr;
+		gamePanel.mouseInSquare = sqr;
 		// System.out.println("Mouse is now in: " + (sqr == null ?
 		// "null" :
 		// sqr.getCoor()));
@@ -309,18 +313,18 @@ public class TestingFrame extends JFrame {
 	}
     }
 
-    class GameInformation extends JPanel {
+    class GameInformationPanel extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 
 	private Square mouseInSquare;
 
-	public GameInformation() {
+	public GameInformationPanel() {
 
 	}
 
 	public void updateInformation() {
-	    mouseInSquare = gamePainter.mouseInSquare;
+	    mouseInSquare = gamePanel.mouseInSquare;
 
 	}
 

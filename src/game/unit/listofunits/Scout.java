@@ -18,7 +18,7 @@ import game.unit.UnitStats;
 import game.unit.property.ability.AbilityProperty;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
 
-public class Pyromancer extends Unit {
+public class Scout extends Unit {
 
     public static final int DEFAULT_HEALTH;
     public static final int DEFAULT_ARMOR;
@@ -30,7 +30,7 @@ public class Pyromancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Pyromancer.class);
+	UnitStat stat = UnitStats.unitStats.get(Scout.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;
@@ -41,7 +41,7 @@ public class Pyromancer extends Unit {
 	DEFAULT_FRONT_BLOCK = stat.defaultFrontBlock;
     }
 
-    public Pyromancer(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+    public Scout(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	super(game, playerOwner, directionFacing, coor);
     }
 
@@ -82,7 +82,8 @@ public class Pyromancer extends Unit {
 
     @Override
     public AbilityProperty getDefaultAbilityProperty() {
-	AbilityProperty abilityProp = new MageAbiltyProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE, MAX_WAIT_TIME);
+	AbilityProperty abilityProp = new BowmenAbilityProperty(this, DEFAULT_POWER, DEFAULT_ATTACK_RANGE,
+		MAX_WAIT_TIME);
 	return abilityProp;
     }
 
@@ -93,18 +94,19 @@ public class Pyromancer extends Unit {
 
     @Override
     public UnitClass getUnitClass() {
-	return UnitClass.MAGE;
+	return UnitClass.BOWMEN;
     }
 }
 
-class MageAbiltyProperty extends ActiveTargetAbilityProperty {
+class BowmenAbilityProperty extends ActiveTargetAbilityProperty {
 
-    public MageAbiltyProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
+    public BowmenAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
 	super(unitOwner, initialPower, initialAttackRange, maxWaitTime);
     }
 
     @Override
     public boolean canUseAbilityOn(Square target) {
+	// TODO other stuff deciding scout?
 	if (!canCurrentlyUseAbility() || target.getUnitOnTop() == null
 		|| Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
 			target.getCoor()) > getAbilityRangeProperty().getCurrentPropertyValue()
@@ -118,27 +120,8 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
     @Override
     public List<Square> getAOESqaures(Square target) {
 	List<Square> list = new ArrayList<>(1);
+	// TODO it might hit another square, not the target
 	list.add(target);
-
-	Board board = getUnitOwner().getGame().getBoard();
-	Square left = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.LEFT));
-	Square up = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.UP));
-	Square right = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.RIGHT));
-	Square down = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.DOWN));
-
-	if (left != null) {
-	    list.add(left);
-	}
-	if (up != null) {
-	    list.add(up);
-	}
-	if (right != null) {
-	    list.add(right);
-	}
-	if (down != null) {
-	    list.add(down);
-	}
-
 	return list;
     }
 
@@ -149,7 +132,8 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
 	}
 	List<Square> targets = getAOESqaures(target);
 	for (Square ss : targets) {
-	    Damage damage = new Damage(getCurrentPropertyValue(), DamageType.MAGIC, getUnitOwner(), ss.getUnitOnTop());
+	    Damage damage = new Damage(getCurrentPropertyValue(), DamageType.PHYSICAL, getUnitOwner(),
+		    ss.getUnitOnTop());
 	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
 	}
     }
