@@ -27,6 +27,7 @@ public abstract class ActiveAbilityProperty extends AbilityProperty {
 	return onAbilityUseReporter;
     }
 
+    @Override
     public boolean canCurrentlyUseAbility() {
 	return !(getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting());
     }

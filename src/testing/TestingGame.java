@@ -7,15 +7,17 @@ import java.util.List;
 import javax.swing.JFrame;
 
 import game.Communication;
+import game.Game;
 import game.Player;
 import game.Turn;
 import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.NormalBoard;
+import game.board.Path;
 import game.unit.Unit;
 
-public class TestingGame {
+public class TestingGame extends Game {
 
     private final Board board;
 
@@ -34,20 +36,21 @@ public class TestingGame {
      * 
      */
     public TestingGame() {
+	super(null, null);
 	board = new NormalBoard();
 
 	playerComms = new HashMap<>(2);
 
-	player1 = new TestingPlayer(this);
-	player2 = new TestingPlayer(this);
+	player1 = new TestingPlayer("Dr. Monson", this);
+	player2 = new TestingPlayer("Albert Einstein", this);
 	allPlayers = new ArrayList<>(2);
 	allPlayers.add(player1);
 	allPlayers.add(player2);
 
+	currentTurn = new Turn(0, player1);
+
 	testingFrame = new TestingFrame(this, player1, player2);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-	currentTurn = new Turn(0, player1);
     }
 
     public void startGame() {
@@ -55,48 +58,121 @@ public class TestingGame {
 	testingFrame.setVisible(true);
 
 	// TODO add stop statement
-	TestingPlayer currentPlayer = null;
-	Communication currentComm = null;
+	// game loop for different turns
 	while (true) {
-	    currentPlayer = (TestingPlayer) currentTurn.getPlayerTurn();
-	    currentComm = getCommForPlayer(currentPlayer);
-
-	    Object received = null;
-	    do {
-		received = currentComm.recieveObject();
-
-		announceToAllPlayers(received);
-
-		Unit unitPicked = null;
-
-		if (!received.equals(Message.END_TURN)) {
-		    Object detail = currentComm.recieveObject();
-
-		    if (received.equals(Message.HOVER)) {
-			Coordinate coor = (Coordinate) detail;
-		    } else if (received.equals(Message.UNIT_SELECT)) {
-			Coordinate coor = (Coordinate) detail;
-			unitPicked = board.getUnitAt(coor);
-		    } else if (received.equals(Message.UNIT_MOVE)) {
-			Coordinate coor = (Coordinate) detail;
-
-		    } else if (received.equals(Message.UNIT_ATTACK)) {
-			Coordinate coor = (Coordinate) detail;
-
-		    } else if (received.equals(Message.UNIT_DIR)) {
-			Direction dir = (Direction) detail;
-
-		    }
-		    announceToAllPlayers(detail);
-
-		} else {
-
-		}
-
-	    } while (!received.equals(Message.END_TURN));
-
+	    handleTurn();
 	    nextTurn();
 	}
+    }
+
+    private TestingPlayer onTurnPlayer = null;
+    private Unit onTurnUnitPicked = null;
+    private boolean onTurnHasSelectedUnit = false;
+    private boolean onTurnHasMoved = false;
+    private boolean onTurnHasAttacked = false;
+    private boolean onTurnHasChangedDir = false;
+
+    public void handleTurn() {
+	TestingPlayer currentPlayer = (TestingPlayer) currentTurn.getPlayerTurn();
+	Communication currentComm = getCommForPlayer(currentPlayer);
+
+	Object received = null;
+
+	onTurnPlayer = currentPlayer;
+	onTurnHasSelectedUnit = false;
+	onTurnUnitPicked = null;
+	onTurnHasMoved = false;
+	onTurnHasAttacked = false;
+	onTurnHasChangedDir = false;
+	boolean shouldRun = true;
+	while (shouldRun) {
+	    shouldRun = handleCommand(currentComm);
+	}
+    }
+
+    public boolean handleCommand(Communication currentComm) {
+	return handleCommand(currentComm.recieveObject(), currentComm);
+    }
+
+    public boolean handleCommand(Object command, Communication currentComm) {
+
+	if (!Message.isCommand(command)) {
+	    throw new RuntimeException("Not a command");
+	}
+
+	announceToAllPlayers(command);
+
+	if (Message.END_TURN.equals(command)) {
+	    return false;
+	}
+
+	Object specifications = currentComm.recieveObject();
+
+	if (Message.isCommand(specifications)) {
+	    return handleCommand(specifications, currentComm);
+	}
+
+	try {
+
+	    if (command.equals(Message.HOVER)) {
+		hover((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_SELECT)) {
+		unitSelect((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_MOVE)) {
+		unitMove((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_ATTACK)) {
+		unitAttack((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_DIR)) {
+		unitChangeDir((Direction) specifications);
+	    }
+
+	} catch (Exception e) {
+	    throw new RuntimeException(e);
+	}
+
+	announceToAllPlayers(specifications);
+	return true;
+
+    }
+
+    public void hover(Coordinate coor) {
+    }
+
+    public void unitSelect(Coordinate coor) {
+	onTurnUnitPicked = board.getUnitAt(coor);
+	// TODO make sure unit is selectable
+	if (onTurnHasSelectedUnit || onTurnUnitPicked == null
+		|| !onTurnUnitPicked.getOwnerProp().getCurrentPropertyValue().equals(onTurnPlayer)) {
+	    throw new RuntimeException("Already selected unit or no unit picked or invalid unit picked");
+	}
+	onTurnHasSelectedUnit = true;
+    }
+
+    public void unitMove(Coordinate coor) {
+	Path path = onTurnUnitPicked.getGamePathTo(coor);
+	if (onTurnHasMoved || onTurnUnitPicked.getPosProp().getCurrentPropertyValue().equals(coor) || path == null) {
+	    throw new RuntimeException("Already moved or no movement or can't move unit to: " + coor);
+	}
+	onTurnUnitPicked.moveTakePath(path, onTurnPlayer);
+	onTurnHasMoved = true;
+
+	announceToAllPlayers(path);
+    }
+
+    public void unitAttack(Coordinate coor) {
+	if (onTurnHasAttacked || !onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
+	    throw new RuntimeException("Has already attacked or can't use ability");
+	}
+	onTurnUnitPicked.attack(board.getSquare(coor));
+	onTurnHasAttacked = true;
+    }
+
+    public void unitChangeDir(Direction dir) {
+	if (onTurnHasChangedDir) {
+	    throw new RuntimeException("Has already changed dir or ");
+	}
+	onTurnUnitPicked.getPosProp().getDirFacingProp().setPropertyValue(dir, onTurnPlayer);
+	onTurnHasChangedDir = true;
     }
 
     public void announceToAllPlayers(Object obj) {
@@ -117,6 +193,7 @@ public class TestingGame {
 	return playerComms.get(player);
     }
 
+    @Override
     public Board getBoard() {
 	return board;
     }
@@ -129,6 +206,7 @@ public class TestingGame {
 	return player2;
     }
 
+    @Override
     public Turn getCurrentTurn() {
 	return currentTurn;
     }
@@ -146,4 +224,8 @@ class Message {
 
     public static final String END_TURN = "\\endturn";
 
+    public static boolean isCommand(Object message) {
+	return message.equals(HOVER) || message.equals(UNIT_SELECT) || message.equals(UNIT_MOVE)
+		|| message.equals(UNIT_ATTACK) || message.equals(UNIT_DIR) || message.equals(END_TURN);
+    }
 }

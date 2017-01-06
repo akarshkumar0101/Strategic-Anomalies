@@ -26,8 +26,13 @@ public abstract class AbilityProperty extends Property<Integer> {
 	return this instanceof ActiveAbilityProperty;
     }
 
+    public boolean canCurrentlyUseAbility() {
+	return false;
+    }
+
+    // TODO some of these methods are public, CHANGE THEM TO PROTECTED
     @Override
-    public void propertyChanged(Integer oldValue, Integer newValue) {
+    protected void propertyChanged(Integer oldValue, Integer newValue) {
 	super.notifyPropertyChanged(oldValue, newValue);
     }
 

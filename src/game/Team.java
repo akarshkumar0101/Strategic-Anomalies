@@ -10,6 +10,10 @@ public class Team {
     private final Player[] players;
 
     public Team(Account[] accounts) {
+	if (accounts == null) {
+	    players = new Player[] { new Player(null), new Player(null) };
+	    return;
+	}
 	players = new Player[accounts.length];
 	for (int i = 0; i < accounts.length; i++) {
 	    // TODO manage stuff

@@ -2,9 +2,9 @@ package game;
 
 public class Turn {
 
-    public final int turnNumber;
+    private final int turnNumber;
 
-    public final Player playerTurn;
+    private final Player playerTurn;
 
     public Turn(Player playerTurn) {
 	this(1, playerTurn);

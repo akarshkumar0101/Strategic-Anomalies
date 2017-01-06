@@ -2,11 +2,11 @@ package game.unit;
 
 import game.Game;
 import game.Player;
-import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.Path;
 import game.board.PathFinder;
+import game.board.Square;
 import game.interaction.effect.Affectable;
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
@@ -103,13 +103,27 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	deathReporter.reportIncident(this);
     }
 
-    public boolean isInRangeOfWalking(Coordinate moveToCoor) {
-	return Board.walkDist(moveToCoor, posProp.getCurrentPropertyValue()) <= movingProp.getCurrentPropertyValue();
+    public void moveTakePath(Path path, Object sourceOfMovement) {
+	getPosProp().setPropertyValue(path.getEndCoor(), sourceOfMovement);
+	Direction newdirFacing = null;
+	try {
+	    newdirFacing = Coordinate.inGeneralDirection(
+		    path.getPathCoordinates().get(path.getPathCoordinates().size() - 2), path.getEndCoor());
+	} catch (Exception e) {
+	    newdirFacing = Coordinate.inGeneralDirection(path.getStartCoor(), path.getEndCoor());
+	}
+	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, path);
+    }
+
+    public void attack(Square sqr) {
+	((ActiveAbilityProperty) getAbilityProp()).performAbility(sqr);
+	Direction newdirFacing = Coordinate.inGeneralDirection(getPosProp().getCurrentPropertyValue(), sqr.getCoor());
+	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, getAbilityProp());
     }
 
     // TODO make sure all units should consider overriding these methods
-    public Path getPathTo(Coordinate moveToCoor) {
-	if (!(movingProp.canCurrentlyMove() && isInRangeOfWalking(moveToCoor))) {
+    public Path getGamePathTo(Coordinate moveToCoor) {
+	if (!movingProp.canCurrentlyMove() || !movingProp.isInRangeOfWalking(moveToCoor)) {
 	    return null;
 	} else if (movingProp.getTeleportingProp().getCurrentPropertyValue()) {
 	    return PathFinder.getTeleportedPath(this, moveToCoor);

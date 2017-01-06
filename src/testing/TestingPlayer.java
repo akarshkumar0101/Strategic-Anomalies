@@ -5,16 +5,23 @@ import game.Player;
 
 public class TestingPlayer extends Player {
 
+    private final String name;
+
     private final TestingGame game;
     private TestingFrame testingFrame;
 
     private Communication gameComm;
 
-    public TestingPlayer(TestingGame game) {
+    public TestingPlayer(String name, TestingGame game) {
 	super(null);
+	this.name = name;
 	this.game = game;
 
 	gameComm = game.getCommForPlayer(this).connectLocally();
+    }
+
+    public String getName() {
+	return name;
     }
 
     public TestingGame getGame() {

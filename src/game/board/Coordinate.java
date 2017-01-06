@@ -1,5 +1,7 @@
 package game.board;
 
+import java.io.Serializable;
+
 /**
  * Coordinate is used to track location on the board for pieces and squares.
  * Pieces implement this by having a CoordinateProperty that tracks Coordinate
@@ -10,7 +12,9 @@ package game.board;
  * @author Akarsh
  *
  */
-public class Coordinate {
+public class Coordinate implements Serializable {
+
+    private static final long serialVersionUID = 5265089525764467646L;
 
     /**
      * x and y information.

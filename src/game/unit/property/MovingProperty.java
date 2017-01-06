@@ -1,5 +1,7 @@
 package game.unit.property;
 
+import game.board.Board;
+import game.board.Coordinate;
 import game.unit.Unit;
 
 public class MovingProperty extends Property<Integer> {
@@ -20,6 +22,11 @@ public class MovingProperty extends Property<Integer> {
 
     public Property<Boolean> getTeleportingProp() {
 	return teleportingProp;
+    }
+
+    public boolean isInRangeOfWalking(Coordinate moveToCoor) {
+	return Board.walkDist(moveToCoor,
+		getUnitOwner().getPosProp().getCurrentPropertyValue()) <= getCurrentPropertyValue();
     }
 
     public boolean canCurrentlyMove() {

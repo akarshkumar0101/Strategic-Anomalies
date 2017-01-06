@@ -25,8 +25,8 @@ public class Main {
 
 	TestingGame tgame = new TestingGame();
 
-	Unit unit1 = new Warrior(null, tgame.getPlayer1(), Direction.LEFT, new Coordinate(1, 1));
-	Unit unit2 = new Warrior(null, tgame.getPlayer2(), Direction.RIGHT, new Coordinate(5, 6));
+	Unit unit1 = new Warrior(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(1, 1));
+	Unit unit2 = new Warrior(tgame, tgame.getPlayer1(), Direction.RIGHT, new Coordinate(5, 6));
 	movableUnit = unit1;
 
 	unit1.getStunnedProp().setPropertyValue(true, "main");
@@ -35,6 +35,7 @@ public class Main {
 	tgame.getBoard().linkBoardToUnit(unit2);
 
 	tgame.startGame();
+
     }
 }
 // Game game = new Game(new Account[] { new Account() }, new Account[] { new

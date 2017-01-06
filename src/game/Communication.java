@@ -31,7 +31,7 @@ public class Communication {
 	    objout.flush();
 	    connected = true;
 	} catch (IOException e) {
-	    throw new RuntimeException("Something went wrong connecting the object streams to socket streams");
+	    throw new RuntimeException(e);
 	}
 
     }
@@ -62,7 +62,7 @@ public class Communication {
 
 	    return comm;
 	} catch (IOException e) {
-	    throw new RuntimeException("Something went wrong connecting game communications");
+	    throw new RuntimeException(e);
 	}
 
     }
@@ -81,8 +81,9 @@ public class Communication {
 	checkConnection();
 	try {
 	    objout.writeObject(obj);
+	    objout.flush();
 	} catch (IOException e) {
-	    throw new RuntimeException("Couldn't write object");
+	    throw new RuntimeException(e);
 	}
     }
 
@@ -91,7 +92,7 @@ public class Communication {
 	try {
 	    return objin.readObject();
 	} catch (Exception e) {
-	    throw new RuntimeException("Couldn't read object");
+	    throw new RuntimeException(e);
 	}
     }
 

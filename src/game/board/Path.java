@@ -1,5 +1,6 @@
 package game.board;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +12,9 @@ import java.util.List;
  * @author Akarsh
  *
  */
-public class Path {
+public class Path implements Serializable {
+
+    private static final long serialVersionUID = -7347670407818763721L;
 
     /**
      * The starting Coordinate

@@ -9,6 +9,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
@@ -16,26 +18,25 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 import game.Communication;
 import game.Player;
 import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
+import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
 import game.unit.listofunits.Warrior;
-import main.Main;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
 public class TestingFrame extends JFrame {
@@ -44,7 +45,8 @@ public class TestingFrame extends JFrame {
 
     static {
 	try {
-	    UIManager.LookAndFeelInfo[] looks = UIManager.getInstalledLookAndFeels();
+	    // UIManager.LookAndFeelInfo[] looks =
+	    // UIManager.getInstalledLookAndFeels();
 	    // javax.swing.plaf.metal.MetalLookAndFeel
 	    // javax.swing.plaf.nimbus.NimbusLookAndFeel
 	    // com.sun.java.swing.plaf.motif.MotifLookAndFeel
@@ -86,34 +88,96 @@ public class TestingFrame extends JFrame {
 
 	organizeComponents();
 
-	setSize(1400, 1000);
+	// setSize(1450, 1000);
+	pack();
 	setResizable(false);
 
-	gameAnnouncementThread = new Thread() {
-	    @Override
-	    public void run() {
-		// TODO manage if player quits, etc.
-		Communication receiveComm = receivingPlayer.getGameComm();
+	gameAnnouncementThread = new FrameUpdatingThread();
 
-		// TODO add stop statement
-		while (true) {
-		    Object receiveObj = receiveComm.recieveObject();
-		}
-	    }
-	};
-	gameDataPanel.pickUnitTButton.setSelected(false);
-	gameDataPanel.pickUnitTButton.setEnabled(true);
-
-	gameDataPanel.pickMoveTButton.setSelected(true);
-	gameDataPanel.pickMoveTButton.setEnabled(true);
-
-	gameDataPanel.pickAttackTButton.setSelected(false);
-	gameDataPanel.pickAttackTButton.setEnabled(false);
-
-	gameDataPanel.pickDirectionTButton.setSelected(true);
-	gameDataPanel.pickDirectionTButton.setEnabled(false);
+	gameAnnouncementThread.start();
 
 	gameDataPanel.resetForNewTurn();
+
+    }
+
+    class FrameUpdatingThread extends Thread {
+	private Communication receiveComm;
+
+	@Override
+	public void run() {
+	    // TODO manage if player quits, etc.
+	    receiveComm = receivingPlayer.getGameComm();
+
+	    // TODO add stop statement
+	    // game loop for different turns
+	    while (true) {
+		handleTurn();
+		gameDataPanel.resetForNewTurn();
+	    }
+
+	}
+
+	public void handleTurn() {
+	    boolean shouldRun = true;
+	    while (shouldRun) {
+		shouldRun = handleCommand();
+	    }
+	}
+
+	public boolean handleCommand() {
+	    return handleCommand(receiveComm.recieveObject());
+	}
+
+	public boolean handleCommand(Object command) {
+	    if (!Message.isCommand(command)) {
+		throw new RuntimeException("Not a command");
+	    }
+
+	    if (Message.END_TURN.equals(command)) {
+		return false;
+	    }
+
+	    Object specifications = receiveComm.recieveObject();
+
+	    if (Message.isCommand(specifications)) {
+		return handleCommand(specifications);
+	    }
+
+	    if (command.equals(Message.HOVER)) {
+		hover((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_SELECT)) {
+		unitSelect((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_MOVE)) {
+		unitMove((Path) specifications, (Coordinate) receiveComm.recieveObject());
+	    } else if (command.equals(Message.UNIT_ATTACK)) {
+		unitAttack((Coordinate) specifications);
+	    } else if (command.equals(Message.UNIT_DIR)) {
+		unitChangeDir((Direction) specifications);
+	    }
+	    return true;
+	}
+
+	public void hover(Coordinate coor) {
+	}
+
+	public void unitSelect(Coordinate coor) {
+	}
+
+	public void unitMove(Path path, Coordinate coor) {
+	    updateInformation();
+	    repaint();
+	}
+
+	public void unitAttack(Coordinate coor) {
+	    updateInformation();
+	    repaint();
+	}
+
+	public void unitChangeDir(Direction dir) {
+	    updateInformation();
+	    repaint();
+	}
+
     }
 
     public boolean playerIsUsingThisFrame(TestingPlayer player) {
@@ -123,6 +187,16 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 	return false;
+    }
+
+    public void transmitDataToGame(Object data) {
+	System.out.println("send:" + data);
+	TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
+	if (!playerIsUsingThisFrame(currentPlayer)) {
+	    return;
+	}
+	Communication gameComm = currentPlayer.getGameComm();
+	gameComm.sendObject(data);
     }
 
     public void organizeComponents() {
@@ -204,7 +278,7 @@ public class TestingFrame extends JFrame {
 	public void setMouseInSquare(Square sqr) {
 	    if (mouseInSquare != sqr) {
 		mouseInSquare = sqr;
-		gameDataPanel.setUnitHoveringOver(sqr == null ? null : sqr.getUnitOnTop());
+		gameDataPanel.updateHoveringOver();
 	    }
 	}
 
@@ -235,8 +309,6 @@ public class TestingFrame extends JFrame {
 	    public SquareLabel(Square sqr) {
 		this.sqr = sqr;
 		addMouseListener(this);
-
-		updateInformation();
 	    }
 
 	    public void updateInformation() {
@@ -298,7 +370,7 @@ public class TestingFrame extends JFrame {
 		g.drawRect(0, 0, getWidth(), getHeight());
 
 		// if empty square, end it
-		if (sqr.isEmpty()) {
+		if (unitOnTop == null) {
 		    return;
 		}
 
@@ -345,22 +417,26 @@ public class TestingFrame extends JFrame {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
 		if (sqr != null) {
-		    Main.movableUnit.getPosProp().setPropertyValue(sqr.getCoor());
-		    TestingFrame.this.updateInformation();
-		    TestingFrame.this.repaint();
+		    if (gameDataPanel.canCurrentlyClick(sqr)) {
+			gameDataPanel.coordinateClicked(sqr.getCoor());
+		    }
 		}
 	    }
 
 	    @Override
 	    public void mousePressed(MouseEvent e) {
-		mousePressing = true;
-		repaint();
+		if (gameDataPanel.canCurrentlyClick(sqr)) {
+		    mousePressing = true;
+		    repaint();
+		}
 	    }
 
 	    @Override
 	    public void mouseReleased(MouseEvent e) {
-		mousePressing = false;
-		repaint();
+		if (gameDataPanel.canCurrentlyClick(sqr)) {
+		    mousePressing = false;
+		    repaint();
+		}
 	    }
 
 	    @Override
@@ -380,16 +456,17 @@ public class TestingFrame extends JFrame {
     }
 
     class GameDataPanel extends JPanel {
-
 	private static final long serialVersionUID = -4840314334092192454L;
 
-	private final GridBagLayout gipgbLayout;
-	private final GridBagConstraints gipgbConstrains;
+	private final GridBagLayout gdpgbLayout;
+	private final GridBagConstraints gdpgbConstrains;
 
-	private final JToggleButton pickUnitTButton;
-	private final JToggleButton pickMoveTButton;
-	private final JToggleButton pickAttackTButton;
-	private final JToggleButton pickDirectionTButton;
+	private final JLabel turnInfoLabel;
+
+	private final PickingButton pickUnitTButton;
+	private final PickingButton pickMoveTButton;
+	private final PickingButton pickAttackTButton;
+	private final PickingButton pickDirectionTButton;
 	private final JButton endTurnButton;
 
 	private final JButton upDirButton;
@@ -397,34 +474,28 @@ public class TestingFrame extends JFrame {
 	private final JButton rightDirButton;
 	private final JButton downDirButton;
 
-	private final JLabel turnInfoLabel;
+	private final JSeparator commandInfoSeperator;
+
 	private final JLabel unitInfoLabel1;
 	private final JLabel unitInfoLabel2;
 
-	private final Border pickingBorder = BorderFactory.createMatteBorder(0, 0, 5, 0, Color.red);
+	private JLabel pointHoverUnitLabel;
+	private JLabel pointPickedUnitLabel;
 
-	private boolean hasPickedUnit;
-	private boolean hasPickedMove;
-	private boolean hasPickedAttack;
-	private boolean hasPickedDirection;
-
-	private JToggleButton currentlyPicking;
-
-	private Unit unitHoveringOver;
+	private PickingButton currentlyPicking;
 
 	public GameDataPanel() {
 	    super();
 
 	    currentlyPicking = null;
-	    unitHoveringOver = null;
 
-	    gipgbLayout = new GridBagLayout();
-	    gipgbConstrains = new GridBagConstraints();
+	    gdpgbLayout = new GridBagLayout();
+	    gdpgbConstrains = new GridBagConstraints();
 
-	    pickUnitTButton = new JToggleButton("  Pick   ");
-	    pickMoveTButton = new JToggleButton("  Move   ");
-	    pickAttackTButton = new JToggleButton(" Attack  ");
-	    pickDirectionTButton = new JToggleButton("Direction");
+	    pickUnitTButton = new PickingButton("  Pick   ");
+	    pickMoveTButton = new PickingButton("  Move   ");
+	    pickAttackTButton = new PickingButton(" Attack  ");
+	    pickDirectionTButton = new PickingButton("Direction");
 
 	    endTurnButton = new JButton("End Turn ");
 	    endTurnButton.setPreferredSize(new Dimension(100, 100));
@@ -475,9 +546,14 @@ public class TestingFrame extends JFrame {
 	    };
 	    downDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
 
+	    commandInfoSeperator = new JSeparator();
+	    commandInfoSeperator.setPreferredSize(new Dimension(1, 50));
+
 	    turnInfoLabel = new JLabel("[player's name]");
 	    unitInfoLabel1 = new JLabel();
+	    unitInfoLabel1.setVerticalAlignment(SwingConstants.TOP);
 	    unitInfoLabel2 = new JLabel();
+	    unitInfoLabel2.setVerticalAlignment(SwingConstants.TOP);
 
 	    organizeComponents();
 	    setupButtonLogic();
@@ -487,160 +563,273 @@ public class TestingFrame extends JFrame {
 
 	public void organizeComponents() {
 
-	    setLayout(gipgbLayout);
+	    setLayout(gdpgbLayout);
 
 	    int gridy = 0;
 
-	    gipgbConstrains.gridx = 0;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 5;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
+	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    turnInfoLabel.setFont(new Font("Times New Roman", Font.BOLD, 30));
 	    turnInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-	    add(turnInfoLabel, gipgbConstrains);
+	    add(turnInfoLabel, gdpgbConstrains);
 
-	    Font normalFont = new Font("Times New Roman", Font.PLAIN, 17);
-	    int gap = 50;
-	    gipgbConstrains.gridx = 0;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.NORTH;
-	    gipgbConstrains.insets = new Insets(gap, 0, gap, 0);
+	    Font normalFont = new Font("Times New Roman", Font.PLAIN, 20);
+	    int gap = 10;
+	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.insets = new Insets(gap, 0, gap, 0);
 	    pickUnitTButton.setFont(normalFont);
-	    add(pickUnitTButton, gipgbConstrains);
+	    add(pickUnitTButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 1;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.gridx = 1;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
 	    pickMoveTButton.setFont(normalFont);
-	    add(pickMoveTButton, gipgbConstrains);
+	    add(pickMoveTButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 2;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.gridx = 2;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
 	    pickAttackTButton.setFont(normalFont);
-	    add(pickAttackTButton, gipgbConstrains);
+	    add(pickAttackTButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 3;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.gridx = 3;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
 	    pickDirectionTButton.setFont(normalFont);
-	    add(pickDirectionTButton, gipgbConstrains);
+	    add(pickDirectionTButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 4;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.gridx = 4;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
 	    endTurnButton.setFont(normalFont);
-	    add(endTurnButton, gipgbConstrains);
+	    add(endTurnButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 2;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.insets = new Insets(0, 0, 0, 0);
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(upDirButton, gipgbConstrains);
+	    gdpgbConstrains.gridx = 2;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.insets = new Insets(0, 0, 0, 0);
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    add(upDirButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 1;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(leftDirButton, gipgbConstrains);
+	    gdpgbConstrains.gridx = 1;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    add(leftDirButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 3;
-	    gipgbConstrains.gridy = gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(rightDirButton, gipgbConstrains);
+	    gdpgbConstrains.gridx = 3;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    add(rightDirButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 2;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 0;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 1;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(downDirButton, gipgbConstrains);
+	    gdpgbConstrains.gridx = 2;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    add(downDirButton, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 0;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 1;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 5;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(unitInfoLabel1, gipgbConstrains);
+	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    add(commandInfoSeperator, gdpgbConstrains);
 
-	    gipgbConstrains.gridx = 0;
-	    gipgbConstrains.gridy = ++gridy;
-	    gipgbConstrains.weightx = 1;
-	    gipgbConstrains.weighty = 1;
-	    gipgbConstrains.gridheight = 1;
-	    gipgbConstrains.gridwidth = 5;
-	    gipgbConstrains.fill = GridBagConstraints.BOTH;
-	    gipgbConstrains.anchor = GridBagConstraints.CENTER;
-	    add(unitInfoLabel2, gipgbConstrains);
+	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 1;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    unitInfoLabel1.setFont(normalFont);
+	    add(unitInfoLabel1, gdpgbConstrains);
+
+	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridy = ++gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 1;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
+	    unitInfoLabel2.setFont(normalFont);
+	    add(unitInfoLabel2, gdpgbConstrains);
 
 	}
 
 	public void setupButtonLogic() {
 	    pickUnitTButton.addActionListener(e -> {
 		setCurrentlyPicking(pickUnitTButton);
-	    });
-	    pickDirectionTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickDirectionTButton);
-	    });
-	    pickAttackTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickAttackTButton);
+		GameDataPanel.this.requestFocus();
 	    });
 	    pickMoveTButton.addActionListener(e -> {
 		setCurrentlyPicking(pickMoveTButton);
+		GameDataPanel.this.requestFocus();
+	    });
+	    pickAttackTButton.addActionListener(e -> {
+		setCurrentlyPicking(pickAttackTButton);
+		GameDataPanel.this.requestFocus();
+	    });
+	    pickDirectionTButton.addActionListener(e -> {
+		setCurrentlyPicking(pickDirectionTButton);
+		GameDataPanel.this.requestFocus();
+	    });
+	    endTurnButton.addActionListener(e -> {
+		transmitDataToGame(Message.END_TURN);
+		GameDataPanel.this.requestFocus();
+	    });
+	    upDirButton.addActionListener(e -> {
+		directionClicked(Direction.UP);
+		GameDataPanel.this.requestFocus();
+	    });
+	    leftDirButton.addActionListener(e -> {
+		directionClicked(Direction.LEFT);
+		GameDataPanel.this.requestFocus();
+	    });
+	    rightDirButton.addActionListener(e -> {
+		directionClicked(Direction.RIGHT);
+		GameDataPanel.this.requestFocus();
+	    });
+	    downDirButton.addActionListener(e -> {
+		directionClicked(Direction.DOWN);
+		GameDataPanel.this.requestFocus();
+	    });
+
+	    setFocusable(true);
+	    addKeyListener(new KeyListener() {
+		@Override
+		public void keyTyped(KeyEvent e) {
+		}
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+		    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			naturalNextPick();
+		    }
+		}
 	    });
 	}
 
 	public void updateInformation() {
+	    turnInfoLabel.setText(((TestingPlayer) game.getCurrentTurn().getPlayerTurn()).getName() + "'s turn");
+	    if (pickUnitTButton.hasPicked) {
+		pointPickedUnitLabel = unitInfoLabel1;
+		pointHoverUnitLabel = unitInfoLabel2;
+	    } else {
+		pointHoverUnitLabel = unitInfoLabel1;
+		pointPickedUnitLabel = unitInfoLabel2;
+	    }
+	    updateHoveringOver();
+	}
 
+	public boolean canCurrentlyClick(Square sqr) {
+	    if (currentlyPicking == pickUnitTButton) {
+		Unit unit = sqr.getUnitOnTop();
+		if (unit != null
+			&& unit.getOwnerProp().getCurrentPropertyValue() == game.getCurrentTurn().getPlayerTurn()) {
+		    return true;
+		}
+	    } else if (currentlyPicking == pickMoveTButton) {
+		return true;
+	    } else if (currentlyPicking == pickAttackTButton) {
+		return true;
+	    } else if (currentlyPicking == pickDirectionTButton) {
+		return false;
+	    }
+	    return false;
+	}
+
+	public Color getCanClickIndicatorColor(Square sqr) {
+	    if (canCurrentlyClick(sqr)) {
+		if (currentlyPicking == pickUnitTButton) {
+		    return null;
+		} else if (currentlyPicking == pickMoveTButton) {
+		    return null;
+		} else if (currentlyPicking == pickAttackTButton) {
+		    return null;
+		} else if (currentlyPicking == pickDirectionTButton) {
+		    return null;
+		}
+		return null;
+	    } else {
+		return null;
+	    }
+	}
+
+	public void coordinateClicked(Coordinate coor) {
+	    if (currentlyPicking == pickUnitTButton || currentlyPicking == pickMoveTButton
+		    || currentlyPicking == pickAttackTButton) {
+		if (currentlyPicking.hasPicked) {
+		    return;
+		}
+		currentlyPicking.hasPicked = true;
+		transmitDataToGame(coor);
+		naturalNextPick();
+	    }
+	}
+
+	public void directionClicked(Direction dir) {
+	    transmitDataToGame(dir);
+	    pickDirectionTButton.hasPicked = true;
 	}
 
 	public void enableAllMoveButtons(boolean enable) {
@@ -649,7 +838,6 @@ public class TestingFrame extends JFrame {
 		pickMoveTButton.setSelected(false);
 		pickAttackTButton.setSelected(false);
 		pickDirectionTButton.setSelected(false);
-		setCurrentlyPicking(pickUnitTButton);
 	    }
 	    pickUnitTButton.setEnabled(enable);
 	    pickMoveTButton.setEnabled(enable);
@@ -659,12 +847,22 @@ public class TestingFrame extends JFrame {
 
 	    enableAllDirButtons(false);
 
-	    hasPickedUnit = hasPickedMove = hasPickedAttack = hasPickedDirection = false;
+	    pickUnitTButton.hasPicked = pickMoveTButton.hasPicked = pickAttackTButton.hasPicked = pickDirectionTButton.hasPicked = false;
 	}
 
 	public void resetForNewTurn() {
-	    enableAllMoveButtons(true);
-	    setCurrentlyPicking(currentlyPicking);
+	    boolean inputIsEnabled = inputIsEnabled();
+	    enableAllMoveButtons(inputIsEnabled);
+	    currentlyPicking = null;
+	    if (inputIsEnabled) {
+		setCurrentlyPicking(pickUnitTButton);
+	    }
+	    updateInformation();
+	    repaint();
+	}
+
+	public boolean inputIsEnabled() {
+	    return playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn());
 	}
 
 	public void enableAllDirButtons(boolean enable) {
@@ -674,34 +872,103 @@ public class TestingFrame extends JFrame {
 	    downDirButton.setEnabled(enable);
 	}
 
-	public void setCurrentlyPicking(JToggleButton currentlyPicking) {
-	    if (this.currentlyPicking != null) {
-		this.currentlyPicking.setBorder(null);
+	public void setCurrentlyPicking(PickingButton currentlyPicking) {
+	    if (this.currentlyPicking == currentlyPicking) {
+		currentlyPicking.setSelected(!currentlyPicking.isSelected());
+		return;
 	    }
+	    PickingButton prev = this.currentlyPicking;
+
+	    if (prev == pickUnitTButton && !pickUnitTButton.hasPicked) {
+		currentlyPicking.setSelected(false);
+		System.out.println("Must pick unit first before continuing");
+		return;
+	    }
+
 	    this.currentlyPicking = currentlyPicking;
+	    if (prev != null) {
+		if (prev.hasPicked) {
+		    prev.setEnabled(false);
+		} else {
+		    prev.setEnabled(true);
+		    prev.setSelected(false);
+		}
+		prev.repaint();
+	    }
 	    if (this.currentlyPicking != null) {
-		this.currentlyPicking.setBorder(pickingBorder);
+
+		if (this.currentlyPicking == pickUnitTButton) {
+		    transmitDataToGame(Message.UNIT_SELECT);
+		} else if (this.currentlyPicking == pickMoveTButton) {
+		    transmitDataToGame(Message.UNIT_MOVE);
+		} else if (this.currentlyPicking == pickAttackTButton) {
+		    transmitDataToGame(Message.UNIT_ATTACK);
+		} else if (this.currentlyPicking == pickDirectionTButton) {
+		    transmitDataToGame(Message.UNIT_DIR);
+		}
+
 		this.currentlyPicking.setSelected(true);
+		this.currentlyPicking.repaint();
+	    }
+	    if (this.currentlyPicking == pickDirectionTButton) {
+		enableAllDirButtons(true);
+	    } else {
+		enableAllDirButtons(false);
 	    }
 	}
 
-	public void setUnitHoveringOver(Unit unitHoveringOver) {
-	    if (this.unitHoveringOver != unitHoveringOver) {
-		this.unitHoveringOver = unitHoveringOver;
+	public void naturalNextPick() {
+	    if (currentlyPicking == pickUnitTButton && pickUnitTButton.hasPicked) {
+		setCurrentlyPicking(pickMoveTButton);
+	    } else if (currentlyPicking == pickMoveTButton) {
+		setCurrentlyPicking(pickAttackTButton);
+	    } else if (currentlyPicking == pickAttackTButton) {
+		setCurrentlyPicking(pickDirectionTButton);
+	    } else if (currentlyPicking == pickDirectionTButton) {
+		endTurnButton.doClick();
+	    }
+	}
 
+	public void updateHoveringOver() {
+	    Square mouseinsqr = gamePanel.mouseInSquare;
+	    pointHoverUnitLabel.setText(getLabelInfoString(mouseinsqr));
+	}
+
+	public String getLabelInfoString(Square square) {
+	    if (square == null) {
+		return "";
+	    } else {
+		Unit unit = square.getUnitOnTop();
+		if (unit == null) {
+		    return "Not hovering over anything";
+		} else {
+		    return "Hovering over: " + unit.getUnitClass();
+		}
+	    }
+	}
+
+	class PickingButton extends JToggleButton {
+	    private static final long serialVersionUID = 2238679707104152403L;
+
+	    private boolean hasPicked;
+
+	    public PickingButton(String text) {
+		super(text);
+		hasPicked = false;
+	    }
+
+	    @Override
+	    public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		if (currentlyPicking == this) {
+		    g.setColor(Color.red);
+		    g.fillRect(0, getHeight() - 7, getWidth(), getHeight());
+		}
 	    }
 	}
 
     }
 
-    public void transmitDataToGame(Object data) {
-	TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
-	if (!playerIsUsingThisFrame(currentPlayer)) {
-	    return;
-	}
-	Communication gameComm = currentPlayer.getGameComm();
-	gameComm.sendObject(data);
-    }
 }
 
 class Images {

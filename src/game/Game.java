@@ -111,7 +111,7 @@ class TurnOrder {
 	}
     }
 
-    public Turn nextTurn() {
+    private Turn nextTurn() {
 	currentIndex = (currentIndex + 1) % playerTurnOrder.length;
 	turnNumber++;
 	currentTurn = null;
