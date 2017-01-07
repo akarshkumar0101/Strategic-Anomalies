@@ -3,12 +3,19 @@ package main;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.unit.Unit;
+import game.unit.listofunits.Aquamancer;
+import game.unit.listofunits.Archer;
+import game.unit.listofunits.DarkMagicWitch;
+import game.unit.listofunits.Guardian;
+import game.unit.listofunits.Hunter;
+import game.unit.listofunits.LightMagicWitch;
+import game.unit.listofunits.Lightningmancer;
+import game.unit.listofunits.Pyromancer;
+import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
 import testing.TestingGame;
 
 public class Main {
-
-    public static Unit movableUnit;
 
     public static boolean test() throws Exception {
 	return false;
@@ -25,14 +32,33 @@ public class Main {
 
 	TestingGame tgame = new TestingGame();
 
-	Unit unit1 = new Warrior(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(1, 1));
-	Unit unit2 = new Warrior(tgame, tgame.getPlayer1(), Direction.RIGHT, new Coordinate(5, 6));
-	movableUnit = unit1;
+	Unit warrior = new Warrior(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 3));
+	Unit guardian = new Guardian(tgame, tgame.getPlayer2(), Direction.LEFT, new Coordinate(4, 3));
 
-	unit1.getStunnedProp().setPropertyValue(true, "main");
+	Unit pyromancer = new Pyromancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 4));
+	Unit aquamancer = new Aquamancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 4));
+	Unit lightningmancer = new Lightningmancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(5, 4));
 
-	tgame.getBoard().linkBoardToUnit(unit1);
-	tgame.getBoard().linkBoardToUnit(unit2);
+	Unit scout = new Scout(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 5));
+	Unit archer = new Archer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 5));
+	Unit hunter = new Hunter(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(5, 5));
+
+	Unit darkmagicwitch = new DarkMagicWitch(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 6));
+	Unit lightmagicwitch = new LightMagicWitch(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 6));
+
+	tgame.getBoard().linkBoardToUnit(warrior);
+	tgame.getBoard().linkBoardToUnit(guardian);
+
+	tgame.getBoard().linkBoardToUnit(pyromancer);
+	tgame.getBoard().linkBoardToUnit(aquamancer);
+	tgame.getBoard().linkBoardToUnit(lightningmancer);
+
+	tgame.getBoard().linkBoardToUnit(scout);
+	tgame.getBoard().linkBoardToUnit(archer);
+	tgame.getBoard().linkBoardToUnit(hunter);
+
+	tgame.getBoard().linkBoardToUnit(darkmagicwitch);
+	tgame.getBoard().linkBoardToUnit(lightmagicwitch);
 
 	tgame.startGame();
 

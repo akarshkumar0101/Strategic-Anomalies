@@ -115,7 +115,7 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, path);
     }
 
-    public void attack(Square sqr) {
+    public void useAbility(Square sqr) {
 	((ActiveAbilityProperty) getAbilityProp()).performAbility(sqr);
 	Direction newdirFacing = Coordinate.inGeneralDirection(getPosProp().getCurrentPropertyValue(), sqr.getCoor());
 	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, getAbilityProp());

@@ -36,6 +36,15 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
+import game.unit.listofunits.Aquamancer;
+import game.unit.listofunits.Archer;
+import game.unit.listofunits.DarkMagicWitch;
+import game.unit.listofunits.Guardian;
+import game.unit.listofunits.Hunter;
+import game.unit.listofunits.LightMagicWitch;
+import game.unit.listofunits.Lightningmancer;
+import game.unit.listofunits.Pyromancer;
+import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
@@ -112,6 +121,8 @@ public class TestingFrame extends JFrame {
 	    // game loop for different turns
 	    while (true) {
 		handleTurn();
+		updateInformation();
+		repaint();
 		gameDataPanel.resetForNewTurn();
 	    }
 
@@ -190,7 +201,6 @@ public class TestingFrame extends JFrame {
     }
 
     public void transmitDataToGame(Object data) {
-	System.out.println("send:" + data);
 	TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
 	if (!playerIsUsingThisFrame(currentPlayer)) {
 	    return;
@@ -236,9 +246,13 @@ public class TestingFrame extends JFrame {
     private static final Color slightBlue = new Color(192, 192, 220), slightRed = new Color(220, 192, 192);
 
     private static Color darkerColor(Color col, int amount) {
-	return new Color(amount > col.getRed() ? 0 : col.getRed() - amount,
-		amount > col.getGreen() ? 0 : col.getGreen() - amount,
-		amount > col.getBlue() ? 0 : col.getBlue() - amount);
+	return new Color(Math.max(col.getRed() - amount, 0), Math.max(col.getGreen() - amount, 0),
+		Math.max(col.getBlue() - amount, 0));
+    }
+
+    private static Color combineColors(Color col1, Color col2) {
+	return new Color(Math.min(col1.getRed() + col2.getRed(), 255), Math.min(col1.getGreen() + col2.getGreen(), 255),
+		Math.min(col1.getBlue() + col2.getBlue(), 255));
     }
 
     class GamePanel extends JPanel {
@@ -278,7 +292,7 @@ public class TestingFrame extends JFrame {
 	public void setMouseInSquare(Square sqr) {
 	    if (mouseInSquare != sqr) {
 		mouseInSquare = sqr;
-		gameDataPanel.updateHoveringOver();
+		gameDataPanel.updateUnitInfoLabels();
 	    }
 	}
 
@@ -290,20 +304,29 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 
+	public void updateAllCanCurrentlyClick() {
+	    for (int y = 0; y < board.getHeight(); y++) {
+		for (int x = 0; x < board.getWidth(); x++) {
+		    labels[x][y].updateCanCurrentlyClick();
+		}
+	    }
+	}
+
 	class SquareLabel extends JComponent implements MouseListener {
 
 	    private static final long serialVersionUID = 7959593291619934967L;
 
-	    private static final double percentageIconHeight = 1, percentageIconWidth = percentageIconHeight;
-
 	    private boolean mouseIn;
 	    private boolean mousePressing;
+
+	    private boolean canCurrentlyClick = true;
 
 	    private Color currentBackgroundColor;
 
 	    private final Square sqr;
 	    private Unit unitOnTop;
 	    private Image unitImg;
+	    private Image waitingImg;
 	    private Image dizzyImg;
 
 	    public SquareLabel(Square sqr) {
@@ -314,17 +337,26 @@ public class TestingFrame extends JFrame {
 	    public void updateInformation() {
 		unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
 
+		waitingImg = null;
 		dizzyImg = null;
 		if (unitOnTop == null) {
 		    unitImg = null;
 		} else {
 		    if (unitOnTop.getStunnedProp().getCurrentPropertyValue()) {
-			dizzyImg = Images.dizzyImage;
+			dizzyImg = Images.stunnedImage;
 		    }
-		    if (unitOnTop.getClass() == Warrior.class) {
-			unitImg = Images.warriorImage;
+		    if (unitOnTop.getWaitProp().isWaiting()) {
+			waitingImg = Images.waitingImage;
 		    }
+
+		    Class<? extends Unit> clazz = unitOnTop.getClass();
+		    unitImg = Images.getImage(clazz);
 		}
+		updateCanCurrentlyClick();
+	    }
+
+	    public void updateCanCurrentlyClick() {
+		canCurrentlyClick = sqr == null ? false : gameDataPanel.canCurrentlyClick(sqr);
 	    }
 
 	    public Color determineBackgroundColor() {
@@ -375,18 +407,21 @@ public class TestingFrame extends JFrame {
 		}
 
 		// draw image in the center
-		int imgWidth = (int) (percentageIconWidth * getWidth()),
-			imgHeight = (int) (percentageIconHeight * getHeight());
+		double ratio = (double) getHeight() / unitImg.getHeight(null);
+		int imgWidth = (int) (ratio * unitImg.getWidth(null)), imgHeight = getHeight();
 		g.drawImage(unitImg, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight,
 			null);
-		// draw dizzy (if stunned)
-		double dizzpercentlen = .3;
-		g.drawImage(dizzyImg, (int) (getWidth() * (1 - dizzpercentlen)),
-			(int) (getHeight() * (1 - dizzpercentlen)), (int) (getWidth() * dizzpercentlen),
-			(int) (getHeight() * dizzpercentlen), null);
+
+		// draw waiting image (if stunned)
+		double smallpiclen = .3;
+		g.drawImage(waitingImg, (int) (getWidth() * (1 - smallpiclen)), (int) (getHeight() * (1 - smallpiclen)),
+			(int) (getWidth() * smallpiclen), (int) (getHeight() * smallpiclen), null);
+		// draw stunned image
+		g.drawImage(dizzyImg, 0, (int) (getHeight() * (1 - smallpiclen)), (int) (getWidth() * smallpiclen),
+			(int) (getHeight() * smallpiclen), null);
 
 		// draw health bar
-		double healthPercentage = unitOnTop.getHealthProp().percentageHealth();
+		double healthPercentage = unitOnTop.getHealthProp().currentPercentageHealth();
 		int healthBarHeight = getHeight() / 15;
 		g.setColor(Color.green);
 		g.fillRect(1, 1, (int) (healthPercentage * getWidth()) - 1, healthBarHeight);
@@ -416,16 +451,14 @@ public class TestingFrame extends JFrame {
 
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
-		if (sqr != null) {
-		    if (gameDataPanel.canCurrentlyClick(sqr)) {
-			gameDataPanel.coordinateClicked(sqr.getCoor());
-		    }
+		if (sqr != null && canCurrentlyClick) {
+		    gameDataPanel.coordinateClicked(sqr.getCoor());
 		}
 	    }
 
 	    @Override
 	    public void mousePressed(MouseEvent e) {
-		if (gameDataPanel.canCurrentlyClick(sqr)) {
+		if (canCurrentlyClick) {
 		    mousePressing = true;
 		    repaint();
 		}
@@ -433,7 +466,7 @@ public class TestingFrame extends JFrame {
 
 	    @Override
 	    public void mouseReleased(MouseEvent e) {
-		if (gameDataPanel.canCurrentlyClick(sqr)) {
+		if (mousePressing) {
 		    mousePressing = false;
 		    repaint();
 		}
@@ -483,6 +516,8 @@ public class TestingFrame extends JFrame {
 	private JLabel pointPickedUnitLabel;
 
 	private PickingButton currentlyPicking;
+
+	private Unit unitPicked;
 
 	public GameDataPanel() {
 	    super();
@@ -547,7 +582,7 @@ public class TestingFrame extends JFrame {
 	    downDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
 
 	    commandInfoSeperator = new JSeparator();
-	    commandInfoSeperator.setPreferredSize(new Dimension(1, 50));
+	    commandInfoSeperator.setPreferredSize(new Dimension(1, 10));
 
 	    turnInfoLabel = new JLabel("[player's name]");
 	    unitInfoLabel1 = new JLabel();
@@ -691,7 +726,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.gridx = 0;
 	    gdpgbConstrains.gridy = ++gridy;
 	    gdpgbConstrains.weightx = 1;
-	    gdpgbConstrains.weighty = 1;
+	    gdpgbConstrains.weighty = 0;
 	    gdpgbConstrains.gridheight = 1;
 	    gdpgbConstrains.gridwidth = 5;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
@@ -771,6 +806,10 @@ public class TestingFrame extends JFrame {
 
 	public void updateInformation() {
 	    turnInfoLabel.setText(((TestingPlayer) game.getCurrentTurn().getPlayerTurn()).getName() + "'s turn");
+	    updateUnitInfoLabels();
+	}
+
+	public void updateUnitInfoLabels() {
 	    if (pickUnitTButton.hasPicked) {
 		pointPickedUnitLabel = unitInfoLabel1;
 		pointHoverUnitLabel = unitInfoLabel2;
@@ -778,7 +817,11 @@ public class TestingFrame extends JFrame {
 		pointHoverUnitLabel = unitInfoLabel1;
 		pointPickedUnitLabel = unitInfoLabel2;
 	    }
-	    updateHoveringOver();
+	    Square mouseinsqr = gamePanel.mouseInSquare;
+	    pointHoverUnitLabel.setText(
+		    getHTMLabelInfoString(mouseinsqr == null ? null : mouseinsqr.getUnitOnTop(), "Hovering Over Unit"));
+	    pointPickedUnitLabel.setText(getHTMLabelInfoString(unitPicked, "Selected Unit"));
+
 	}
 
 	public boolean canCurrentlyClick(Square sqr) {
@@ -821,6 +864,9 @@ public class TestingFrame extends JFrame {
 		if (currentlyPicking.hasPicked) {
 		    return;
 		}
+		if (currentlyPicking == pickUnitTButton) {
+		    unitPicked = board.getUnitAt(coor);
+		}
 		currentlyPicking.hasPicked = true;
 		transmitDataToGame(coor);
 		naturalNextPick();
@@ -851,6 +897,7 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void resetForNewTurn() {
+	    unitPicked = null;
 	    boolean inputIsEnabled = inputIsEnabled();
 	    enableAllMoveButtons(inputIsEnabled);
 	    currentlyPicking = null;
@@ -884,6 +931,9 @@ public class TestingFrame extends JFrame {
 		System.out.println("Must pick unit first before continuing");
 		return;
 	    }
+	    if (prev == pickUnitTButton) {
+		updateUnitInfoLabels();
+	    }
 
 	    this.currentlyPicking = currentlyPicking;
 	    if (prev != null) {
@@ -915,6 +965,7 @@ public class TestingFrame extends JFrame {
 	    } else {
 		enableAllDirButtons(false);
 	    }
+	    gamePanel.updateAllCanCurrentlyClick();
 	}
 
 	public void naturalNextPick() {
@@ -929,21 +980,52 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 
-	public void updateHoveringOver() {
-	    Square mouseinsqr = gamePanel.mouseInSquare;
-	    pointHoverUnitLabel.setText(getLabelInfoString(mouseinsqr));
-	}
-
-	public String getLabelInfoString(Square square) {
-	    if (square == null) {
+	private String getHTMLabelInfoString(Unit unit, String title) {
+	    if (unit == null) {
 		return "";
 	    } else {
-		Unit unit = square.getUnitOnTop();
-		if (unit == null) {
-		    return "Not hovering over anything";
-		} else {
-		    return "Hovering over: " + unit.getUnitClass();
+		String str = "<html>";
+
+		str += "<strong><u>" + title + "</u></strong>";
+
+		TestingPlayer owner = (TestingPlayer) unit.getOwnerProp().getCurrentPropertyValue();
+		str += "<br>" + owner.getName() + "'s " + unit.getClass().getSimpleName();
+
+		int health = unit.getHealthProp().getCurrentPropertyValue();
+		double percentHealth = unit.getHealthProp().currentPercentageHealth();
+		str += "<br>Health: "
+			+ colorize(health + "(" + (int) (percentHealth * 100) + "%)", percentHealth, 1, true);
+
+		int power = unit.getAbilityProp().getCurrentPropertyValue();
+		int defaultPower = unit.getAbilityProp().getDefaultPropertyValue();
+		str += "<br>Power: " + colorize(power + "", power, defaultPower, true);
+
+		int armor = unit.getHealthProp().getArmorProp().getCurrentPropertyValue();
+		int defaultArmor = unit.getHealthProp().getArmorProp().getDefaultPropertyValue();
+		str += "<br>Armor: " + colorize(armor + "", armor, defaultArmor, true);
+
+		if (unit.getStunnedProp().getCurrentPropertyValue()) {
+		    str += "<br>" + colorize("stunned*", 1, 2, true);
 		}
+		if (unit.getWaitProp().isWaiting()) {
+		    str += "<br>" + colorize("is waiting*", 1, 2, true);
+		}
+
+		str += "</html>";
+		return str;
+	    }
+	}
+
+	private String colorize(String str, double value, double defaultValue, boolean greaterIsGreen) {
+
+	    if (value == defaultValue) {
+		return str;
+	    } else if (!(value > defaultValue ^ greaterIsGreen)) {
+		// green
+		return "<font color=\"green\">" + str + "</font>";
+	    } else {
+		// red
+		return "<font color=\"red\">" + str + "</font>";
 	    }
 	}
 
@@ -974,26 +1056,82 @@ public class TestingFrame extends JFrame {
 class Images {
 
     public static Image warriorImage;
+    public static Image guardianImage;
+
+    public static Image pyromancerImage;
+    public static Image aquamancerImage;
+    public static Image lightningmancerImage;
+
+    public static Image scoutImage;
+    public static Image archerImage;
+    public static Image hunterImage;
+
+    public static Image darkmagicwitchImage;
+    public static Image lightmagicwitchImage;
 
     public static Image upArrowImage;
     public static Image rightArrowImage;
     public static Image downArrowImage;
     public static Image leftArrowImage;
 
-    public static Image dizzyImage;
+    public static Image stunnedImage;
+    public static Image waitingImage;
+
     static {
 	try {
 	    warriorImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png"));
+	    guardianImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/guardian.png"));
+
+	    pyromancerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/pyromancer.png"));
+	    aquamancerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/aquamancer.png"));
+	    lightningmancerImage = ImageIO
+		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/lightningmancer.png"));
+
+	    scoutImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/scout.png"));
+	    archerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/archer.png"));
+	    hunterImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/hunter.png"));
+
+	    darkmagicwitchImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/darkmagicwitch.png"));
+	    lightmagicwitchImage = ImageIO
+		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/lightmagicwitch.png"));
 
 	    upArrowImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/redarrow.png"));
 	    rightArrowImage = rotate((BufferedImage) upArrowImage, 90);
 	    downArrowImage = rotate((BufferedImage) upArrowImage, 180);
 	    leftArrowImage = rotate((BufferedImage) upArrowImage, 270);
 
-	    dizzyImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/dizzy.png"));
+	    stunnedImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/dizzy.png"));
+
+	    waitingImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/waiting.png"));
 
 	} catch (Exception e) {
 	    e.printStackTrace();
+	}
+    }
+
+    public static Image getImage(Class<? extends Unit> unitClass) {
+	if (unitClass == Warrior.class) {
+	    return warriorImage;
+	} else if (unitClass == Guardian.class) {
+	    return guardianImage;
+	} else if (unitClass == Pyromancer.class) {
+	    return pyromancerImage;
+	} else if (unitClass == Aquamancer.class) {
+	    return aquamancerImage;
+	} else if (unitClass == Lightningmancer.class) {
+	    return lightningmancerImage;
+	} else if (unitClass == Scout.class) {
+	    return scoutImage;
+	} else if (unitClass == Archer.class) {
+	    return archerImage;
+	} else if (unitClass == Hunter.class) {
+	    return hunterImage;
+	} else if (unitClass == DarkMagicWitch.class) {
+	    return darkmagicwitchImage;
+	} else if (unitClass == LightMagicWitch.class) {
+	    return lightmagicwitchImage;
+	} else {
+	    return null;
 	}
     }
 

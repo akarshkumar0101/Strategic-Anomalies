@@ -88,6 +88,9 @@ public class TestingGame extends Game {
 	while (shouldRun) {
 	    shouldRun = handleCommand(currentComm);
 	}
+	if (onTurnHasAttacked) {
+	    onTurnUnitPicked.getWaitProp().triggerWaitAfterAttack();
+	}
     }
 
     public boolean handleCommand(Communication currentComm) {
@@ -163,7 +166,7 @@ public class TestingGame extends Game {
 	if (onTurnHasAttacked || !onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
 	    throw new RuntimeException("Has already attacked or can't use ability");
 	}
-	onTurnUnitPicked.attack(board.getSquare(coor));
+	onTurnUnitPicked.useAbility(board.getSquare(coor));
 	onTurnHasAttacked = true;
     }
 

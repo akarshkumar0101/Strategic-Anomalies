@@ -2,6 +2,7 @@ package testing;
 
 import game.Communication;
 import game.Player;
+import game.Team;
 
 public class TestingPlayer extends Player {
 
@@ -13,7 +14,7 @@ public class TestingPlayer extends Player {
     private Communication gameComm;
 
     public TestingPlayer(String name, TestingGame game) {
-	super(null);
+	super(new Team(null));
 	this.name = name;
 	this.game = game;
 

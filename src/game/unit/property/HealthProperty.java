@@ -31,7 +31,7 @@ public class HealthProperty extends Property<Integer> {
 	return armorProp;
     }
 
-    public double percentageHealth() {
+    public double currentPercentageHealth() {
 	return (double) getCurrentPropertyValue() / getDefaultPropertyValue();
     }
 
