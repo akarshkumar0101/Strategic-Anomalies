@@ -1,6 +1,7 @@
 package game.board;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import game.unit.Unit;
@@ -12,7 +13,7 @@ import game.unit.Unit;
  * @author Akarsh
  *
  */
-public abstract class Board {
+public abstract class Board implements Iterable<Square> {
     /**
      * Grid of squares the board has. Uses (x, y) to access elements.
      */
@@ -163,6 +164,60 @@ public abstract class Board {
      */
     public static double absDist(Coordinate coor1, Coordinate coor2) {
 	return Math.sqrt(Math.pow(Math.abs(coor2.x() - coor1.x()), 2) + Math.pow(Math.abs(coor2.y() - coor1.y()), 2));
+    }
+
+    @Override
+    public Iterator<Square> iterator() {
+	return new BoardIterator();
+    }
+
+    private class BoardIterator implements Iterator<Square> {
+
+	boolean hasNext;
+	private final int[] currentCoor;
+
+	public BoardIterator() {
+	    hasNext = true;
+	    currentCoor = new int[] { -1, 0 };
+	    findNext();
+	}
+
+	@Override
+	public boolean hasNext() {
+	    return hasNext;
+	}
+
+	@Override
+	public Square next() {
+	    Square sqr = grid[currentCoor[0]][currentCoor[1]];
+	    if (sqr != null) {
+		findNext();
+		return sqr;
+	    }
+
+	    throw new RuntimeException("Nothing left on the board");
+	}
+
+	private void findNext() {
+	    int y = currentCoor[1];
+	    for (int x = currentCoor[0] + 1; true; x++) {
+		if (x == getWidth()) {
+		    x = 0;
+		    y++;
+		    if (y == getHeight()) {
+			hasNext = false;
+			return;
+		    }
+		}
+		if (grid[x][y] != null) {
+		    currentCoor[0] = x;
+		    currentCoor[1] = y;
+		    return;
+		}
+	    }
+
+	}
+
     }
 
 }
