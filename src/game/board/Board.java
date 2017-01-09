@@ -199,6 +199,7 @@ public abstract class Board implements Iterable<Square> {
 	}
 
 	private void findNext() {
+	    System.out.println("next");
 	    int y = currentCoor[1];
 	    for (int x = currentCoor[0] + 1; true; x++) {
 		if (x == getWidth()) {
@@ -217,7 +218,6 @@ public abstract class Board implements Iterable<Square> {
 	    }
 
 	}
-
     }
-
+    // this should sync
 }
