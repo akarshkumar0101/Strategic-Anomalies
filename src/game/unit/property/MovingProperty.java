@@ -6,47 +6,47 @@ import game.unit.Unit;
 
 public class MovingProperty extends Property<Integer> {
 
-    private final Property<Boolean> teleportingProp;
+	private final Property<Boolean> teleportingProp;
 
-    public MovingProperty(Unit unitOwner, Integer initMoveRange, Boolean initTeleportingValue) {
-	super(unitOwner, initMoveRange);
+	public MovingProperty(Unit unitOwner, Integer initMoveRange, Boolean initTeleportingValue) {
+		super(unitOwner, initMoveRange);
 
-	teleportingProp = new Property<Boolean>(unitOwner, initTeleportingValue) {
+		teleportingProp = new Property<Boolean>(unitOwner, initTeleportingValue) {
 
-	    @Override
-	    protected void propertyChanged(Boolean oldValue, Boolean newValue) {
-		notifyPropertyChanged(oldValue, newValue);
-	    }
-	};
-    }
-
-    public Property<Boolean> getTeleportingProp() {
-	return teleportingProp;
-    }
-
-    public boolean isInRangeOfWalking(Coordinate moveToCoor) {
-	return Board.walkDist(moveToCoor,
-		getUnitOwner().getPosProp().getCurrentPropertyValue()) <= getCurrentPropertyValue();
-    }
-
-    public boolean canCurrentlyMove() {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting()) {
-	    return false;
+			@Override
+			protected void propertyChanged(Boolean oldValue, Boolean newValue) {
+				notifyPropertyChanged(oldValue, newValue);
+			}
+		};
 	}
-	return getUnitOwner().canDefaultMove();
-    }
 
-    public boolean isCurrentlyStoic() {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
-	    return true;
+	public Property<Boolean> getTeleportingProp() {
+		return teleportingProp;
 	}
-	return getUnitOwner().isDefaultStoic();
-    }
 
-    @Override
-    protected void propertyChanged(Integer oldValue, Integer newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+	public boolean isInRangeOfWalking(Coordinate moveToCoor) {
+		return Board.walkDist(moveToCoor,
+				getUnitOwner().getPosProp().getCurrentPropertyValue()) <= getCurrentPropertyValue();
+	}
 
-    }
+	public boolean canCurrentlyMove() {
+		if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting()) {
+			return false;
+		}
+		return getUnitOwner().canDefaultMove();
+	}
+
+	public boolean isCurrentlyStoic() {
+		if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
+			return true;
+		}
+		return getUnitOwner().isDefaultStoic();
+	}
+
+	@Override
+	protected void propertyChanged(Integer oldValue, Integer newValue) {
+		super.notifyPropertyChanged(oldValue, newValue);
+
+	}
 
 }
