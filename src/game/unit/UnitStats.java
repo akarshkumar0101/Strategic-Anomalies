@@ -1,9 +1,11 @@
 package game.unit;
 
 import java.util.HashMap;
+import java.util.Scanner;
 
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
+import game.unit.listofunits.Cleric;
 import game.unit.listofunits.DarkMagicWitch;
 import game.unit.listofunits.Guardian;
 import game.unit.listofunits.Hunter;
@@ -17,127 +19,51 @@ public class UnitStats {
 
     public static final HashMap<Class<? extends Unit>, UnitStat> unitStats;
 
+    @SuppressWarnings("unchecked")
+    public static final Class<? extends Unit>[] UNITCLASSES = (Class<? extends Unit>[]) new Class<?>[] {
+	    Aquamancer.class, Archer.class, Cleric.class, DarkMagicWitch.class, Guardian.class, Hunter.class,
+	    LightMagicWitch.class, Lightningmancer.class, Pyromancer.class, Scout.class, Warrior.class };
+
     static {
 	unitStats = new HashMap<>();
 
-	int defaultHealth = 50;
-	int defaultArmor = 8;
-	int defaultPower = 25;
-	int defaultAttackRange = 1;
-	double defaultSideBlock = .35;
-	double defaultFrontBlock = .8;
-	int defaultMoveRange = 3;
-	int maxWaitTime = 1;
-	UnitStat stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Warrior.class, stat);
+	Scanner scan = new Scanner(UnitStats.class.getResourceAsStream("/stats.txt"));
+	try {
+	    while (scan.hasNextLine()) {
+		String[] data = scan.nextLine().split("\t");
+		String unitName = data[0].replaceAll(" ", "");
 
-	defaultHealth = 50;
-	defaultArmor = 25;
-	defaultPower = 22;
-	defaultAttackRange = 1;
-	defaultSideBlock = .2;
-	defaultFrontBlock = .9;
-	defaultMoveRange = 3;
-	maxWaitTime = 1;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Guardian.class, stat);
+		Class<? extends Unit> unitClass = null;
+		for (Class<? extends Unit> clazz : UNITCLASSES) {
+		    if (clazz.getSimpleName().equals(unitName)) {
+			unitClass = clazz;
+			break;
+		    }
+		}
+		if (unitClass == null) {
+		    continue;
+		}
+		UnitStat stat = new UnitStat((int) parseNumber(data[1]), (int) parseNumber(data[2]),
+			(int) parseNumber(data[3]), (int) parseNumber(data[4]), parseNumber(data[5]),
+			parseNumber(data[6]), (int) parseNumber(data[7]), (int) parseNumber(data[8]));
+		unitStats.put(unitClass, stat);
+	    }
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    System.out.println("Trouble reading in unit statistics");
+	}
+	scan.close();
+    }
 
-	defaultHealth = 30;
-	defaultArmor = 0;
-	defaultPower = 15;
-	defaultAttackRange = 3;
-	defaultSideBlock = .4;
-	defaultFrontBlock = .6;
-	defaultMoveRange = 3;
-	maxWaitTime = 3;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Pyromancer.class, stat);
-
-	defaultHealth = 28;
-	defaultArmor = 0;
-	defaultPower = 18;
-	defaultAttackRange = 2;
-	defaultSideBlock = .25;
-	defaultFrontBlock = .7;
-	defaultMoveRange = 4;
-	maxWaitTime = 3;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Aquamancer.class, stat);
-
-	defaultHealth = 35;
-	defaultArmor = 0;
-	defaultPower = 15;
-	defaultAttackRange = 4;
-	defaultSideBlock = 1.0;
-	defaultFrontBlock = 1.0;
-	defaultMoveRange = 3;
-	maxWaitTime = 3;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Lightningmancer.class, stat);
-
-	defaultHealth = 40;
-	defaultArmor = 8;
-	defaultPower = 18;
-	defaultAttackRange = 6;
-	defaultSideBlock = .3;
-	defaultFrontBlock = .6;
-	defaultMoveRange = 4;
-	maxWaitTime = 2;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Scout.class, stat);
-
-	defaultHealth = 35;
-	defaultArmor = 8;
-	defaultPower = 22;
-	defaultAttackRange = 5;
-	defaultSideBlock = .5;
-	defaultFrontBlock = .7;
-	defaultMoveRange = 3;
-	maxWaitTime = 2;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Archer.class, stat);
-
-	defaultHealth = 40;
-	defaultArmor = 0;
-	defaultPower = 12;
-	defaultAttackRange = 8;
-	defaultSideBlock = .4;
-	defaultFrontBlock = .5;
-	defaultMoveRange = 3;
-	maxWaitTime = 2;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(Hunter.class, stat);
-
-	defaultHealth = 28;
-	defaultArmor = 0;
-	defaultPower = 24;
-	defaultAttackRange = 4;
-	defaultSideBlock = .2;
-	defaultFrontBlock = .1;
-	defaultMoveRange = 3;
-	maxWaitTime = 3;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(DarkMagicWitch.class, stat);
-
-	defaultHealth = 28;
-	defaultArmor = 0;
-	defaultPower = 26;
-	defaultAttackRange = 4;
-	defaultSideBlock = .2;
-	defaultFrontBlock = .1;
-	defaultMoveRange = 3;
-	maxWaitTime = 3;
-	stat = new UnitStat(defaultHealth, defaultArmor, defaultMoveRange, defaultAttackRange, defaultPower,
-		maxWaitTime, defaultSideBlock, defaultFrontBlock);
-	unitStats.put(LightMagicWitch.class, stat);
+    private static double parseNumber(String str) {
+	if (str.equals("Special")) {
+	    return -1;
+	}
+	if (str.contains("%")) {
+	    str = str.substring(0, str.indexOf('%'));
+	    return Double.parseDouble(str) / 100;
+	} else {
+	    return Double.parseDouble(str);
+	}
     }
 }

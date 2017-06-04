@@ -11,8 +11,8 @@ public class UnitStat {
     public final double defaultSideBlock;
     public final double defaultFrontBlock;
 
-    public UnitStat(int defaultHealth, int defaultArmor, int defaultMoveRange, int defaultAttackRange, int defaultPower,
-	    int maxWaitTime, double defaultSideBlock, double defaultFrontBlock) {
+    public UnitStat(int defaultHealth, int defaultArmor, int defaultPower, int defaultAttackRange,
+	    double defaultSideBlock, double defaultFrontBlock, int defaultMoveRange, int maxWaitTime) {
 	this.defaultHealth = defaultHealth;
 	this.defaultArmor = defaultArmor;
 	this.defaultMoveRange = defaultMoveRange;
