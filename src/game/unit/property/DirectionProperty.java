@@ -10,8 +10,8 @@ public class DirectionProperty extends Property<Direction> {
     }
 
     @Override
-    protected void propertyChanged(Direction oldValue, Direction newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+    protected Object[] getSpecificationsOfPropertyChange(Direction oldValue, Direction newValue) {
+	return null;
     }
 
 }

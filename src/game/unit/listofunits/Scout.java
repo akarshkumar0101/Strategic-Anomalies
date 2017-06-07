@@ -30,7 +30,7 @@ public class Scout extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Scout.class);
+	UnitStat stat = UnitStats.getStat(Scout.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

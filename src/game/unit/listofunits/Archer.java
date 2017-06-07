@@ -22,7 +22,7 @@ public class Archer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Archer.class);
+	UnitStat stat = UnitStats.getStat(Archer.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

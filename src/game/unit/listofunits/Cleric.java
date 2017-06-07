@@ -29,7 +29,7 @@ public class Cleric extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Cleric.class);
+	UnitStat stat = UnitStats.getStat(Cleric.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

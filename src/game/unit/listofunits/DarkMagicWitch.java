@@ -30,7 +30,7 @@ public class DarkMagicWitch extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(DarkMagicWitch.class);
+	UnitStat stat = UnitStats.getStat(DarkMagicWitch.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

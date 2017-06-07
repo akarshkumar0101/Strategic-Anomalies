@@ -22,7 +22,7 @@ public class LightMagicWitch extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(LightMagicWitch.class);
+	UnitStat stat = UnitStats.getStat(LightMagicWitch.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

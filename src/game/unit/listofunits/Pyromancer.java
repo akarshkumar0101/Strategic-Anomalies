@@ -30,7 +30,7 @@ public class Pyromancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Pyromancer.class);
+	UnitStat stat = UnitStats.getStat(Pyromancer.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

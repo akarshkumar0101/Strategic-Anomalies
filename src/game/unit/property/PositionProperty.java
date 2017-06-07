@@ -18,8 +18,8 @@ public class PositionProperty extends Property<Coordinate> {
     }
 
     @Override
-    protected void propertyChanged(Coordinate oldValue, Coordinate newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+    protected Object[] getSpecificationsOfPropertyChange(Coordinate oldValue, Coordinate newValue) {
+	return null;
     }
 
 }

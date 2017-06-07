@@ -27,8 +27,8 @@ public class WaitProperty extends Property<Integer> {
     }
 
     @Override
-    protected void propertyChanged(Integer oldValue, Integer newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
+	return null;
     }
 
 }

@@ -9,7 +9,7 @@ public class StunnedProperty extends Property<Boolean> {
     }
 
     @Override
-    public void propertyChanged(Boolean oldValue, Boolean newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+    protected Object[] getSpecificationsOfPropertyChange(Boolean oldValue, Boolean newValue) {
+	return null;
     }
 }

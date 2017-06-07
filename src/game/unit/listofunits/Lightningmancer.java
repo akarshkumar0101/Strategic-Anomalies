@@ -22,7 +22,7 @@ public class Lightningmancer extends Unit {
     public static final double DEFAULT_FRONT_BLOCK;
 
     static {
-	UnitStat stat = UnitStats.unitStats.get(Lightningmancer.class);
+	UnitStat stat = UnitStats.getStat(Lightningmancer.class);
 	DEFAULT_HEALTH = stat.defaultHealth;
 	DEFAULT_ARMOR = stat.defaultArmor;
 	DEFAULT_POWER = stat.defaultPower;

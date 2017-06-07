@@ -15,9 +15,10 @@ public class HealthProperty extends Property<Integer> {
     public HealthProperty(Unit unit, int initialHealth, int initialArmor) {
 	super(unit, initialHealth);
 	maxHealthProperty = new Property<Integer>(unit, initialHealth) {
+
 	    @Override
-	    protected void propertyChanged(Integer oldValue, Integer newValue) {
-		super.notifyPropertyChanged(oldValue, newValue);
+	    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
+		return null;
 	    }
 	};
 	armorProp = new ArmorProperty(unit, initialArmor);
@@ -87,7 +88,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     @Override
-    protected void propertyChanged(Integer oldValue, Integer newValue) {
-	super.notifyPropertyChanged(oldValue, newValue);
+    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
+	return null;
     }
 }

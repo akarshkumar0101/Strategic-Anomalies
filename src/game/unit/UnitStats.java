@@ -3,26 +3,9 @@ package game.unit;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import game.unit.listofunits.Aquamancer;
-import game.unit.listofunits.Archer;
-import game.unit.listofunits.Cleric;
-import game.unit.listofunits.DarkMagicWitch;
-import game.unit.listofunits.Guardian;
-import game.unit.listofunits.Hunter;
-import game.unit.listofunits.LightMagicWitch;
-import game.unit.listofunits.Lightningmancer;
-import game.unit.listofunits.Pyromancer;
-import game.unit.listofunits.Scout;
-import game.unit.listofunits.Warrior;
-
 public class UnitStats {
 
-    public static final HashMap<Class<? extends Unit>, UnitStat> unitStats;
-
-    @SuppressWarnings("unchecked")
-    public static final Class<? extends Unit>[] UNITCLASSES = (Class<? extends Unit>[]) new Class<?>[] {
-	    Aquamancer.class, Archer.class, Cleric.class, DarkMagicWitch.class, Guardian.class, Hunter.class,
-	    LightMagicWitch.class, Lightningmancer.class, Pyromancer.class, Scout.class, Warrior.class };
+    private static final HashMap<Class<? extends Unit>, UnitStat> unitStats;
 
     static {
 	unitStats = new HashMap<>();
@@ -34,7 +17,7 @@ public class UnitStats {
 		String unitName = data[0].replaceAll(" ", "");
 
 		Class<? extends Unit> unitClass = null;
-		for (Class<? extends Unit> clazz : UNITCLASSES) {
+		for (Class<? extends Unit> clazz : Unit.UNITCLASSES) {
 		    if (clazz.getSimpleName().equals(unitName)) {
 			unitClass = clazz;
 			break;
@@ -65,5 +48,9 @@ public class UnitStats {
 	} else {
 	    return Double.parseDouble(str);
 	}
+    }
+
+    public static UnitStat getStat(Class<? extends Unit> clazz) {
+	return unitStats.get(clazz);
     }
 }

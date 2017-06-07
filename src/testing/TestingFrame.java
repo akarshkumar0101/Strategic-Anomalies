@@ -16,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -1085,6 +1086,7 @@ public class TestingFrame extends JFrame {
 }
 
 class Images {
+    public static final HashMap<Class<? extends Unit>, Image> classImages = new HashMap<>();
 
     public static Image warriorImage;
     public static Image guardianImage;
@@ -1110,22 +1112,28 @@ class Images {
 
     static {
 	try {
-	    Images.warriorImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png"));
-	    Images.guardianImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/guardian.png"));
+	    classImages.put(Warrior.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png")));
+	    classImages.put(Guardian.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/guardian.png")));
 
-	    Images.pyromancerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/pyromancer.png"));
-	    Images.aquamancerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/aquamancer.png"));
-	    Images.lightningmancerImage = ImageIO
-		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/lightningmancer.png"));
+	    classImages.put(Pyromancer.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/pyromancer.png")));
+	    classImages.put(Aquamancer.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/aquamancer.png")));
+	    classImages.put(Lightningmancer.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/lightningmancer.png")));
 
-	    Images.scoutImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/scout.png"));
-	    Images.archerImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/archer.png"));
-	    Images.hunterImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/hunter.png"));
+	    classImages.put(Scout.class, ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/scout.png")));
+	    classImages.put(Archer.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/archer.png")));
+	    classImages.put(Hunter.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/hunter.png")));
 
-	    Images.darkmagicwitchImage = ImageIO
-		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/darkmagicwitch.png"));
-	    Images.lightmagicwitchImage = ImageIO
-		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/lightmagicwitch.png"));
+	    classImages.put(DarkMagicWitch.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/darkmagicwitch.png")));
+	    classImages.put(LightMagicWitch.class,
+		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/lightmagicwitch.png")));
 
 	    Images.upArrowImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/redarrow.png"));
 	    Images.rightArrowImage = Images.rotate((BufferedImage) Images.upArrowImage, 90);
@@ -1142,29 +1150,7 @@ class Images {
     }
 
     public static Image getImage(Class<? extends Unit> unitClass) {
-	if (unitClass == Warrior.class) {
-	    return Images.warriorImage;
-	} else if (unitClass == Guardian.class) {
-	    return Images.guardianImage;
-	} else if (unitClass == Pyromancer.class) {
-	    return Images.pyromancerImage;
-	} else if (unitClass == Aquamancer.class) {
-	    return Images.aquamancerImage;
-	} else if (unitClass == Lightningmancer.class) {
-	    return Images.lightningmancerImage;
-	} else if (unitClass == Scout.class) {
-	    return Images.scoutImage;
-	} else if (unitClass == Archer.class) {
-	    return Images.archerImage;
-	} else if (unitClass == Hunter.class) {
-	    return Images.hunterImage;
-	} else if (unitClass == DarkMagicWitch.class) {
-	    return Images.darkmagicwitchImage;
-	} else if (unitClass == LightMagicWitch.class) {
-	    return Images.lightmagicwitchImage;
-	} else {
-	    return null;
-	}
+	return classImages.get(unitClass);
     }
 
     // the following is not my code

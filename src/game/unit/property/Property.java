@@ -11,7 +11,7 @@ import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 
 /**
- * Properties are used to contain and track changes in all properties of a Unit.
+ * Properties are used to contain and track changes in any properties of a Unit.
  * The actual property should be a final, disposable object that can and should
  * be replaced regularly. <br>
  * <br>
@@ -162,12 +162,7 @@ public abstract class Property<T> {
      *            the new value to set it to
      */
     public void setPropertyValue(T value) {
-	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT, unitOwner, null, 0) {
-	    @Override
-	    public T affectProperty(T init) {
-		return value;
-	    }
-	});
+	setPropertyValue(value, unitOwner);
     }
 
     public void setPropertyValue(T value, Object source) {
@@ -265,22 +260,20 @@ public abstract class Property<T> {
      */
     protected void valueUpdated() {
 	if (!currentPropValue.equals(lastCurrentPropValue)) {
-	    propertyChanged(lastCurrentPropValue, currentPropValue);
+	    Object[] specifications = getSpecificationsOfPropertyChange(lastCurrentPropValue, currentPropValue);
+	    notifyPropertyChanged(lastCurrentPropValue, currentPropValue, specifications);
 	    lastCurrentPropValue = currentPropValue;
 	}
     }
 
     /**
-     * Subclasses should implement this method in order to call
-     * propertyChanged(T oldValue, T newValue, Object... specifications) with
-     * the PROPER SPECIFICATIONS. Since the specifications depend on the
-     * property, the subclass will decide what to send. <br>
-     * <br>
-     * This method MUST call the this class's method notifyPropertyChanged(T
-     * oldValue, T newValue, Object... specifications).
+     * Specify the change of the property with an Object[]
      * 
+     * @param oldValue
+     * @param newValue
+     * @return the Object[] specifications of the change
      */
-    protected abstract void propertyChanged(T oldValue, T newValue);
+    protected abstract Object[] getSpecificationsOfPropertyChange(T oldValue, T newValue);
 
     /**
      * Internal method that will be called by the subclass when the value of the
