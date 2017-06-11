@@ -1,8 +1,8 @@
 package game.interaction.incident;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 /**
  * IncidentReporters are used to maintain multiple IncidentListeners that are
@@ -14,21 +14,18 @@ import java.util.List;
 public class IncidentReporter {
 
     /**
-     * The list of IncidentListeners listening to this IncidentReporter.
+     * Listeners listening to this for broadcasts from this reporter. The
+     * boolean value suggests if the listener is only listening for one
+     * broadcast. If it is true, the listener will be removed from the list of
+     * listeners after it has received one broadcast.
      */
-    private final List<IncidentListener> listeners;
-
-    /**
-     * The list of listeners are only listening to one broadcast.
-     */
-    private final List<IncidentListener> listenersOnlyOnce;
+    private final HashMap<IncidentListener, Boolean> listeners;
 
     /**
      * Initializes the IncidentReporter.
      */
     public IncidentReporter() {
-	listeners = new ArrayList<>(3);
-	listenersOnlyOnce = new ArrayList<>(1);
+	listeners = new HashMap<>();
     }
 
     /**
@@ -39,15 +36,14 @@ public class IncidentReporter {
      *            for the listeners
      */
     public void reportIncident(Object... specifications) {
-	Iterator<IncidentListener> it = listeners.iterator();
+	Iterator<IncidentListener> it = listeners.keySet().iterator();
 	while (it.hasNext()) {
 	    IncidentListener listener = it.next();
 
 	    listener.incidentReported(specifications);
 
-	    if (listenersOnlyOnce.contains(listener)) {
+	    if (listeners.get(listener)) {
 		it.remove();
-		listenersOnlyOnce.remove(listener);
 	    }
 	}
     }
@@ -55,8 +51,8 @@ public class IncidentReporter {
     /**
      * @return the list of listeners.
      */
-    public List<IncidentListener> getListeners() {
-	return listeners;
+    public Set<IncidentListener> getListeners() {
+	return listeners.keySet();
     }
 
     /**
@@ -79,10 +75,7 @@ public class IncidentReporter {
      * @param onlyOnce
      */
     public void add(IncidentListener listener, boolean onlyOnce) {
-	listeners.add(listener);
-	if (onlyOnce) {
-	    listenersOnlyOnce.add(listener);
-	}
+	listeners.put(listener, onlyOnce);
     }
 
     /**

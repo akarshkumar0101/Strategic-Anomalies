@@ -72,6 +72,7 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 		super.add(listener, true);
 	    }
 	};
+
 	// TODO add the inital wait time if going first etc.
     }
 
