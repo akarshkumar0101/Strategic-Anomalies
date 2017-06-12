@@ -26,12 +26,11 @@ import game.unit.property.MovingProperty;
 import game.unit.property.OwnerProperty;
 import game.unit.property.PositionProperty;
 import game.unit.property.StunnedProperty;
-import game.unit.property.UnitDefaults;
 import game.unit.property.WaitProperty;
 import game.unit.property.ability.AbilityProperty;
 import game.unit.property.ability.ActiveAbilityProperty;
 
-public abstract class Unit extends Affectable implements UnitDefaults {
+public abstract class Unit extends Affectable {
 
     // TODO go through and document EVERYTHING
     // TODO go through and determine visibility of ALL members in every class.
@@ -56,13 +55,17 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 
     private final IncidentReporter deathReporter;
 
+    private final UnitStat defaultStat;
+
     public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
 	this.game = game;
 
+	defaultStat = UnitDefaults.getStat(this.getClass());
+
 	ownerProp = new OwnerProperty(this, playerOwner);
 	posProp = new PositionProperty(this, coor, directionFacing);
-	healthProp = new HealthProperty(this, getDefaultHealth(), getDefaultArmor());
-	movingProp = new MovingProperty(this, getDefaultMoveRange(), canDefaultTeleport());
+	healthProp = new HealthProperty(this, defaultStat.defaultHealth, defaultStat.defaultArmor);
+	movingProp = new MovingProperty(this, defaultStat.defaultMoveRange, defaultStat.canDefaultTeleport);
 	abilityProp = getDefaultAbilityProperty();
 	stunnedProp = new StunnedProperty(this, false);
 
@@ -79,6 +82,8 @@ public abstract class Unit extends Affectable implements UnitDefaults {
     public Game getGame() {
 	return game;
     }
+
+    public abstract AbilityProperty getDefaultAbilityProperty();
 
     public OwnerProperty getOwnerProp() {
 	return ownerProp;
@@ -110,6 +115,10 @@ public abstract class Unit extends Affectable implements UnitDefaults {
 
     public IncidentReporter getDeathReporter() {
 	return deathReporter;
+    }
+
+    public UnitStat getDefaultStat() {
+	return defaultStat;
     }
 
     public void runOnStart() {

@@ -1,37 +1,37 @@
-Unit_Name	Health	Armor	Power	Range	Side_Block(OCOH)	Front_Block(OCOH)	Movement	Wait
-Warrior	50	8	25	1	65%	20%	3	1
-Guardian	50	25	22	1	80%	10%	3	1								
-Pyromancer 	30	0	15	3	60%	40%	3	3
-Aquamancer	28	0	18	2	75%	30%	4	3
-Lightningmancer	35	0	15	4	0%	0%	3	3
-Scout	40	8	18	6	70%	40%	4	2
-Archer	35	8	22	5	50%	30%	3	2
-Hunter	40	0	12	8	60%	50%	3	2
-Dark Magic Witch	28	0	24	4	80%	90%	3	3
-Light Magic Witch	28	0	26	4	80%	90%	3	3
-Cleric	24	0	12	Special	0%	0%	4	4
-Sage	18	0	22	Special	0%	0%	3	7
-Monk	35	0	18	3	20%	10%	4	4
-Assassin	35	12	18	1(special)	70%	40%	4	1
-Berserker	30	12	21	1(special)	45%	30%	4	1
-Siren	30	0	N/A	3	0%	0%	3	3
-Chanty	35	0	N/A	0	0%	0%	4	3
-Barrier Ward	32	0	N/A	6	100%	100%	N/A	2
-Lightening Wards	56	18	30	3	100%	100%	N/A	4
-Vine Ward	50	12	N/A	3	100%	100%	N/A	4
-Basilisk	38	8	21	1	65%	20%	4	1
-Rock Beast	52	30	16	1	50%	30%	3	2
-Beasty	38	15	19	1	60%	50%	4	1
-Furgon	48	0	N/A	2	50%	20%	4	1
-Giant Mole	48	0	N/A	3	40%	20%	3	3
-Poise	34	0	4	Special	0%	0%	6	2
-Dragon Tyrant	68	16	28	Special	60%	40%	4	3
-Turtle Tyrant	60	18	25	2	30%		3	3
-Eagle Tyrant	60	16	24	3	50%		4	3
-Mud Golem	60	N/A	20	1	0%	0%	5	2
-Golem Ambusher	60	N/A	20	5-6	0%	0%	2	3
-Sand Golem	60	N/A	20	1	0%	0%	5	2
-Lava Golem	60	N/A	20	4	0%	0%	4	2
-Stone Golem	60	30	N/A	1	N/A	0%	2	4
-Bronze Golem	60	30	N/A	1	N/A	0%	1	6
-Clay Golem	60	N/A	N/A	1	N/A	0%	5	3
+Unit_Name	Health	Armor	Ability_Power	Ability_Range	Side_Block(OCOH)	Front_Block(OCOH)	Can_Move	Move_Range	Wait
+Warrior	50	8	25	1	65%	20%	TRUE	3	1
+Guardian	50	25	22	1	80%	10%	TRUE	3	1
+Pyromancer	30	0	15	3	60%	40%	TRUE	3	3
+Aquamancer	28	0	18	2	75%	30%	TRUE	4	3
+Lightningmancer	35	0	15	4	0%	0%	TRUE	3	3
+Scout	40	8	18	6	70%	40%	TRUE	4	2
+Archer	35	8	22	5	50%	30%	TRUE	3	2
+Hunter	40	0	12	8	60%	50%	TRUE	3	2
+Dark Magic Witch	28	0	24	4	80%	90%	TRUE	3	3
+Light Magic Witch	28	0	26	4	80%	90%	TRUE	3	3
+Cleric	24	0	12	Special	0%	0%	TRUE	4	4
+Sage	18	0	22	Special	0%	0%	TRUE	3	7
+Monk	35	0	18	3	20%	10%	TRUE	4	4
+Assassin	35	12	18	1(special)	70%	40%	TRUE	4	1
+Berserker	30	12	21	1(special)	45%	30%	TRUE	4	1
+Siren	30	0	N/A	3	0%	0%	TRUE	3	3
+Chanty	35	0	N/A	0	0%	0%	TRUE	4	3
+Barrier Ward	32	0	N/A	6	100%	100%	FALSE	N/A	2
+Lightening Wards	56	18	30	3	100%	100%	FALSE	N/A	4
+Vine Ward	50	12	N/A	3	100%	100%	FALSE	N/A	4
+Basilisk	38	8	21	1	65%	20%	TRUE	4	1
+Rock Beast	52	30	16	1	50%	30%	TRUE	3	2
+Beasty	38	15	19	1	60%	50%	TRUE	4	1
+Furgon	48	0	N/A	2	50%	20%	TRUE	4	1
+Giant Mole	48	0	N/A	3	40%	20%	TRUE	3	3
+Poise	34	0	4	Special	0%	0%	TRUE	6	2
+Dragon Tyrant	68	16	28	Special	60%	40%	TRUE	4	3
+Turtle Tyrant	60	18	25	2	30%		TRUE	3	3
+Eagle Tyrant	60	16	24	3	50%		TRUE	4	3
+Mud Golem	60	N/A	20	1	0%	0%	TRUE	5	2
+Golem Ambusher	60	N/A	20	5-6	0%	0%	TRUE	2	3
+Sand Golem	60	N/A	20	1	0%	0%	TRUE	5	2
+Lava Golem	60	N/A	20	4	0%	0%	TRUE	4	2
+Stone Golem	60	30	N/A	1	N/A	0%	TRUE	2	4
+Bronze Golem	60	30	N/A	1	N/A	0%	TRUE	1	6
+Clay Golem	60	N/A	N/A	1	N/A	0%	TRUE	5	3

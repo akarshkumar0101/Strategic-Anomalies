@@ -33,14 +33,14 @@ public class MovingProperty extends Property<Integer> {
 	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting()) {
 	    return false;
 	}
-	return getUnitOwner().canDefaultMove();
+	return getUnitOwner().getDefaultStat().canDefaultMove;
     }
 
     public boolean isCurrentlyStoic() {
 	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
 	    return true;
 	}
-	return getUnitOwner().isDefaultStoic();
+	return getUnitOwner().getDefaultStat().isDefaultStoic;
     }
 
     @Override

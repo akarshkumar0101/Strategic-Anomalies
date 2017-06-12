@@ -213,7 +213,6 @@ public class TestingFrame extends JFrame {
     }
 
     public void organizeComponents() {
-
 	getContentPane().setLayout(gbLayout);
 
 	gbConstrains.gridx = 0;
@@ -387,8 +386,8 @@ public class TestingFrame extends JFrame {
 		} else if (mouseIn) {
 		    col = TestingFrame.darkerColor(col, 25);
 		}
-		col = TestingFrame.combineColors(col,
-			gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
+		// col = TestingFrame.combineColors(col,
+		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
 		return col;
 
 	    }

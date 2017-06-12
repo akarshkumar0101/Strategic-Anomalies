@@ -3,14 +3,14 @@ package game.unit;
 import java.util.HashMap;
 import java.util.Scanner;
 
-public class UnitStats {
+public class UnitDefaults {
 
-    private static final HashMap<Class<? extends Unit>, UnitStat> unitStats;
+    private static final HashMap<Class<? extends Unit>, UnitStat> unitDefaultStats;
 
     static {
-	unitStats = new HashMap<>();
+	unitDefaultStats = new HashMap<>();
 
-	Scanner scan = new Scanner(UnitStats.class.getResourceAsStream("/stats.txt"));
+	Scanner scan = new Scanner(UnitDefaults.class.getResourceAsStream("/stats.txt"));
 	try {
 	    while (scan.hasNextLine()) {
 		String[] data = scan.nextLine().split("\t");
@@ -26,10 +26,19 @@ public class UnitStats {
 		if (unitClass == null) {
 		    continue;
 		}
-		UnitStat stat = new UnitStat((int) parseNumber(data[1]), (int) parseNumber(data[2]),
-			(int) parseNumber(data[3]), (int) parseNumber(data[4]), parseNumber(data[5]),
-			parseNumber(data[6]), (int) parseNumber(data[7]), (int) parseNumber(data[8]));
-		unitStats.put(unitClass, stat);
+		UnitStat stat = new UnitStat();
+		// TODO add info to stat;
+		stat.defaultHealth = (int) parseNumber(data[1]);
+		stat.defaultArmor = (int) parseNumber(data[2]);
+		stat.defaultPower = (int) parseNumber(data[3]);
+		stat.defaultAttackRange = (int) parseNumber(data[4]);
+		stat.defaultSideBlock = parseNumber(data[5]);
+		stat.defaultFrontBlock = parseNumber(data[6]);
+		stat.canDefaultMove = data[7].equals("TRUE");
+		stat.defaultMoveRange = (int) parseNumber(data[8]);
+		stat.defaultWaitTime = (int) parseNumber(data[9]);
+
+		unitDefaultStats.put(unitClass, stat);
 	    }
 	} catch (Exception e) {
 	    e.printStackTrace();
@@ -51,6 +60,6 @@ public class UnitStats {
     }
 
     public static UnitStat getStat(Class<? extends Unit> clazz) {
-	return unitStats.get(clazz);
+	return unitDefaultStats.get(clazz);
     }
 }
