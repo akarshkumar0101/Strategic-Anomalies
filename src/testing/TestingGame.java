@@ -136,6 +136,8 @@ public class TestingGame extends Game {
     }
 
     private TestingPlayer onTurnPlayer = null;
+    private boolean isLocalPlayer = false;
+
     private Unit onTurnUnitPicked = null;
     private boolean onTurnHasSelectedUnit = false;
     private boolean onTurnHasMoved = false;
@@ -144,19 +146,23 @@ public class TestingGame extends Game {
 
     public void handleTurn() {
 	TestingPlayer currentPlayer = (TestingPlayer) currentTurn.getPlayerTurn();
-	System.out.println(currentPlayer.getName() + " TURN");
-	System.out.println(testingFrame.playerIsUsingThisFrame(currentPlayer));
 	Communication currentComm = getCommForPlayer(currentPlayer);
 
 	Object received = null;
 
 	onTurnPlayer = currentPlayer;
+	isLocalPlayer = localPlayers.contains(currentPlayer);
+
 	onTurnHasSelectedUnit = false;
 	onTurnUnitPicked = null;
 	onTurnHasMoved = false;
 	onTurnHasAttacked = false;
 	onTurnHasChangedDir = false;
 	boolean shouldRun = true;
+
+	System.out.println(currentPlayer.getName() + " TURN");
+	System.out.println(isLocalPlayer);
+
 	while (shouldRun) {
 	    shouldRun = handleCommand(currentComm);
 	}
@@ -168,7 +174,12 @@ public class TestingGame extends Game {
     }
 
     public boolean handleCommand(Communication currentComm) {
-	return handleCommand(currentComm.recieveObject(), currentComm);
+	Object obj = currentComm.recieveObject();
+	if (Message.HOVER.equals(obj)) {
+	    hover((Coordinate) currentComm.recieveObject());
+	    return handleCommand(currentComm);
+	}
+	return handleCommand(obj, currentComm);
     }
 
     public boolean handleCommand(Object command, Communication currentComm) {
@@ -185,23 +196,25 @@ public class TestingGame extends Game {
 
 	Object specifications = currentComm.recieveObject();
 
+	if (Message.HOVER.equals(specifications)) {
+	    hover((Coordinate) currentComm.recieveObject());
+	    return handleCommand(command, currentComm);
+	}
+
 	if (Message.isCommand(specifications)) {
 	    return handleCommand(specifications, currentComm);
 	}
 
 	try {
-	    if (command.equals(Message.HOVER)) {
-		hover((Coordinate) specifications);
-	    } else if (command.equals(Message.UNIT_SELECT)) {
+	    if (Message.UNIT_SELECT.equals(command)) {
 		unitSelect((Coordinate) specifications);
-	    } else if (command.equals(Message.UNIT_MOVE)) {
+	    } else if (Message.UNIT_MOVE.equals(command)) {
 		unitMove((Coordinate) specifications);
-	    } else if (command.equals(Message.UNIT_ATTACK)) {
+	    } else if (Message.UNIT_ATTACK.equals(command)) {
 		unitAttack((Coordinate) specifications);
-	    } else if (command.equals(Message.UNIT_DIR)) {
+	    } else if (Message.UNIT_DIR.equals(command)) {
 		unitChangeDir((Direction) specifications);
 	    }
-
 	} catch (Exception e) {
 	    throw new RuntimeException(e);
 	}
@@ -213,8 +226,11 @@ public class TestingGame extends Game {
     }
 
     public void hover(Coordinate coor) {
-	// if it is being notified of a move from another game
-	if (!localPlayers.contains(onTurnPlayer)) {
+	if (isLocalPlayer) {
+	    announceToAllNonLocalPlayers(Message.HOVER);
+	    announceToAllNonLocalPlayers(coor);
+	} else {
+	    announceToAllLocalPlayers(Message.HOVER);
 	    announceToAllLocalPlayers(coor);
 	}
     }
@@ -263,7 +279,7 @@ public class TestingGame extends Game {
 
     public void announceToAllPlayers(Object obj) {
 	// if it is being notified of a move from another game
-	if (!localPlayers.contains(onTurnPlayer)) {
+	if (!isLocalPlayer) {
 	    announceToAllLocalPlayers(obj);
 	} else {
 	    for (TestingPlayer player : allPlayers) {
@@ -275,6 +291,14 @@ public class TestingGame extends Game {
     public void announceToAllLocalPlayers(Object obj) {
 	for (TestingPlayer player : localPlayers) {
 	    getCommForPlayer(player).sendObject(obj);
+	}
+    }
+
+    public void announceToAllNonLocalPlayers(Object obj) {
+	for (TestingPlayer player : allPlayers) {
+	    if (!localPlayers.contains(player)) {
+		getCommForPlayer(player).sendObject(obj);
+	    }
 	}
     }
 

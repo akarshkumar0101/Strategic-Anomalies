@@ -132,6 +132,7 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void handleTurn() {
+	    opponentHover = null;
 	    boolean shouldRun = true;
 	    while (shouldRun) {
 		shouldRun = handleCommand();
@@ -139,7 +140,12 @@ public class TestingFrame extends JFrame {
 	}
 
 	public boolean handleCommand() {
-	    return handleCommand(receiveComm.recieveObject());
+	    Object obj = receiveComm.recieveObject();
+	    if (Message.HOVER.equals(obj)) {
+		hover((Coordinate) receiveComm.recieveObject());
+		return handleCommand();
+	    }
+	    return handleCommand(obj);
 	}
 
 	public boolean handleCommand(Object command) {
@@ -154,13 +160,15 @@ public class TestingFrame extends JFrame {
 
 	    Object specifications = receiveComm.recieveObject();
 
+	    if (Message.HOVER.equals(specifications)) {
+		hover((Coordinate) receiveComm.recieveObject());
+	    }
+
 	    if (Message.isCommand(specifications)) {
 		return handleCommand(specifications);
 	    }
 
-	    if (command.equals(Message.HOVER)) {
-		hover((Coordinate) specifications);
-	    } else if (command.equals(Message.UNIT_SELECT)) {
+	    if (command.equals(Message.UNIT_SELECT)) {
 		unitSelect((Coordinate) specifications);
 	    } else if (command.equals(Message.UNIT_MOVE)) {
 		unitMove((Path) specifications, (Coordinate) receiveComm.recieveObject());
@@ -173,7 +181,8 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void hover(Coordinate coor) {
-	    // System.out.println("Opponent hovered: " + coor);
+	    opponentHover = coor;
+	    repaint();
 	}
 
 	public void unitSelect(Coordinate coor) {
@@ -259,6 +268,8 @@ public class TestingFrame extends JFrame {
 	return new Color(Math.min(col1.getRed() + col2.getRed(), 255), Math.min(col1.getGreen() + col2.getGreen(), 255),
 		Math.min(col1.getBlue() + col2.getBlue(), 255));
     }
+
+    private static Coordinate opponentHover = null;
 
     class GamePanel extends JPanel {
 
@@ -388,6 +399,8 @@ public class TestingFrame extends JFrame {
 		    col = TestingFrame.darkerColor(col, 50);
 		} else if (mouseIn) {
 		    col = TestingFrame.darkerColor(col, 25);
+		} else if (sqr.getCoor().equals(opponentHover)) {
+		    col = TestingFrame.darkerColor(col, 25);
 		}
 		// col = TestingFrame.combineColors(col,
 		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
@@ -487,7 +500,10 @@ public class TestingFrame extends JFrame {
 		setMouseInSquare(sqr);
 		mouseIn = true;
 		repaint();
-		// transmitDataToGame(sqr.getCoor());
+		if (sqr != null && playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn())) {
+		    transmitDataToGame(Message.HOVER);
+		    transmitDataToGame(sqr.getCoor());
+		}
 	    }
 
 	    @Override
@@ -495,6 +511,10 @@ public class TestingFrame extends JFrame {
 		setMouseInSquare(null);
 		mouseIn = false;
 		repaint();
+		if (sqr != null && playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn())) {
+		    transmitDataToGame(Message.HOVER);
+		    transmitDataToGame(null);
+		}
 	    }
 	}
     }

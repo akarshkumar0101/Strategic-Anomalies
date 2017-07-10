@@ -5,7 +5,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import game.Communication;
-import game.board.Path;
 
 public class TestingServer {
     public static final String INIT_STRING = "init99";
@@ -28,9 +27,6 @@ public class TestingServer {
 		    try {
 			while (true) {
 			    Object data = comm.recieveObject();
-			    if (data.getClass() == Path.class) {
-				continue;
-			    }
 
 			    for (Communication c : clientComms) {
 				if (c == comm) {
