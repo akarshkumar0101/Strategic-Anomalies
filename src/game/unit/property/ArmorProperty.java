@@ -7,6 +7,7 @@ import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
+import testing.TestingGame;
 
 public class ArmorProperty extends Property<Integer> {
 
@@ -24,7 +25,10 @@ public class ArmorProperty extends Property<Integer> {
     public boolean attemptBlock(Damage damage) {
 	// determine if it blocked the damage
 	double blockPercent = determineBlockPercentage(damage);
-	if (damage.getDamageType().equals(DamageType.PHYSICAL) && Math.random() < blockPercent) {
+	// double random = Math.random();
+	double random = ((TestingGame) getUnitOwner().getGame()).random.nextDouble();
+	System.out.println(random);
+	if (damage.getDamageType().equals(DamageType.PHYSICAL) && random < blockPercent) {
 	    triggerBlock(damage);
 	    return true;
 	}

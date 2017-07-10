@@ -66,7 +66,7 @@ public class TestingFrame extends JFrame {
 	    // com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
 	    UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
 	} catch (Exception e) {
-	    System.out.println("Didnt find look and feel");
+	    e.printStackTrace();
 	}
     }
 
@@ -144,6 +144,7 @@ public class TestingFrame extends JFrame {
 
 	public boolean handleCommand(Object command) {
 	    if (!Message.isCommand(command)) {
+		System.out.println(command);
 		throw new RuntimeException("Not a command");
 	    }
 
@@ -172,6 +173,7 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void hover(Coordinate coor) {
+	    // System.out.println("Opponent hovered: " + coor);
 	}
 
 	public void unitSelect(Coordinate coor) {
@@ -209,6 +211,7 @@ public class TestingFrame extends JFrame {
 	    return;
 	}
 	Communication gameComm = currentPlayer.getGameComm();
+	// System.out.println("writing data to players out " + data);
 	gameComm.sendObject(data);
     }
 
@@ -374,9 +377,9 @@ public class TestingFrame extends JFrame {
 		if (unitOnTop != null) {
 		    Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
 
-		    if (owner.equals(game.getPlayer1())) {
+		    if (owner.equals(localFramePlayers[0])) {
 			col = TestingFrame.slightBlue;
-		    } else if (owner.equals(game.getPlayer2())) {
+		    } else {
 			col = TestingFrame.slightRed;
 		    }
 		}
@@ -484,6 +487,7 @@ public class TestingFrame extends JFrame {
 		setMouseInSquare(sqr);
 		mouseIn = true;
 		repaint();
+		// transmitDataToGame(sqr.getCoor());
 	    }
 
 	    @Override

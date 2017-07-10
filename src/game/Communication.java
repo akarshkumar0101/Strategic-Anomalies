@@ -7,91 +7,84 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.net.Socket;
 
 public class Communication {
-
-    private static final RuntimeException notConnectedException = new RuntimeException("Not connected");
-
-    private boolean connected;
 
     private ObjectInputStream objin;
     private ObjectOutputStream objout;
 
     public Communication() {
-	connected = false;
-
 	objin = null;
 	objout = null;
     }
 
     public Communication(InputStream in, OutputStream out) {
 	try {
-	    objin = new ObjectInputStream(in);
 	    objout = new ObjectOutputStream(out);
 	    objout.flush();
-	    connected = true;
+	    objin = new ObjectInputStream(in);
 	} catch (IOException e) {
 	    throw new RuntimeException(e);
 	}
+    }
 
+    public Communication(Socket sock) throws IOException {
+	this(sock.getInputStream(), sock.getOutputStream());
     }
 
     public Communication connectLocally() {
-	if (connected) {
-	    throw new RuntimeException("Already connected");
-	}
-
 	try {
-	    PipedInputStream thisin = new PipedInputStream();
 	    PipedOutputStream thisout = new PipedOutputStream();
+	    PipedInputStream thisin = new PipedInputStream();
 
-	    PipedInputStream otherin = new PipedInputStream();
 	    PipedOutputStream otherout = new PipedOutputStream();
+	    PipedInputStream otherin = new PipedInputStream();
 
 	    otherout.connect(thisin);
 	    thisout.connect(otherin);
 
 	    objout = new ObjectOutputStream(thisout);
-	    objout.flush();
-
-	    Communication comm = new Communication(otherin, otherout);
+	    flush();
+	    Communication othercomm = new Communication(otherin, otherout);
+	    othercomm.flush();
 
 	    objin = new ObjectInputStream(thisin);
 
-	    connected = true;
-
-	    return comm;
+	    return othercomm;
 	} catch (IOException e) {
 	    throw new RuntimeException(e);
 	}
 
     }
 
-    public boolean isConnected() {
-	return connected;
-    }
-
-    private void checkConnection() {
-	if (!connected) {
-	    throw notConnectedException;
-	}
-    }
-
     public void sendObject(Object obj) {
-	checkConnection();
+	sendObject(obj, true);
+    }
+
+    public void sendObject(Object obj, boolean flush) {
 	try {
 	    objout.writeObject(obj);
-	    objout.flush();
+	    if (flush) {
+		objout.flush();
+	    }
 	} catch (IOException e) {
 	    throw new RuntimeException(e);
 	}
     }
 
     public Object recieveObject() {
-	checkConnection();
 	try {
 	    return objin.readObject();
-	} catch (Exception e) {
+	} catch (ClassNotFoundException | IOException e) {
+	    throw new RuntimeException(e);
+	}
+    }
+
+    public void flush() {
+	try {
+	    objout.flush();
+	} catch (IOException e) {
 	    throw new RuntimeException(e);
 	}
     }

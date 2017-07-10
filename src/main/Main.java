@@ -1,5 +1,9 @@
 package main;
 
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import game.Communication;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.unit.Unit;
@@ -18,12 +22,31 @@ import testing.TestingGame;
 public class Main {
 
     public static boolean test() throws Exception {
-	return false;
+	return true;
+    }
+
+    public static boolean servtest() throws Exception {
+	ServerSocket servsock = new ServerSocket(8839);
+	Socket sock = servsock.accept();
+	Communication comm = new Communication(sock);
+	System.out.println("serv running");
+	System.out.println(comm.recieveObject());
+	comm.sendObject("this is serv message");
+	return true;
+    }
+
+    public static boolean clienttest() throws Exception {
+	Socket sock = new Socket("localhost", 8839);
+	Communication comm = new Communication(sock);
+	System.out.println("client running");
+	System.out.println(comm.recieveObject());
+	comm.sendObject("this is client message");
+	return true;
     }
 
     public static void main(String[] args) {
 	try {
-	    if (test()) {
+	    if (clienttest()) {
 		return;
 	    }
 	} catch (Exception e) {

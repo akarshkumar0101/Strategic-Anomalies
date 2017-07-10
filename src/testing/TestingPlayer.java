@@ -8,25 +8,19 @@ public class TestingPlayer extends Player {
 
     private final String name;
 
-    private final TestingGame game;
     private TestingFrame testingFrame;
 
     private Communication gameComm;
 
-    public TestingPlayer(String name, TestingGame game) {
+    public TestingPlayer(String name, Communication gameComm) {
 	super(new Team(null));
 	this.name = name;
-	this.game = game;
 
-	gameComm = game.getCommForPlayer(this).connectLocally();
+	this.gameComm = gameComm;
     }
 
     public String getName() {
 	return name;
-    }
-
-    public TestingGame getGame() {
-	return game;
     }
 
     public void setTestingFrame(TestingFrame testingFrame) {
