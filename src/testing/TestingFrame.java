@@ -133,6 +133,7 @@ public class TestingFrame extends JFrame {
 
 	public void handleTurn() {
 	    opponentHover = null;
+	    unitSelected = null;
 	    boolean shouldRun = true;
 	    while (shouldRun) {
 		shouldRun = handleCommand();
@@ -186,6 +187,9 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void unitSelect(Coordinate coor) {
+	    unitSelected = board.getUnitAt(coor);
+	    updateInformation();
+	    repaint();
 	}
 
 	public void unitMove(Path path, Coordinate coor) {
@@ -270,6 +274,7 @@ public class TestingFrame extends JFrame {
     }
 
     private static Coordinate opponentHover = null;
+    private static Unit unitSelected = null;
 
     class GamePanel extends JPanel {
 
@@ -419,7 +424,6 @@ public class TestingFrame extends JFrame {
 		if (sqr == null) {
 		    return;
 		}
-
 		// border
 		g.setColor(Color.black);
 		g.drawRect(0, 0, getWidth(), getHeight());
@@ -469,6 +473,14 @@ public class TestingFrame extends JFrame {
 		    g.drawImage(Images.rightArrowImage, getWidth() - arrowHeight, (getHeight() - arrowWidth) / 2,
 			    arrowHeight, arrowWidth, null);
 		}
+
+		// golden border if unit is picked
+		if (unitSelected != null && unitSelected == unitOnTop) {
+		    g.drawImage(Images.goldenFrameImage, 1, 1, getWidth() - 2, getHeight() - 2, null);
+		}
+		// border
+		g.setColor(Color.black);
+		g.drawRect(0, 0, getWidth(), getHeight());
 
 	    }
 
@@ -1133,6 +1145,8 @@ class Images {
     public static Image stunnedImage;
     public static Image waitingImage;
 
+    public static Image goldenFrameImage;
+
     static {
 	try {
 	    classImages.put(Warrior.class,
@@ -1166,6 +1180,9 @@ class Images {
 	    Images.stunnedImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/dizzy.png"));
 
 	    Images.waitingImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/waiting.png"));
+
+	    Images.goldenFrameImage = ImageIO
+		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/goldenframe.png"));
 
 	} catch (Exception e) {
 	    e.printStackTrace();
