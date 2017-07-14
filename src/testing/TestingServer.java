@@ -25,8 +25,18 @@ public class TestingServer {
 		@Override
 		public void run() {
 		    try {
+			Object prevData = null;
 			while (true) {
 			    Object data = comm.recieveObject();
+			    // System.out.println(data);
+
+			    // if (Message.HOVER.equals(data) ||
+			    // Message.HOVER.equals(prevData)) {
+			    //
+			    // } else {
+			    // System.out.println(data);
+			    // }
+			    prevData = data;
 
 			    for (Communication c : clientComms) {
 				if (c == comm) {
@@ -43,6 +53,7 @@ public class TestingServer {
 			}
 		    } catch (Exception e) {
 			e.printStackTrace();
+			System.exit(0);
 		    }
 		}
 	    };

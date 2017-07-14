@@ -132,6 +132,10 @@ public class TestingGame extends Game {
 	while (true) {
 	    handleTurn();
 	    nextTurn();
+
+	    testingFrame.gameDataPanel.resetForNewTurn();
+	    testingFrame.updateInformation();
+	    testingFrame.repaint();
 	}
     }
 
@@ -160,9 +164,6 @@ public class TestingGame extends Game {
 	onTurnHasChangedDir = false;
 	boolean shouldRun = true;
 
-	System.out.println(currentPlayer.getName() + " TURN");
-	System.out.println(isLocalPlayer);
-
 	while (shouldRun) {
 	    shouldRun = handleCommand(currentComm);
 	}
@@ -174,55 +175,49 @@ public class TestingGame extends Game {
     }
 
     public boolean handleCommand(Communication currentComm) {
-	Object obj = currentComm.recieveObject();
-	if (Message.HOVER.equals(obj)) {
-	    hover((Coordinate) currentComm.recieveObject());
-	    return handleCommand(currentComm);
-	}
-	return handleCommand(obj, currentComm);
+	Object command = null, specs = null;
+
+	boolean run = false;
+	do {
+	    run = false;
+
+	    Object obj = currentComm.recieveObject();
+	    if (Message.HOVER.equals(obj)) {
+		hover((Coordinate) currentComm.recieveObject());
+		run = true;
+	    } else if (Message.isCommand(obj)) {
+		command = obj;
+		announceToAllPlayers(command);
+		run = true;
+
+		if (Message.END_TURN.equals(command)) {
+		    return false;
+		}
+	    } else {
+		specs = obj;
+		announceToAllPlayers(specs);
+		run = false;
+	    }
+
+	} while (run);
+
+	handleFullNonHoverCommand(command, specs);
+	return true;
     }
 
-    public boolean handleCommand(Object command, Communication currentComm) {
-
+    public void handleFullNonHoverCommand(Object command, Object specs) {
 	if (!Message.isCommand(command)) {
 	    throw new RuntimeException("Not a command");
 	}
-
-	announceToAllPlayers(command);
-
-	if (Message.END_TURN.equals(command)) {
-	    return false;
+	if (Message.UNIT_SELECT.equals(command)) {
+	    unitSelect((Coordinate) specs);
+	} else if (Message.UNIT_MOVE.equals(command)) {
+	    unitMove((Coordinate) specs);
+	} else if (Message.UNIT_ATTACK.equals(command)) {
+	    unitAttack((Coordinate) specs);
+	} else if (Message.UNIT_DIR.equals(command)) {
+	    unitChangeDir((Direction) specs);
 	}
-
-	Object specifications = currentComm.recieveObject();
-
-	if (Message.HOVER.equals(specifications)) {
-	    hover((Coordinate) currentComm.recieveObject());
-	    return handleCommand(command, currentComm);
-	}
-
-	if (Message.isCommand(specifications)) {
-	    return handleCommand(specifications, currentComm);
-	}
-
-	try {
-	    if (Message.UNIT_SELECT.equals(command)) {
-		unitSelect((Coordinate) specifications);
-	    } else if (Message.UNIT_MOVE.equals(command)) {
-		unitMove((Coordinate) specifications);
-	    } else if (Message.UNIT_ATTACK.equals(command)) {
-		unitAttack((Coordinate) specifications);
-	    } else if (Message.UNIT_DIR.equals(command)) {
-		unitChangeDir((Direction) specifications);
-	    }
-	} catch (Exception e) {
-	    throw new RuntimeException(e);
-	}
-
-	announceToAllPlayers(specifications);
-
-	return true;
-
     }
 
     public void hover(Coordinate coor) {

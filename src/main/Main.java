@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -17,11 +18,47 @@ import game.unit.listofunits.Lightningmancer;
 import game.unit.listofunits.Pyromancer;
 import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
+import testing.TestingClient;
 import testing.TestingGame;
+import testing.TestingServer;
 
 public class Main {
 
     public static boolean test() throws Exception {
+	Thread servThread = new Thread() {
+	    @Override
+	    public void run() {
+		try {
+		    TestingServer.main(null);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	    }
+	};
+	Thread.sleep(500);
+	servThread.start();
+	Thread client1Thead = new Thread() {
+	    @Override
+	    public void run() {
+		try {
+		    TestingClient.main(null);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	    }
+	};
+	client1Thead.start();
+	Thread client2Thead = new Thread() {
+	    @Override
+	    public void run() {
+		try {
+		    TestingClient.main(null);
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
+	    }
+	};
+	client2Thead.start();
 	return true;
     }
 
@@ -46,7 +83,7 @@ public class Main {
 
     public static void main(String[] args) {
 	try {
-	    if (clienttest()) {
+	    if (test()) {
 		return;
 	    }
 	} catch (Exception e) {

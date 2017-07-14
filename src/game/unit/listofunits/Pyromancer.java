@@ -83,7 +83,9 @@ class MageAbiltyProperty extends ActiveTargetAbilityProperty {
 	List<Square> targets = getAOESqaures(target);
 	for (Square ss : targets) {
 	    Damage damage = new Damage(getCurrentPropertyValue(), DamageType.MAGIC, getUnitOwner(), ss.getUnitOnTop());
-	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
+	    if (!ss.isEmpty()) {
+		ss.getUnitOnTop().getHealthProp().takeDamage(damage);
+	    }
 	}
     }
 

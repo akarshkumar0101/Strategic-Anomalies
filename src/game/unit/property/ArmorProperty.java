@@ -27,7 +27,6 @@ public class ArmorProperty extends Property<Integer> {
 	double blockPercent = determineBlockPercentage(damage);
 	// double random = Math.random();
 	double random = ((TestingGame) getUnitOwner().getGame()).random.nextDouble();
-	System.out.println(random);
 	if (damage.getDamageType().equals(DamageType.PHYSICAL) && random < blockPercent) {
 	    triggerBlock(damage);
 	    return true;
