@@ -31,7 +31,7 @@ public class TestingGame extends Game {
 
     private final Board board;
 
-    private final TestingFrame testingFrame;
+    public final TestingFrame testingFrame;
 
     private final TestingPlayer player1;
     private final TestingPlayer player2;
