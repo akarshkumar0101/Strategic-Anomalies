@@ -17,6 +17,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Vector;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -78,7 +81,7 @@ public class TestingFrame extends JFrame {
     private final TestingPlayer receivingPlayer;
 
     private final GamePanel gamePanel;
-    private final GameDataPanel gameDataPanel;
+    public final GameDataPanel gameDataPanel;
 
     private final GridBagLayout gbLayout;
     private final GridBagConstraints gbConstrains;
@@ -126,7 +129,6 @@ public class TestingFrame extends JFrame {
 		handleTurn();
 		updateInformation();
 		repaint();
-		gameDataPanel.resetForNewTurn();
 	    }
 
 	}
@@ -141,44 +143,47 @@ public class TestingFrame extends JFrame {
 	}
 
 	public boolean handleCommand() {
-	    Object obj = receiveComm.recieveObject();
-	    if (Message.HOVER.equals(obj)) {
-		hover((Coordinate) receiveComm.recieveObject());
-		return handleCommand();
-	    }
-	    return handleCommand(obj);
+	    Object command = null, specs = null;
+
+	    boolean run = false;
+	    do {
+		run = false;
+
+		Object obj = receiveComm.recieveObject();
+		if (Message.HOVER.equals(obj)) {
+		    hover((Coordinate) receiveComm.recieveObject());
+		    run = true;
+		} else if (Message.isCommand(obj)) {
+		    command = obj;
+		    run = true;
+
+		    if (Message.END_TURN.equals(command)) {
+			return false;
+		    }
+		} else {
+		    specs = obj;
+		    run = false;
+		}
+
+	    } while (run);
+
+	    handleFullNonHoverCommand(command, specs);
+	    return true;
 	}
 
-	public boolean handleCommand(Object command) {
+	public void handleFullNonHoverCommand(Object command, Object specs) {
 	    if (!Message.isCommand(command)) {
-		System.out.println(command);
 		throw new RuntimeException("Not a command");
 	    }
-
-	    if (Message.END_TURN.equals(command)) {
-		return false;
-	    }
-
-	    Object specifications = receiveComm.recieveObject();
-
-	    if (Message.HOVER.equals(specifications)) {
-		hover((Coordinate) receiveComm.recieveObject());
-	    }
-
-	    if (Message.isCommand(specifications)) {
-		return handleCommand(specifications);
-	    }
-
 	    if (command.equals(Message.UNIT_SELECT)) {
-		unitSelect((Coordinate) specifications);
+		unitSelect((Coordinate) specs);
 	    } else if (command.equals(Message.UNIT_MOVE)) {
-		unitMove((Path) specifications, (Coordinate) receiveComm.recieveObject());
+		unitMove((Path) receiveComm.recieveObject(), (Coordinate) specs);
 	    } else if (command.equals(Message.UNIT_ATTACK)) {
-		unitAttack((Coordinate) specifications);
+		unitAttack((Coordinate) specs);
 	    } else if (command.equals(Message.UNIT_DIR)) {
-		unitChangeDir((Direction) specifications);
+		unitChangeDir((Direction) specs);
 	    }
-	    return true;
 	}
 
 	public void hover(Coordinate coor) {
@@ -261,7 +266,9 @@ public class TestingFrame extends JFrame {
 	return num * scale + new1;
     }
 
-    private static final Color slightBlue = new Color(192, 192, 220), slightRed = new Color(220, 192, 192);
+    private static final Color friendlyColor = new Color(192, 192, 220), enemyColor = new Color(220, 192, 192);
+    private static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
+	    slightGreen = new Color(192, 255, 192);
 
     private static Color darkerColor(Color col, int amount) {
 	return new Color(Math.max(col.getRed() - amount, 0), Math.max(col.getGreen() - amount, 0),
@@ -273,8 +280,25 @@ public class TestingFrame extends JFrame {
 		Math.min(col1.getBlue() + col2.getBlue(), 255));
     }
 
-    private static Coordinate opponentHover = null;
-    private static Unit unitSelected = null;
+    private final Vector<Square> blockedSquares = new Vector<>();
+
+    public static final int BLOCK_ANIMATION_TIME = 500;
+
+    public void triggerBlockAnimation(Square sqr) {
+	blockedSquares.add(sqr);
+	repaint();
+	Timer timer = new Timer();
+	timer.schedule(new TimerTask() {
+	    @Override
+	    public void run() {
+		blockedSquares.remove(sqr);
+		repaint();
+	    }
+	}, BLOCK_ANIMATION_TIME);
+    }
+
+    private Coordinate opponentHover = null;
+    private Unit unitSelected = null;
 
     class GamePanel extends JPanel {
 
@@ -325,12 +349,12 @@ public class TestingFrame extends JFrame {
 	    }
 	}
 
-	public void updateAllCanCurrentlyClick() {
-	    for (int y = 0; y < board.getHeight(); y++) {
-		for (int x = 0; x < board.getWidth(); x++) {
-		    labels[x][y].updateCanCurrentlyClick();
-		}
-	    }
+	public SquareLabel getSquareLabel(Coordinate coor) {
+	    return getSquareLabel(coor.x(), coor.y());
+	}
+
+	public SquareLabel getSquareLabel(byte x, byte y) {
+	    return labels[x][y];
 	}
 
 	class SquareLabel extends JComponent implements MouseListener {
@@ -341,8 +365,7 @@ public class TestingFrame extends JFrame {
 	    private boolean mousePressing;
 
 	    private boolean canCurrentlyClick = true;
-
-	    private Color currentBackgroundColor;
+	    private Color colorToDisplay = null;
 
 	    private final Square sqr;
 	    private Unit unitOnTop;
@@ -383,20 +406,29 @@ public class TestingFrame extends JFrame {
 		canCurrentlyClick = sqr == null ? false : gameDataPanel.canCurrentlyClick(sqr);
 	    }
 
+	    public void setColorToDisplay(Color col) {
+		colorToDisplay = col;
+	    }
+
 	    public Color determineBackgroundColor() {
-		if (sqr == null) {
-		    return Color.black;
-		}
+		Color col = null;
+		if (colorToDisplay != null) {
+		    col = colorToDisplay;
+		} else {
+		    if (sqr == null) {
+			return Color.black;
+		    }
 
-		Color col = Color.lightGray;
+		    col = Color.lightGray;
 
-		if (unitOnTop != null) {
-		    Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
+		    if (unitOnTop != null) {
+			Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
 
-		    if (owner.equals(localFramePlayers[0])) {
-			col = TestingFrame.slightBlue;
-		    } else {
-			col = TestingFrame.slightRed;
+			if (owner.equals(localFramePlayers[0])) {
+			    col = TestingFrame.friendlyColor;
+			} else {
+			    col = TestingFrame.enemyColor;
+			}
 		    }
 		}
 
@@ -410,14 +442,21 @@ public class TestingFrame extends JFrame {
 		// col = TestingFrame.combineColors(col,
 		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
 		return col;
-
 	    }
 
 	    @Override
 	    public void paintComponent(Graphics g) {
-		currentBackgroundColor = determineBackgroundColor();
+		try {
+		    paintComponentActual(g);
+		} catch (Exception e) {
+		    paintComponent(g);
+		}
+	    }
+
+	    public void paintComponentActual(Graphics g) {
+		Color background = determineBackgroundColor();
 		// clear
-		g.setColor(currentBackgroundColor);
+		g.setColor(background);
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		// if outside of board
@@ -482,6 +521,12 @@ public class TestingFrame extends JFrame {
 		g.setColor(Color.black);
 		g.drawRect(0, 0, getWidth(), getHeight());
 
+		if (blockedSquares.contains(sqr)) {
+		    int imgw = Images.blockedImage.getWidth(null), imgh = Images.blockedImage.getHeight(null);
+		    double scale = (double) getWidth() / imgw;
+		    int scaledimgh = (int) (imgh * scale);
+		    g.drawImage(Images.blockedImage, 0, getHeight() / 2 - scaledimgh / 2, getWidth(), scaledimgh, null);
+		}
 	    }
 
 	    @Override
@@ -562,14 +607,10 @@ public class TestingFrame extends JFrame {
 
 	private Unit unitPicked;
 
-	public final Color[][] colorsDisplayed;
-
 	public GameDataPanel() {
 	    super();
 
 	    currentlyPicking = null;
-
-	    colorsDisplayed = new Color[board.getWidth()][board.getHeight()];
 
 	    gdpgbLayout = new GridBagLayout();
 	    gdpgbConstrains = new GridBagConstraints();
@@ -648,13 +689,14 @@ public class TestingFrame extends JFrame {
 	    setLayout(gdpgbLayout);
 
 	    int gridy = 0;
+	    int gridx = 0;
 
-	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridx = gridx;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
 	    gdpgbConstrains.gridheight = 1;
-	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.gridwidth = 6;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    turnInfoLabel.setFont(new Font("Times New Roman", Font.BOLD, 30));
@@ -663,7 +705,7 @@ public class TestingFrame extends JFrame {
 
 	    Font normalFont = new Font("Times New Roman", Font.PLAIN, 20);
 	    int gap = 10;
-	    gdpgbConstrains.gridx = 0;
+	    gdpgbConstrains.gridx = gridx;
 	    gdpgbConstrains.gridy = ++gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -675,7 +717,7 @@ public class TestingFrame extends JFrame {
 	    pickUnitTButton.setFont(normalFont);
 	    add(pickUnitTButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 1;
+	    gdpgbConstrains.gridx = ++gridx;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -683,10 +725,23 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.gridwidth = 1;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
 	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.insets = new Insets(gap, 5, gap, 5);
+	    JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
+	    add(sep, gdpgbConstrains);
+
+	    gdpgbConstrains.gridx = ++gridx;
+	    gdpgbConstrains.gridy = gridy;
+	    gdpgbConstrains.weightx = 1;
+	    gdpgbConstrains.weighty = 0;
+	    gdpgbConstrains.gridheight = 1;
+	    gdpgbConstrains.gridwidth = 1;
+	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
+	    gdpgbConstrains.anchor = GridBagConstraints.NORTH;
+	    gdpgbConstrains.insets = new Insets(gap, 0, gap, 0);
 	    pickMoveTButton.setFont(normalFont);
 	    add(pickMoveTButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 2;
+	    gdpgbConstrains.gridx = ++gridx;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -697,7 +752,7 @@ public class TestingFrame extends JFrame {
 	    pickAttackTButton.setFont(normalFont);
 	    add(pickAttackTButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 3;
+	    gdpgbConstrains.gridx = ++gridx;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -708,7 +763,7 @@ public class TestingFrame extends JFrame {
 	    pickDirectionTButton.setFont(normalFont);
 	    add(pickDirectionTButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 4;
+	    gdpgbConstrains.gridx = ++gridx;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -719,7 +774,8 @@ public class TestingFrame extends JFrame {
 	    endTurnButton.setFont(normalFont);
 	    add(endTurnButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 2;
+	    gridx = 3;
+	    gdpgbConstrains.gridx = gridx;
 	    gdpgbConstrains.gridy = ++gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -730,7 +786,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    add(upDirButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 1;
+	    gdpgbConstrains.gridx = gridx - 1;
 	    gdpgbConstrains.gridy = ++gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -740,7 +796,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    add(leftDirButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 3;
+	    gdpgbConstrains.gridx = gridx + 1;
 	    gdpgbConstrains.gridy = gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -750,7 +806,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    add(rightDirButton, gdpgbConstrains);
 
-	    gdpgbConstrains.gridx = 2;
+	    gdpgbConstrains.gridx = gridx;
 	    gdpgbConstrains.gridy = ++gridy;
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
@@ -765,7 +821,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
 	    gdpgbConstrains.gridheight = 1;
-	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.gridwidth = 6;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    add(commandInfoSeperator, gdpgbConstrains);
@@ -775,7 +831,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 0;
 	    gdpgbConstrains.gridheight = 1;
-	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.gridwidth = 6;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    unitInfoLabel1.setFont(normalFont);
@@ -786,7 +842,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains.weightx = 1;
 	    gdpgbConstrains.weighty = 1;
 	    gdpgbConstrains.gridheight = 1;
-	    gdpgbConstrains.gridwidth = 5;
+	    gdpgbConstrains.gridwidth = 6;
 	    gdpgbConstrains.fill = GridBagConstraints.BOTH;
 	    gdpgbConstrains.anchor = GridBagConstraints.CENTER;
 	    unitInfoLabel2.setFont(normalFont);
@@ -852,7 +908,9 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void updateInformation() {
-	    turnInfoLabel.setText(((TestingPlayer) game.getCurrentTurn().getPlayerTurn()).getName() + "'s turn");
+	    TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
+	    boolean local = playerIsUsingThisFrame(currentPlayer);
+	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn - " + (local ? "this" : "network"));
 	    updateUnitInfoLabels();
 	}
 
@@ -873,17 +931,13 @@ public class TestingFrame extends JFrame {
 
 	public boolean canCurrentlyClick(Square sqr) {
 	    if (currentlyPicking == pickUnitTButton) {
-		Unit unit = sqr.getUnitOnTop();
-		if (unit != null
-			&& unit.getOwnerProp().getCurrentPropertyValue() == game.getCurrentTurn().getPlayerTurn()) {
-		    return true;
-		}
+		return game.canSelectUnit(sqr.getCoor());
 	    } else if (currentlyPicking == pickMoveTButton) {
-		return true;
+		return game.canMoveTo(sqr.getCoor());
 	    } else if (currentlyPicking == pickAttackTButton) {
-		return true;
+		return game.canAttack(sqr.getCoor());
 	    } else if (currentlyPicking == pickDirectionTButton) {
-		return false;
+		return game.canChangeDir(null);
 	    }
 	    return false;
 	}
@@ -893,12 +947,12 @@ public class TestingFrame extends JFrame {
 		Coordinate coor = sqr.getCoor();
 		Unit unit = sqr.getUnitOnTop();
 
-		colorsDisplayed[coor.x()][coor.y()] = Color.black;
+		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
 
 		if (currentlyPicking == pickUnitTButton) {
 		    if (unit != null
 			    && unit.getOwnerProp().getCurrentPropertyValue() == game.getCurrentTurn().getPlayerTurn()) {
-			colorsDisplayed[coor.x()][coor.y()] = Color.blue;
+			gamePanel.getSquareLabel(coor).setColorToDisplay(slightBlue);
 		    }
 		} else if (currentlyPicking == pickMoveTButton) {
 		    // if (unitPicked.getGamePathTo(coor) != null) {
@@ -906,17 +960,16 @@ public class TestingFrame extends JFrame {
 		    // }
 		    if (PathFinder.hasClearPathTo(unitPicked, unitPicked.getPosProp().getCurrentPropertyValue(), coor,
 			    unitPicked.getMovingProp().getCurrentPropertyValue())) {
-			colorsDisplayed[coor.x()][coor.y()] = Color.green;
+			gamePanel.getSquareLabel(coor).setColorToDisplay(slightGreen);
 		    }
 		} else if (currentlyPicking == pickAttackTButton) {
 		    if (unitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty
 			    && ((ActiveTargetAbilityProperty) unitPicked.getAbilityProp()).canUseAbilityOn(sqr)) {
-			colorsDisplayed[coor.x()][coor.y()] = Color.red;
+			gamePanel.getSquareLabel(coor).setColorToDisplay(slightRed);
 		    }
 		} else if (currentlyPicking == pickDirectionTButton) {
 
 		}
-
 	    }
 	}
 
@@ -962,7 +1015,7 @@ public class TestingFrame extends JFrame {
 
 	public void resetForNewTurn() {
 	    unitPicked = null;
-	    boolean inputIsEnabled = inputIsEnabled();
+	    boolean inputIsEnabled = playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn());
 	    enableAllMoveButtons(inputIsEnabled);
 	    currentlyPicking = null;
 	    if (inputIsEnabled) {
@@ -970,10 +1023,6 @@ public class TestingFrame extends JFrame {
 	    }
 	    updateInformation();
 	    repaint();
-	}
-
-	public boolean inputIsEnabled() {
-	    return playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn());
 	}
 
 	public void enableAllDirButtons(boolean enable) {
@@ -1029,7 +1078,7 @@ public class TestingFrame extends JFrame {
 	    } else {
 		enableAllDirButtons(false);
 	    }
-	    gamePanel.updateAllCanCurrentlyClick();
+	    gamePanel.updateInformation();
 
 	    updateColorsDisplayed();
 	    gamePanel.repaint();
@@ -1111,7 +1160,7 @@ public class TestingFrame extends JFrame {
 		super.paintComponent(g);
 		if (currentlyPicking == this) {
 		    g.setColor(Color.red);
-		    g.fillRect(0, getHeight() - 7, getWidth(), getHeight());
+		    g.fillRect(4, getHeight() - 7, getWidth() - 8, 5);
 		}
 	    }
 	}
@@ -1146,6 +1195,8 @@ class Images {
     public static Image waitingImage;
 
     public static Image goldenFrameImage;
+
+    public static Image blockedImage;
 
     static {
 	try {
@@ -1183,6 +1234,7 @@ class Images {
 
 	    Images.goldenFrameImage = ImageIO
 		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/goldenframe.png"));
+	    Images.blockedImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/blocked.png"));
 
 	} catch (Exception e) {
 	    e.printStackTrace();

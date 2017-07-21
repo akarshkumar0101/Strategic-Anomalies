@@ -40,12 +40,15 @@ public class TestingClient {
 	boolean first = (boolean) servComm.recieveObject();
 
 	TestingGame tgame = establishGame(servComm, randomSeed, first);
-	tgame.startGame();
+	try {
+	    tgame.startGame();
+	} catch (Exception e) {
+	    e.printStackTrace();
+	    System.exit(0);
+	}
     }
 
     public static TestingGame establishGame(Communication servComm, long randomSeed, boolean first) {
-	System.out.println(first);
-
 	TestingGame tgame = new TestingGame(servComm, randomSeed, first);
 
 	TestingPlayer player1 = (TestingPlayer) tgame.getPlayer1(), player2 = (TestingPlayer) tgame.getPlayer2();

@@ -17,6 +17,7 @@ import game.board.Direction;
 import game.board.NormalBoard;
 import game.board.Path;
 import game.unit.Unit;
+import game.unit.property.ability.ActiveTargetAbilityProperty;
 
 /*
  * Communications:
@@ -134,8 +135,6 @@ public class TestingGame extends Game {
 	    nextTurn();
 
 	    testingFrame.gameDataPanel.resetForNewTurn();
-	    testingFrame.updateInformation();
-	    testingFrame.repaint();
 	}
     }
 
@@ -165,13 +164,16 @@ public class TestingGame extends Game {
 	boolean shouldRun = true;
 
 	while (shouldRun) {
+	    testingFrame.updateInformation();
+	    testingFrame.repaint();
 	    shouldRun = handleCommand(currentComm);
 	}
 	if (onTurnHasAttacked) {
 	    onTurnUnitPicked.getWaitProp().triggerWaitAfterAttack();
-	    testingFrame.updateInformation();
-	    testingFrame.repaint();
 	}
+
+	testingFrame.updateInformation();
+	testingFrame.repaint();
     }
 
     public boolean handleCommand(Communication currentComm) {
@@ -205,18 +207,86 @@ public class TestingGame extends Game {
 	return true;
     }
 
+    public boolean canSelectUnit(Coordinate coor) {
+	Unit unit = board.getUnitAt(coor);
+	// TODO make sure unit is selectable
+
+	if (onTurnHasSelectedUnit) {
+	    return false;
+	} else if (unit == null) {
+	    return false;
+	} else if (!unit.getOwnerProp().getCurrentPropertyValue().equals(onTurnPlayer)) {
+	    return false;
+	}
+	return true;
+    }
+
+    public boolean canMoveTo(Coordinate coor) {
+	Path path = onTurnUnitPicked.getGamePathTo(coor);
+	if (onTurnHasMoved) {
+	    return false;
+	} else if (onTurnUnitPicked.getPosProp().getCurrentPropertyValue().equals(coor)) {
+	    return false;
+	} else if (!board.getSquare(coor).isEmpty()) {
+	    return false;
+	} else if (path == null) {
+	    return false;
+	}
+	return true;
+    }
+
+    public boolean canAttack(Coordinate coor) {
+	if (onTurnHasAttacked) {
+	    return false;
+	} else if (!onTurnUnitPicked.getAbilityProp().isActiveAbility()) {
+	    return false;
+	} else if (!onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
+	    return false;
+	} else if (onTurnUnitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty) {
+	    if (!((ActiveTargetAbilityProperty) onTurnUnitPicked.getAbilityProp())
+		    .canUseAbilityOn(board.getSquare(coor))) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    public boolean canChangeDir(Direction dir) {
+	if (onTurnHasChangedDir) {
+	    return false;
+	}
+	return true;
+    }
+
     public void handleFullNonHoverCommand(Object command, Object specs) {
 	if (!Message.isCommand(command)) {
 	    throw new RuntimeException("Not a command");
 	}
 	if (Message.UNIT_SELECT.equals(command)) {
-	    unitSelect((Coordinate) specs);
+	    if (canSelectUnit((Coordinate) specs)) {
+		unitSelect((Coordinate) specs);
+	    } else {
+		throw new RuntimeException("Cannot select unit at " + specs);
+	    }
 	} else if (Message.UNIT_MOVE.equals(command)) {
-	    unitMove((Coordinate) specs);
+	    if (canMoveTo((Coordinate) specs)) {
+		Path path = unitMove((Coordinate) specs);
+		announceToAllLocalPlayers(path);
+	    } else {
+		throw new RuntimeException("Cannot move to " + specs);
+	    }
 	} else if (Message.UNIT_ATTACK.equals(command)) {
-	    unitAttack((Coordinate) specs);
+	    if (canAttack((Coordinate) specs)) {
+		unitAttack((Coordinate) specs);
+	    } else {
+		throw new RuntimeException("Cannot attack at " + specs);
+	    }
 	} else if (Message.UNIT_DIR.equals(command)) {
-	    unitChangeDir((Direction) specs);
+	    if (canChangeDir((Direction) specs)) {
+		unitChangeDir((Direction) specs);
+	    } else {
+		throw new RuntimeException("Cannot change dir to " + specs);
+	    }
 	}
     }
 
@@ -232,42 +302,24 @@ public class TestingGame extends Game {
 
     public void unitSelect(Coordinate coor) {
 	onTurnUnitPicked = board.getUnitAt(coor);
-	// TODO make sure unit is selectable
-
-	if (onTurnHasSelectedUnit) {
-	    throw new RuntimeException("Already selected unit");
-	} else if (onTurnUnitPicked == null) {
-	    throw new RuntimeException("no unit picked");
-	} else if (!onTurnUnitPicked.getOwnerProp().getCurrentPropertyValue().equals(onTurnPlayer)) {
-	    throw new RuntimeException("invalid unit picked");
-	}
 	onTurnHasSelectedUnit = true;
     }
 
-    public void unitMove(Coordinate coor) {
+    public Path unitMove(Coordinate coor) {
 	Path path = onTurnUnitPicked.getGamePathTo(coor);
-	if (onTurnHasMoved || onTurnUnitPicked.getPosProp().getCurrentPropertyValue().equals(coor) || path == null) {
-	    throw new RuntimeException("Already moved or no movement or can't move unit to: " + coor);
-	}
+
 	onTurnUnitPicked.moveTakePath(path, onTurnPlayer);
 	onTurnHasMoved = true;
 
-	announceToAllLocalPlayers(path);
-
+	return path;
     }
 
     public void unitAttack(Coordinate coor) {
-	if (onTurnHasAttacked || !onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
-	    throw new RuntimeException("Has already attacked or can't use ability");
-	}
 	onTurnUnitPicked.useAbility(board.getSquare(coor));
 	onTurnHasAttacked = true;
     }
 
     public void unitChangeDir(Direction dir) {
-	if (onTurnHasChangedDir) {
-	    throw new RuntimeException("Has already changed dir or ");
-	}
 	onTurnUnitPicked.getPosProp().getDirFacingProp().setPropertyValue(dir, onTurnPlayer);
 	onTurnHasChangedDir = true;
     }
