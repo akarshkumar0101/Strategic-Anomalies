@@ -7,7 +7,7 @@ package game.board;
  *
  */
 public enum Direction {
-
+    // up and right are towards increasing coordinate values
     UP, RIGHT, DOWN, LEFT;
 
     /**

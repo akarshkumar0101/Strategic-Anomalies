@@ -40,13 +40,7 @@ public class NormalBoard extends Board {
 	return HEIGHT;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see game.board.Board#isInBoard(game.board.Coordinate)
-     */
-    @Override
-    public boolean isInBoard(Coordinate coor) {
+    public static boolean isInNormalBoard(Coordinate coor) {
 	byte x = coor.x(), y = coor.y();
 
 	// limit to board
@@ -66,6 +60,27 @@ public class NormalBoard extends Board {
 	    return false;
 	}
 	return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see game.board.Board#isInBoard(game.board.Coordinate)
+     */
+    @Override
+    public boolean isInBoard(Coordinate coor) {
+	return isInNormalBoard(coor);
+    }
+
+    public static Coordinate transformCoordinateForOtherPlayerNormalBoard(Coordinate coor) {
+	int x = WIDTH - 1 - coor.x();
+	int y = HEIGHT - 1 - coor.y();
+	return new Coordinate(x, y);
+    }
+
+    @Override
+    public Coordinate transformCoordinateForOtherPlayer(Coordinate coor) {
+	return transformCoordinateForOtherPlayerNormalBoard(coor);
     }
 
 }

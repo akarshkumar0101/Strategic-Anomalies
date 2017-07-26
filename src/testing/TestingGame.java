@@ -37,6 +37,7 @@ public class TestingGame extends Game {
     private final TestingPlayer player1;
     private final TestingPlayer player2;
     private final List<TestingPlayer> allPlayers;
+
     private final List<TestingPlayer> localPlayers;
 
     private final HashMap<TestingPlayer, Communication> playerComms;
@@ -104,29 +105,31 @@ public class TestingGame extends Game {
 
 	    localPlayers.add(player1);
 	} else {
-	    player1 = new TestingPlayer("Dr. Monson", null);
-	    player2 = new TestingPlayer("Albert Einstein", comm1.connectLocally());
+	    player2 = new TestingPlayer("Dr. Monson", null);
+	    player1 = new TestingPlayer("Albert Einstein", comm1.connectLocally());
 
-	    playerComms.put(player1, serverComm);
-	    playerComms.put(player2, comm1);
+	    playerComms.put(player2, serverComm);
+	    playerComms.put(player1, comm1);
 
-	    currentTurn = new Turn(0, player1);
+	    currentTurn = new Turn(0, player2);
 
-	    localPlayers.add(player2);
+	    localPlayers.add(player1);
 	}
 
 	allPlayers = new ArrayList<>(2);
 	allPlayers.add(player1);
 	allPlayers.add(player2);
 
-	testingFrame = new TestingFrame(this, first ? player1 : player2);
+	testingFrame = new TestingFrame(this, player1);
+	// testingFrame = new TestingFrame(this, first ? player1 : player2);
 	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
     }
 
     public void startGame() {
+
 	testingFrame.updateInformation();
 	testingFrame.setVisible(true);
+	testingFrame.startFrameUpdatingThread();
 
 	// TODO add stop statement
 	// game loop for different turns

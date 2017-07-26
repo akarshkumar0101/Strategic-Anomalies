@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import game.Game;
+import game.Player;
 import game.unit.Unit;
 
 /**
@@ -55,6 +57,8 @@ public abstract class Board implements Iterable<Square> {
      */
     public abstract boolean isInBoard(Coordinate coor);
 
+    public abstract Coordinate transformCoordinateForOtherPlayer(Coordinate coor);
+
     // TODO public? private?
     // TODO go through everything in game package to see visibility
     private final void checkCoordinateRange(Coordinate coor) {
@@ -105,6 +109,10 @@ public abstract class Board implements Iterable<Square> {
 	for (Unit unit : units) {
 	    linkBoardToUnit(unit);
 	}
+    }
+
+    public void setupBoard(Game game, Player player1, Player player2, SelectionBoard homeSel, SelectionBoard awaySel) {
+	homeSel.setupBoardWithSelections(this, game, player1, player2, awaySel);
     }
 
     public List<Square> squaresInRange(Square sqr, int range) {

@@ -7,6 +7,8 @@ import java.net.UnknownHostException;
 import game.Communication;
 import game.board.Coordinate;
 import game.board.Direction;
+import game.board.NormalSelectionBoard;
+import game.board.SelectionBoard;
 import game.unit.Unit;
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
@@ -25,20 +27,26 @@ public class TestingClient {
 
     public static final String serverIP = "localhost";
 
+    public static long randomSeed;
+
     public static void main(String[] args) throws UnknownHostException, IOException {
 	Socket sock = new Socket(serverIP, TestingServer.PORT);
 
 	Communication servComm = new Communication(sock);
 
-	if (!servComm.recieveObject().equals(TestingServer.INIT_STRING)) {
+	if (!TestingServer.INIT_STRING.equals(servComm.recieveObject())) {
 	    return;
 	}
 
-	long randomSeed = (long) servComm.recieveObject();
+	randomSeed = (long) servComm.recieveObject();
 	// System.out.println(randomSeed);
 
 	boolean first = (boolean) servComm.recieveObject();
 
+	newGame(servComm, first);
+    }
+
+    public static void oldGame(Communication servComm, boolean first) {
 	TestingGame tgame = establishGame(servComm, randomSeed, first);
 	try {
 	    tgame.startGame();
@@ -46,6 +54,17 @@ public class TestingClient {
 	    e.printStackTrace();
 	    System.exit(0);
 	}
+    }
+
+    public static void newGame(Communication servComm, boolean first) {
+	SelectionBoard homeSel = first ? getSelectionBoard1() : getSelectionBoard2();
+	servComm.sendObject(homeSel);
+	SelectionBoard awaySel = (SelectionBoard) servComm.recieveObject();
+
+	TestingGame tgame = new TestingGame(servComm, randomSeed, first);
+	TestingPlayer player1 = (TestingPlayer) tgame.getPlayer1(), player2 = (TestingPlayer) tgame.getPlayer2();
+	tgame.getBoard().setupBoard(tgame, player1, player2, homeSel, awaySel);
+	tgame.startGame();
     }
 
     public static TestingGame establishGame(Communication servComm, long randomSeed, boolean first) {
@@ -84,4 +103,15 @@ public class TestingClient {
 	return tgame;
     }
 
+    public static SelectionBoard getSelectionBoard1() {
+	SelectionBoard selBoard = new NormalSelectionBoard();
+	selBoard.setSelection(new Coordinate(1, 1), Warrior.class, Direction.UP);
+	return selBoard;
+    }
+
+    public static SelectionBoard getSelectionBoard2() {
+	SelectionBoard selBoard = new NormalSelectionBoard();
+	selBoard.setSelection(new Coordinate(1, 1), Pyromancer.class, Direction.UP);
+	return selBoard;
+    }
 }

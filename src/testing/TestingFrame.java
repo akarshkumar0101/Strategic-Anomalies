@@ -109,10 +109,12 @@ public class TestingFrame extends JFrame {
 
 	gameAnnouncementThread = new FrameUpdatingThread();
 
-	gameAnnouncementThread.start();
-
 	gameDataPanel.resetForNewTurn();
 
+    }
+
+    public void startFrameUpdatingThread() {
+	gameAnnouncementThread.start();
     }
 
     class FrameUpdatingThread extends Thread {
@@ -316,7 +318,7 @@ public class TestingFrame extends JFrame {
 	    gridLayout = new GridLayout(board.getHeight(), board.getWidth());
 
 	    setLayout(gridLayout);
-	    for (int y = 0; y < board.getHeight(); y++) {
+	    for (int y = board.getHeight() - 1; y >= 0; y--) {
 		for (int x = 0; x < board.getWidth(); x++) {
 		    Coordinate coor = new Coordinate(x, y);
 		    if (!board.isInBoard(coor)) {

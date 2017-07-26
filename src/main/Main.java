@@ -1,6 +1,5 @@
 package main;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -30,34 +29,35 @@ public class Main {
 	    public void run() {
 		try {
 		    TestingServer.main(null);
-		} catch (IOException e) {
+		} catch (Exception e) {
 		    e.printStackTrace();
 		}
 	    }
 	};
-	Thread.sleep(500);
-	servThread.start();
 	Thread client1Thead = new Thread() {
 	    @Override
 	    public void run() {
 		try {
 		    TestingClient.main(null);
-		} catch (IOException e) {
+		} catch (Exception e) {
 		    e.printStackTrace();
 		}
 	    }
 	};
-	client1Thead.start();
 	Thread client2Thead = new Thread() {
 	    @Override
 	    public void run() {
 		try {
 		    TestingClient.main(null);
-		} catch (IOException e) {
+		} catch (Exception e) {
 		    e.printStackTrace();
 		}
 	    }
 	};
+
+	servThread.start();
+	Thread.sleep(100);
+	client1Thead.start();
 	client2Thead.start();
 	return true;
     }

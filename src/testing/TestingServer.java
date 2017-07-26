@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import game.Communication;
+import game.board.Coordinate;
+import game.board.NormalBoard;
 
 public class TestingServer {
     public static final String INIT_STRING = "init99";
@@ -28,6 +30,9 @@ public class TestingServer {
 			Object prevData = null;
 			while (true) {
 			    Object data = comm.recieveObject();
+			    if (data != null && data.getClass() == Coordinate.class) {
+				data = NormalBoard.transformCoordinateForOtherPlayerNormalBoard((Coordinate) data);
+			    }
 			    // System.out.println(data);
 
 			    // if (Message.HOVER.equals(data) ||
@@ -36,8 +41,8 @@ public class TestingServer {
 			    // } else {
 			    // System.out.println(data);
 			    // }
-			    prevData = data;
-
+			    // prevData = data;
+			    // System.out.println(data);
 			    for (Communication c : clientComms) {
 				if (c == comm) {
 				    continue;
@@ -67,4 +72,5 @@ public class TestingServer {
 	    first = false;
 	}
     }
+
 }
