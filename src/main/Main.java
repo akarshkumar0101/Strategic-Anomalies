@@ -4,26 +4,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import game.Communication;
-import game.board.Coordinate;
-import game.board.Direction;
-import game.unit.Unit;
-import game.unit.listofunits.Aquamancer;
-import game.unit.listofunits.Archer;
-import game.unit.listofunits.DarkMagicWitch;
-import game.unit.listofunits.Guardian;
-import game.unit.listofunits.Hunter;
-import game.unit.listofunits.LightMagicWitch;
-import game.unit.listofunits.Lightningmancer;
-import game.unit.listofunits.Pyromancer;
-import game.unit.listofunits.Scout;
-import game.unit.listofunits.Warrior;
 import testing.TestingClient;
-import testing.TestingGame;
 import testing.TestingServer;
+import testing.TestingSetup;
 
 public class Main {
 
-    public static boolean test() throws Exception {
+    public static void test() throws Exception {
 	Thread servThread = new Thread() {
 	    @Override
 	    public void run() {
@@ -59,7 +46,6 @@ public class Main {
 	Thread.sleep(100);
 	client1Thead.start();
 	client2Thead.start();
-	return true;
     }
 
     public static boolean servtest() throws Exception {
@@ -82,45 +68,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
+	boolean test = false;
 	try {
-	    if (test()) {
+	    if (test) {
+		Main.test();
 		return;
 	    }
 	} catch (Exception e) {
 	    return;
 	}
-
-	TestingGame tgame = new TestingGame();
-
-	Unit warrior = new Warrior(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 3));
-	Unit guardian = new Guardian(tgame, tgame.getPlayer2(), Direction.LEFT, new Coordinate(4, 3));
-
-	Unit pyromancer = new Pyromancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 4));
-	Unit aquamancer = new Aquamancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 4));
-	Unit lightningmancer = new Lightningmancer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(5, 4));
-
-	Unit scout = new Scout(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 5));
-	Unit archer = new Archer(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 5));
-	Unit hunter = new Hunter(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(5, 5));
-
-	Unit darkmagicwitch = new DarkMagicWitch(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(3, 6));
-	Unit lightmagicwitch = new LightMagicWitch(tgame, tgame.getPlayer1(), Direction.LEFT, new Coordinate(4, 6));
-
-	tgame.getBoard().linkBoardToUnit(warrior);
-	tgame.getBoard().linkBoardToUnit(guardian);
-
-	tgame.getBoard().linkBoardToUnit(pyromancer);
-	tgame.getBoard().linkBoardToUnit(aquamancer);
-	tgame.getBoard().linkBoardToUnit(lightningmancer);
-
-	tgame.getBoard().linkBoardToUnit(scout);
-	tgame.getBoard().linkBoardToUnit(archer);
-	tgame.getBoard().linkBoardToUnit(hunter);
-
-	tgame.getBoard().linkBoardToUnit(darkmagicwitch);
-	tgame.getBoard().linkBoardToUnit(lightmagicwitch);
-
-	tgame.startGame();
+	TestingSetup.startTestingSetup();
 
     }
 }

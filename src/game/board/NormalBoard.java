@@ -1,8 +1,10 @@
 package game.board;
 
+import setup.Position;
+
 /**
  * The original game implementation of the board.
- * 
+ *
  * @author Akarsh
  *
  */
@@ -22,34 +24,34 @@ public class NormalBoard extends Board {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see game.board.Board#getWidth()
      */
     @Override
     public int getWidth() {
-	return WIDTH;
+	return NormalBoard.WIDTH;
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see game.board.Board#getHeight()
      */
     @Override
     public int getHeight() {
-	return HEIGHT;
+	return NormalBoard.HEIGHT;
     }
 
     public static boolean isInNormalBoard(Coordinate coor) {
 	byte x = coor.x(), y = coor.y();
 
 	// limit to board
-	if (x >= WIDTH || x < 0 || y >= HEIGHT || y < 0) {
+	if (x >= NormalBoard.WIDTH || x < 0 || y >= NormalBoard.HEIGHT || y < 0) {
 	    return false;
 	}
 
 	// exclude corners in a regular board
-	if ((x < 2 || x > WIDTH - 3) && (y < 2 || y > HEIGHT - 3)) {
+	if ((x < 2 || x > NormalBoard.WIDTH - 3) && (y < 2 || y > NormalBoard.HEIGHT - 3)) {
 	    for (int xt = 1; xt < 10; xt += 8) {
 		for (int yt = 1; yt < 10; yt += 8) {
 		    if (x == xt && y == yt) {
@@ -64,23 +66,40 @@ public class NormalBoard extends Board {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see game.board.Board#isInBoard(game.board.Coordinate)
      */
     @Override
     public boolean isInBoard(Coordinate coor) {
-	return isInNormalBoard(coor);
+	return NormalBoard.isInNormalBoard(coor);
     }
 
     public static Coordinate transformCoordinateForOtherPlayerNormalBoard(Coordinate coor) {
-	int x = WIDTH - 1 - coor.x();
-	int y = HEIGHT - 1 - coor.y();
+	int x = NormalBoard.WIDTH - 1 - coor.x();
+	int y = NormalBoard.HEIGHT - 1 - coor.y();
 	return new Coordinate(x, y);
     }
 
     @Override
     public Coordinate transformCoordinateForOtherPlayer(Coordinate coor) {
-	return transformCoordinateForOtherPlayerNormalBoard(coor);
+	return NormalBoard.transformCoordinateForOtherPlayerNormalBoard(coor);
+    }
+
+    @Override
+    public Direction transformDirectionForOtherPlayer(Direction dir) {
+	return dir.getOpposite();
+    }
+
+    @Override
+    public Position createHomePosition(Position templatePos) {
+	return templatePos;
+    }
+
+    @Override
+    public Position createAwayPosition(Position templatePos) {
+	int x = NormalBoard.WIDTH - 1 - templatePos.getCoor().x();
+	int y = NormalBoard.HEIGHT - 1 - templatePos.getCoor().y();
+	return new Position(new Coordinate(x, y), templatePos.getDir().getOpposite());
     }
 
 }

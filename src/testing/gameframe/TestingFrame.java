@@ -1,4 +1,4 @@
-package testing;
+package testing.gameframe;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -13,15 +13,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -41,17 +36,10 @@ import game.board.Path;
 import game.board.PathFinder;
 import game.board.Square;
 import game.unit.Unit;
-import game.unit.listofunits.Aquamancer;
-import game.unit.listofunits.Archer;
-import game.unit.listofunits.DarkMagicWitch;
-import game.unit.listofunits.Guardian;
-import game.unit.listofunits.Hunter;
-import game.unit.listofunits.LightMagicWitch;
-import game.unit.listofunits.Lightningmancer;
-import game.unit.listofunits.Pyromancer;
-import game.unit.listofunits.Scout;
-import game.unit.listofunits.Warrior;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
+import testing.Message;
+import testing.TestingGame;
+import testing.TestingPlayer;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
 public class TestingFrame extends JFrame {
@@ -240,7 +228,7 @@ public class TestingFrame extends JFrame {
 
 	gbConstrains.gridx = 0;
 	gbConstrains.gridy = 0;
-	gbConstrains.weightx = 0;
+	gbConstrains.weightx = 1;
 	gbConstrains.weighty = 1;
 	gbConstrains.fill = GridBagConstraints.BOTH;
 	gbConstrains.anchor = GridBagConstraints.CENTER;
@@ -249,7 +237,7 @@ public class TestingFrame extends JFrame {
 
 	gbConstrains.gridx = 1;
 	gbConstrains.gridy = 0;
-	gbConstrains.weightx = 1;
+	gbConstrains.weightx = 0;
 	gbConstrains.weighty = 1;
 	gbConstrains.fill = GridBagConstraints.BOTH;
 	gbConstrains.anchor = GridBagConstraints.CENTER;
@@ -296,7 +284,7 @@ public class TestingFrame extends JFrame {
 		blockedSquares.remove(sqr);
 		repaint();
 	    }
-	}, BLOCK_ANIMATION_TIME);
+	}, TestingFrame.BLOCK_ANIMATION_TIME);
     }
 
     private Coordinate opponentHover = null;
@@ -578,7 +566,7 @@ public class TestingFrame extends JFrame {
 	}
     }
 
-    class GameDataPanel extends JPanel {
+    public class GameDataPanel extends JPanel {
 	private static final long serialVersionUID = -4840314334092192454L;
 
 	private final GridBagLayout gdpgbLayout;
@@ -954,7 +942,7 @@ public class TestingFrame extends JFrame {
 		if (currentlyPicking == pickUnitTButton) {
 		    if (unit != null
 			    && unit.getOwnerProp().getCurrentPropertyValue() == game.getCurrentTurn().getPlayerTurn()) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(slightBlue);
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightBlue);
 		    }
 		} else if (currentlyPicking == pickMoveTButton) {
 		    // if (unitPicked.getGamePathTo(coor) != null) {
@@ -962,12 +950,12 @@ public class TestingFrame extends JFrame {
 		    // }
 		    if (PathFinder.hasClearPathTo(unitPicked, unitPicked.getPosProp().getCurrentPropertyValue(), coor,
 			    unitPicked.getMovingProp().getCurrentPropertyValue())) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(slightGreen);
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightGreen);
 		    }
 		} else if (currentlyPicking == pickAttackTButton) {
 		    if (unitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty
 			    && ((ActiveTargetAbilityProperty) unitPicked.getAbilityProp()).canUseAbilityOn(sqr)) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(slightRed);
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightRed);
 		    }
 		} else if (currentlyPicking == pickDirectionTButton) {
 
@@ -1169,132 +1157,4 @@ public class TestingFrame extends JFrame {
 
     }
 
-}
-
-class Images {
-    public static final HashMap<Class<? extends Unit>, Image> classImages = new HashMap<>();
-
-    public static Image warriorImage;
-    public static Image guardianImage;
-
-    public static Image pyromancerImage;
-    public static Image aquamancerImage;
-    public static Image lightningmancerImage;
-
-    public static Image scoutImage;
-    public static Image archerImage;
-    public static Image hunterImage;
-
-    public static Image darkmagicwitchImage;
-    public static Image lightmagicwitchImage;
-
-    public static Image upArrowImage;
-    public static Image rightArrowImage;
-    public static Image downArrowImage;
-    public static Image leftArrowImage;
-
-    public static Image stunnedImage;
-    public static Image waitingImage;
-
-    public static Image goldenFrameImage;
-
-    public static Image blockedImage;
-
-    static {
-	try {
-	    classImages.put(Warrior.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/warrior.png")));
-	    classImages.put(Guardian.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/guardian.png")));
-
-	    classImages.put(Pyromancer.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/pyromancer.png")));
-	    classImages.put(Aquamancer.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/aquamancer.png")));
-	    classImages.put(Lightningmancer.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/lightningmancer.png")));
-
-	    classImages.put(Scout.class, ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/scout.png")));
-	    classImages.put(Archer.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/archer.png")));
-	    classImages.put(Hunter.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/hunter.png")));
-
-	    classImages.put(DarkMagicWitch.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/darkmagicwitch.png")));
-	    classImages.put(LightMagicWitch.class,
-		    ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/lightmagicwitch.png")));
-
-	    Images.upArrowImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/redarrow.png"));
-	    Images.rightArrowImage = Images.rotate((BufferedImage) Images.upArrowImage, 90);
-	    Images.downArrowImage = Images.rotate((BufferedImage) Images.upArrowImage, 180);
-	    Images.leftArrowImage = Images.rotate((BufferedImage) Images.upArrowImage, 270);
-
-	    Images.stunnedImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/dizzy.png"));
-
-	    Images.waitingImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/waiting.png"));
-
-	    Images.goldenFrameImage = ImageIO
-		    .read(TestingFrame.class.getResourceAsStream("/temp_pics/goldenframe.png"));
-	    Images.blockedImage = ImageIO.read(TestingFrame.class.getResourceAsStream("/temp_pics/blocked.png"));
-
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
-
-    public static Image getImage(Class<? extends Unit> unitClass) {
-	return classImages.get(unitClass);
-    }
-
-    // the following is not my code
-    private static BufferedImage rotate(BufferedImage image, int _thetaInDegrees) {
-	double _theta = Math.toRadians(_thetaInDegrees);
-
-	AffineTransform xform = new AffineTransform();
-
-	if (image.getWidth() > image.getHeight()) {
-	    xform.setToTranslation(0.5 * image.getWidth(), 0.5 * image.getWidth());
-	    xform.rotate(_theta);
-
-	    int diff = image.getWidth() - image.getHeight();
-
-	    switch (_thetaInDegrees) {
-	    case 90:
-		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth() + diff);
-		break;
-	    case 180:
-		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth() + diff);
-		break;
-	    default:
-		xform.translate(-0.5 * image.getWidth(), -0.5 * image.getWidth());
-		break;
-	    }
-	} else if (image.getHeight() > image.getWidth()) {
-	    xform.setToTranslation(0.5 * image.getHeight(), 0.5 * image.getHeight());
-	    xform.rotate(_theta);
-
-	    int diff = image.getHeight() - image.getWidth();
-
-	    switch (_thetaInDegrees) {
-	    case 180:
-		xform.translate(-0.5 * image.getHeight() + diff, -0.5 * image.getHeight());
-		break;
-	    case 270:
-		xform.translate(-0.5 * image.getHeight() + diff, -0.5 * image.getHeight());
-		break;
-	    default:
-		xform.translate(-0.5 * image.getHeight(), -0.5 * image.getHeight());
-		break;
-	    }
-	} else {
-	    xform.setToTranslation(0.5 * image.getWidth(), 0.5 * image.getHeight());
-	    xform.rotate(_theta);
-	    xform.translate(-0.5 * image.getHeight(), -0.5 * image.getWidth());
-	}
-
-	AffineTransformOp op = new AffineTransformOp(xform, AffineTransformOp.TYPE_BILINEAR);
-
-	return op.filter(image, null);
-    }
 }

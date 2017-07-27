@@ -7,8 +7,7 @@ import java.net.UnknownHostException;
 import game.Communication;
 import game.board.Coordinate;
 import game.board.Direction;
-import game.board.NormalSelectionBoard;
-import game.board.SelectionBoard;
+import game.board.NormalBoard;
 import game.unit.Unit;
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
@@ -20,6 +19,7 @@ import game.unit.listofunits.Lightningmancer;
 import game.unit.listofunits.Pyromancer;
 import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
+import setup.SetupTemplate;
 
 public class TestingClient {
 
@@ -30,7 +30,7 @@ public class TestingClient {
     public static long randomSeed;
 
     public static void main(String[] args) throws UnknownHostException, IOException {
-	Socket sock = new Socket(serverIP, TestingServer.PORT);
+	Socket sock = new Socket(TestingClient.serverIP, TestingServer.PORT);
 
 	Communication servComm = new Communication(sock);
 
@@ -38,16 +38,16 @@ public class TestingClient {
 	    return;
 	}
 
-	randomSeed = (long) servComm.recieveObject();
+	TestingClient.randomSeed = (long) servComm.recieveObject();
 	// System.out.println(randomSeed);
 
 	boolean first = (boolean) servComm.recieveObject();
 
-	newGame(servComm, first);
+	TestingClient.newGame(servComm, first);
     }
 
     public static void oldGame(Communication servComm, boolean first) {
-	TestingGame tgame = establishGame(servComm, randomSeed, first);
+	TestingGame tgame = TestingClient.establishGame(servComm, TestingClient.randomSeed, first);
 	try {
 	    tgame.startGame();
 	} catch (Exception e) {
@@ -57,11 +57,11 @@ public class TestingClient {
     }
 
     public static void newGame(Communication servComm, boolean first) {
-	SelectionBoard homeSel = first ? getSelectionBoard1() : getSelectionBoard2();
+	SetupTemplate homeSel = first ? TestingClient.getSetupTemplate1() : TestingClient.getSetupTemplate2();
 	servComm.sendObject(homeSel);
-	SelectionBoard awaySel = (SelectionBoard) servComm.recieveObject();
+	SetupTemplate awaySel = (SetupTemplate) servComm.recieveObject();
 
-	TestingGame tgame = new TestingGame(servComm, randomSeed, first);
+	TestingGame tgame = new TestingGame(servComm, TestingClient.randomSeed, first);
 	TestingPlayer player1 = (TestingPlayer) tgame.getPlayer1(), player2 = (TestingPlayer) tgame.getPlayer2();
 	tgame.getBoard().setupBoard(tgame, player1, player2, homeSel, awaySel);
 	tgame.startGame();
@@ -103,15 +103,15 @@ public class TestingClient {
 	return tgame;
     }
 
-    public static SelectionBoard getSelectionBoard1() {
-	SelectionBoard selBoard = new NormalSelectionBoard();
-	selBoard.setSelection(new Coordinate(1, 1), Warrior.class, Direction.UP);
-	return selBoard;
+    public static SetupTemplate getSetupTemplate1() {
+	SetupTemplate temp = new SetupTemplate(NormalBoard.class);
+	temp.put(Warrior.class, new Coordinate(1, 1), Direction.UP);
+	return temp;
     }
 
-    public static SelectionBoard getSelectionBoard2() {
-	SelectionBoard selBoard = new NormalSelectionBoard();
-	selBoard.setSelection(new Coordinate(1, 1), Pyromancer.class, Direction.UP);
-	return selBoard;
+    public static SetupTemplate getSetupTemplate2() {
+	SetupTemplate temp = new SetupTemplate(NormalBoard.class);
+	temp.put(Pyromancer.class, new Coordinate(1, 1), Direction.UP);
+	return temp;
     }
 }

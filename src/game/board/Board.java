@@ -7,6 +7,8 @@ import java.util.List;
 import game.Game;
 import game.Player;
 import game.unit.Unit;
+import setup.Position;
+import setup.SetupTemplate;
 
 /**
  * Board holds squares that can hold pieces on them. Contains information about
@@ -58,6 +60,12 @@ public abstract class Board implements Iterable<Square> {
     public abstract boolean isInBoard(Coordinate coor);
 
     public abstract Coordinate transformCoordinateForOtherPlayer(Coordinate coor);
+
+    public abstract Direction transformDirectionForOtherPlayer(Direction dir);
+
+    public abstract Position createHomePosition(Position templatePos);
+
+    public abstract Position createAwayPosition(Position templatePos);
 
     // TODO public? private?
     // TODO go through everything in game package to see visibility
@@ -111,8 +119,8 @@ public abstract class Board implements Iterable<Square> {
 	}
     }
 
-    public void setupBoard(Game game, Player player1, Player player2, SelectionBoard homeSel, SelectionBoard awaySel) {
-	homeSel.setupBoardWithSelections(this, game, player1, player2, awaySel);
+    public void setupBoard(Game game, Player player1, Player player2, SetupTemplate homeTemp, SetupTemplate awayTemp) {
+	SetupTemplate.setupBoardWithTemplates(this, game, player1, player2, homeTemp, awayTemp);
     }
 
     public List<Square> squaresInRange(Square sqr, int range) {
