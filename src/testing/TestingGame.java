@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import javax.swing.JFrame;
-
 import game.Communication;
 import game.Game;
 import game.Player;
@@ -18,7 +16,6 @@ import game.board.NormalBoard;
 import game.board.Path;
 import game.unit.Unit;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
-import testing.gameframe.TestingFrame;
 
 /*
  * Communications:
@@ -46,39 +43,6 @@ public class TestingGame extends Game {
     private Turn currentTurn;
 
     public final Random random;
-
-    /**
-     * run this for local game
-     *
-     */
-    public TestingGame() {
-	super(null, null);
-	random = new Random();
-
-	board = new NormalBoard();
-
-	playerComms = new HashMap<>(2);
-
-	Communication comm1 = new Communication(), comm2 = new Communication();
-
-	player1 = new TestingPlayer("Dr. Monson", comm1.connectLocally());
-	player2 = new TestingPlayer("Albert Einstein", comm2.connectLocally());
-	playerComms.put(player1, comm1);
-	playerComms.put(player2, comm2);
-
-	allPlayers = new ArrayList<>(2);
-	allPlayers.add(player1);
-	allPlayers.add(player2);
-
-	localPlayers = new ArrayList<>(2);
-	localPlayers.add(player1);
-	localPlayers.add(player2);
-
-	currentTurn = new Turn(0, player1);
-
-	testingFrame = new TestingFrame(this, player1, player2);
-	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    }
 
     /**
      * run this for online game
@@ -122,8 +86,6 @@ public class TestingGame extends Game {
 	allPlayers.add(player2);
 
 	testingFrame = new TestingFrame(this, player1);
-	// testingFrame = new TestingFrame(this, first ? player1 : player2);
-	testingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     public void startGame() {
@@ -138,7 +100,7 @@ public class TestingGame extends Game {
 	    handleTurn();
 	    nextTurn();
 
-	    testingFrame.gameDataPanel.resetForNewTurn();
+	    testingFrame.resetForNewTurn();
 	}
     }
 
@@ -211,6 +173,10 @@ public class TestingGame extends Game {
 	return true;
     }
 
+    public boolean hasSelectedUnit() {
+	return onTurnHasSelectedUnit;
+    }
+
     public boolean canSelectUnit(Coordinate coor) {
 	Unit unit = board.getUnitAt(coor);
 	// TODO make sure unit is selectable
@@ -223,6 +189,10 @@ public class TestingGame extends Game {
 	    return false;
 	}
 	return true;
+    }
+
+    public boolean hasMoved() {
+	return onTurnHasMoved;
     }
 
     public boolean canMoveTo(Coordinate coor) {
@@ -239,6 +209,10 @@ public class TestingGame extends Game {
 	return true;
     }
 
+    public boolean hasAttacked() {
+	return onTurnHasAttacked;
+    }
+
     public boolean canAttack(Coordinate coor) {
 	if (onTurnHasAttacked) {
 	    return false;
@@ -253,6 +227,10 @@ public class TestingGame extends Game {
 	    }
 	}
 	return true;
+    }
+
+    public boolean hasChangedDir() {
+	return onTurnHasChangedDir;
     }
 
     public boolean canChangeDir(Direction dir) {

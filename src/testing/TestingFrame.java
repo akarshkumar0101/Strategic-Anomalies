@@ -1,4 +1,4 @@
-package testing.gameframe;
+package testing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,7 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
 
 import game.Communication;
 import game.Player;
@@ -37,67 +36,31 @@ import game.board.PathFinder;
 import game.board.Square;
 import game.unit.Unit;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
-import testing.Message;
-import testing.TestingGame;
-import testing.TestingPlayer;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
-public class TestingFrame extends JFrame {
+public class TestingFrame {
 
-    private static final long serialVersionUID = 5606773788174572563L;
+    final TestingGame game;
+    final Board board;
+    final TestingPlayer localPlayer;
 
-    static {
-	try {
-	    // UIManager.LookAndFeelInfo[] looks =
-	    // UIManager.getInstalledLookAndFeels();
-	    // javax.swing.plaf.metal.MetalLookAndFeel
-	    // javax.swing.plaf.nimbus.NimbusLookAndFeel
-	    // com.sun.java.swing.plaf.motif.MotifLookAndFeel
-	    // com.sun.java.swing.plaf.windows.WindowsLookAndFeel
-	    // com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
-	    UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
-    }
-
-    private final TestingGame game;
-    private final Board board;
-    private final TestingPlayer[] localFramePlayers;
-    // player that will be used to get announcements from game to update
-    // testingframe
-    private final TestingPlayer receivingPlayer;
-
-    private final GamePanel gamePanel;
-    public final GameDataPanel gameDataPanel;
-
-    private final GridBagLayout gbLayout;
-    private final GridBagConstraints gbConstrains;
+    private final TestingFrameGUI gui;
 
     private final Thread gameAnnouncementThread;
 
-    public TestingFrame(TestingGame game, TestingPlayer... localFramePlayers) {
-	super("Testing Frame for Strategic Anomalies");
+    private final Object dataTransferLock = new Object();
+
+    public TestingFrame(TestingGame game, TestingPlayer localPlayer) {
 	this.game = game;
 	board = game.getBoard();
-	this.localFramePlayers = localFramePlayers;
-	receivingPlayer = localFramePlayers[0];
+	this.localPlayer = localPlayer;
 
-	gamePanel = new GamePanel();
-	gameDataPanel = new GameDataPanel();
-
-	gbLayout = new GridBagLayout();
-	gbConstrains = new GridBagConstraints();
-
-	organizeComponents();
-
-	// setSize(1450, 1000);
-	pack();
-	setResizable(false);
+	gui = new TestingFrameGUI(this);
+	gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	gameAnnouncementThread = new FrameUpdatingThread();
 
-	gameDataPanel.resetForNewTurn();
+	gui.gameDataPanel.resetForNewTurn();
 
     }
 
@@ -105,20 +68,23 @@ public class TestingFrame extends JFrame {
 	gameAnnouncementThread.start();
     }
 
+    Coordinate opponentHover = null;
+    Unit unitSelected = null;
+
     class FrameUpdatingThread extends Thread {
 	private Communication receiveComm;
 
 	@Override
 	public void run() {
 	    // TODO manage if player quits, etc.
-	    receiveComm = receivingPlayer.getGameComm();
+	    receiveComm = localPlayer.getGameComm();
 
 	    // TODO add stop statement
 	    // game loop for different turns
 	    while (true) {
 		handleTurn();
 		updateInformation();
-		repaint();
+		gui.repaint();
 	    }
 
 	}
@@ -178,44 +144,35 @@ public class TestingFrame extends JFrame {
 
 	public void hover(Coordinate coor) {
 	    opponentHover = coor;
-	    repaint();
+	    gui.repaint();
 	}
 
 	public void unitSelect(Coordinate coor) {
 	    unitSelected = board.getUnitAt(coor);
 	    updateInformation();
-	    repaint();
+	    gui.repaint();
 	}
 
 	public void unitMove(Path path, Coordinate coor) {
 	    updateInformation();
-	    repaint();
+	    gui.repaint();
 	}
 
 	public void unitAttack(Coordinate coor) {
 	    updateInformation();
-	    repaint();
+	    gui.repaint();
 	}
 
 	public void unitChangeDir(Direction dir) {
 	    updateInformation();
-	    repaint();
+	    gui.repaint();
 	}
 
     }
 
-    public boolean playerIsUsingThisFrame(TestingPlayer player) {
-	for (TestingPlayer p : localFramePlayers) {
-	    if (p.equals(player)) {
-		return true;
-	    }
-	}
-	return false;
-    }
-
-    public void transmitDataToGame(Object data) {
+    void transmitDataToGame(Object data) {
 	TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
-	if (!playerIsUsingThisFrame(currentPlayer)) {
+	if (!localPlayer.equals(currentPlayer)) {
 	    return;
 	}
 	Communication gameComm = currentPlayer.getGameComm();
@@ -223,7 +180,117 @@ public class TestingFrame extends JFrame {
 	gameComm.sendObject(data);
     }
 
+    public void updateInformation() {
+	gui.gamePanel.updateInformation();
+	gui.gameDataPanel.updateInformation();
+    }
+
+    public Square getSquare(Coordinate coor) {
+	return board.getSquare(coor);
+    }
+
+    public void resetForNewTurn() {
+	gui.gameDataPanel.resetForNewTurn();
+    }
+
+    public void triggerBlockAnimation(Square sqr) {
+	gui.triggerBlockAnimation(sqr);
+    }
+
+    public void setVisible(boolean vis) {
+	gui.setVisible(vis);
+    }
+
+    public void repaint() {
+	gui.repaint();
+    }
+
+    public boolean canCurrentlyClick(Coordinate coor) {
+	return gui.gameDataPanel.canCurrentlyClick(board.getSquare(coor));
+    }
+
+    private final Object mouseInLock = new Object();
+    private Coordinate mouseInCoordinate;
+
+    public void setMouseInCoordinate(Coordinate mouseInCoordinate) {
+	synchronized (mouseInLock) {
+	    if (this.mouseInCoordinate != mouseInCoordinate) {
+		this.mouseInCoordinate = mouseInCoordinate;
+		gui.gameDataPanel.updateUnitInfoLabels();
+	    }
+	}
+    }
+
+    public Square getMouseInSquare() {
+	synchronized (mouseInLock) {
+	    if (mouseInCoordinate == null || !board.isInBoard(mouseInCoordinate)) {
+		return null;
+	    } else {
+		return board.getSquare(mouseInCoordinate);
+	    }
+	}
+    }
+
+    public void mouseEntered(Coordinate coor) {
+	if (board.isInBoard(coor) && localPlayer.equals(game.getCurrentTurn().getPlayerTurn())) {
+	    synchronized (dataTransferLock) {
+		transmitDataToGame(Message.HOVER);
+		transmitDataToGame(coor);
+	    }
+	}
+	setMouseInCoordinate(coor);
+    }
+
+    public void mouseExited(Coordinate coor) {
+	if (board.isInBoard(coor) && localPlayer.equals(game.getCurrentTurn().getPlayerTurn())) {
+	    synchronized (dataTransferLock) {
+		transmitDataToGame(Message.HOVER);
+		transmitDataToGame(null);
+	    }
+	}
+	setMouseInCoordinate(null);
+    }
+}
+
+class TestingFrameGUI extends JFrame {
+    private static final long serialVersionUID = 2570119871946595519L;
+
+    private final TestingFrame testingFrame;
+
+    private final GridBagLayout gbLayout;
+    private final GridBagConstraints gbConstrains;
+
+    public GamePanel gamePanel;
+    public GameDataPanel gameDataPanel;
+
+    public TestingFrameGUI(TestingFrame testingFrame) {
+	super("Testing Frame for Strategic Anomalies");
+
+	this.testingFrame = testingFrame;
+
+	gbLayout = new GridBagLayout();
+	gbConstrains = new GridBagConstraints();
+
+	gamePanel = new GamePanel();
+	gameDataPanel = new GameDataPanel();
+
+	organizeComponents();
+
+	// setSize(1450, 1000);
+	pack();
+	setResizable(false);
+    }
+
     public void organizeComponents() {
+	// this.setContentPane(new JPanel() {
+	// private static final long serialVersionUID = -5960100728713917480L;
+	//
+	// @Override
+	// public Dimension getPreferredSize() {
+	// return new Dimension(900, 900);
+	// }
+	// });
+
 	getContentPane().setLayout(gbLayout);
 
 	gbConstrains.gridx = 0;
@@ -243,17 +310,12 @@ public class TestingFrame extends JFrame {
 	gbConstrains.anchor = GridBagConstraints.CENTER;
 
 	getContentPane().add(gameDataPanel, gbConstrains);
-
-    }
-
-    public void updateInformation() {
-	gamePanel.updateInformation();
-	gameDataPanel.updateInformation();
     }
 
     public static double scale(double num, double ori1, double ori2, double new1, double new2) {
-	double scale = (new1 - new2) / (ori1 - ori2);
-	return num * scale + new1;
+	double scale = (new2 - new1) / (ori2 - ori1);
+	System.out.println(ori1);
+	return (num - ori1) * scale + new1;
     }
 
     private static final Color friendlyColor = new Color(192, 192, 220), enemyColor = new Color(220, 192, 192);
@@ -263,11 +325,6 @@ public class TestingFrame extends JFrame {
     public static Color darkerColor(Color col, int amount) {
 	return new Color(Math.max(col.getRed() - amount, 0), Math.max(col.getGreen() - amount, 0),
 		Math.max(col.getBlue() - amount, 0));
-    }
-
-    private static Color combineColors(Color col1, Color col2) {
-	return new Color(Math.min(col1.getRed() + col2.getRed(), 255), Math.min(col1.getGreen() + col2.getGreen(), 255),
-		Math.min(col1.getBlue() + col2.getBlue(), 255));
     }
 
     private final Vector<Square> blockedSquares = new Vector<>();
@@ -284,36 +341,34 @@ public class TestingFrame extends JFrame {
 		blockedSquares.remove(sqr);
 		repaint();
 	    }
-	}, TestingFrame.BLOCK_ANIMATION_TIME);
+	}, TestingFrameGUI.BLOCK_ANIMATION_TIME);
     }
-
-    private Coordinate opponentHover = null;
-    private Unit unitSelected = null;
 
     class GamePanel extends JPanel {
 
 	private static final long serialVersionUID = 7783998123812310360L;
 
-	private final GridLayout gridLayout;
 	private final SquareLabel[][] labels;
-
-	private Square mouseInSquare;
+	private final GridLayout gridLayout;
 
 	public GamePanel() {
 	    super();
-	    labels = new SquareLabel[board.getWidth()][board.getHeight()];
+	    labels = new SquareLabel[testingFrame.board.getWidth()][testingFrame.board.getHeight()];
+	    gridLayout = new GridLayout(testingFrame.board.getHeight(), testingFrame.board.getWidth());
 
-	    gridLayout = new GridLayout(board.getHeight(), board.getWidth());
-
-	    setLayout(gridLayout);
-	    for (int y = board.getHeight() - 1; y >= 0; y--) {
-		for (int x = 0; x < board.getWidth(); x++) {
+	    for (int x = 0; x < testingFrame.board.getWidth(); x++) {
+		for (int y = 0; y < testingFrame.board.getHeight(); y++) {
 		    Coordinate coor = new Coordinate(x, y);
-		    if (!board.isInBoard(coor)) {
-			labels[x][y] = new SquareLabel(null);
-		    } else {
-			labels[x][y] = new SquareLabel(board.getSquare(coor));
-		    }
+		    labels[x][y] = new SquareLabel(coor);
+		}
+	    }
+	    GamePanel.this.organizeComponents();
+	}
+
+	public void organizeComponents() {
+	    setLayout(gridLayout);
+	    for (int y = testingFrame.board.getHeight() - 1; y >= 0; y--) {
+		for (int x = 0; x < testingFrame.board.getWidth(); x++) {
 		    this.add(labels[x][y]);
 		}
 	    }
@@ -324,32 +379,24 @@ public class TestingFrame extends JFrame {
 	    return new Dimension(900, 900);
 	}
 
-	public void setMouseInSquare(Square sqr) {
-	    if (mouseInSquare != sqr) {
-		mouseInSquare = sqr;
-		gameDataPanel.updateUnitInfoLabels();
-	    }
-	}
-
 	public void updateInformation() {
-	    for (int y = 0; y < board.getHeight(); y++) {
-		for (int x = 0; x < board.getWidth(); x++) {
+	    for (int x = 0; x < testingFrame.board.getWidth(); x++) {
+		for (int y = 0; y < testingFrame.board.getHeight(); y++) {
 		    labels[x][y].updateInformation();
 		}
 	    }
 	}
 
-	public SquareLabel getSquareLabel(Coordinate coor) {
-	    return getSquareLabel(coor.x(), coor.y());
-	}
-
-	public SquareLabel getSquareLabel(byte x, byte y) {
-	    return labels[x][y];
+	private SquareLabel getSquareLabel(Coordinate coor) {
+	    return labels[coor.x()][coor.y()];
 	}
 
 	class SquareLabel extends JComponent implements MouseListener {
 
 	    private static final long serialVersionUID = 7959593291619934967L;
+
+	    private final Coordinate coor;
+	    private final boolean isInBoard;
 
 	    private boolean mouseIn;
 	    private boolean mousePressing;
@@ -357,28 +404,28 @@ public class TestingFrame extends JFrame {
 	    private boolean canCurrentlyClick = true;
 	    private Color colorToDisplay = null;
 
-	    private final Square sqr;
 	    private Unit unitOnTop;
 	    private Image unitImg;
 	    private Image waitingImg;
 	    private Image dizzyImg;
 
-	    public SquareLabel(Square sqr) {
-		this.sqr = sqr;
-		if (sqr != null) {
-		    setToolTipText(sqr.getCoor().toString());
+	    public SquareLabel(Coordinate coor) {
+		super();
+		this.coor = coor;
+		isInBoard = testingFrame.board.isInBoard(coor);
+		if (isInBoard) {
+		    setToolTipText(coor.toString());
 		}
 		addMouseListener(this);
 	    }
 
 	    public void updateInformation() {
-		unitOnTop = sqr == null ? null : sqr.getUnitOnTop();
+		unitOnTop = isInBoard ? testingFrame.getSquare(coor).getUnitOnTop() : null;
 
+		unitImg = null;
 		waitingImg = null;
 		dizzyImg = null;
-		if (unitOnTop == null) {
-		    unitImg = null;
-		} else {
+		if (unitOnTop != null) {
 		    if (unitOnTop.getStunnedProp().getCurrentPropertyValue()) {
 			dizzyImg = Images.stunnedImage;
 		    }
@@ -393,45 +440,50 @@ public class TestingFrame extends JFrame {
 	    }
 
 	    public void updateCanCurrentlyClick() {
-		canCurrentlyClick = sqr == null ? false : gameDataPanel.canCurrentlyClick(sqr);
+		canCurrentlyClick = isInBoard ? testingFrame.canCurrentlyClick(coor) : false;
 	    }
 
 	    public void setColorToDisplay(Color col) {
 		colorToDisplay = col;
 	    }
 
-	    public Color determineBackgroundColor() {
-		Color col = null;
-		if (colorToDisplay != null) {
-		    col = colorToDisplay;
-		} else {
-		    if (sqr == null) {
-			return Color.black;
-		    }
-
-		    col = Color.lightGray;
-
-		    if (unitOnTop != null) {
-			Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
-
-			if (owner.equals(localFramePlayers[0])) {
-			    col = TestingFrame.friendlyColor;
-			} else {
-			    col = TestingFrame.enemyColor;
-			}
-		    }
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		if (isInBoard && canCurrentlyClick) {
+		    gameDataPanel.coordinateClicked(coor);
 		}
+	    }
 
+	    @Override
+	    public void mousePressed(MouseEvent e) {
+		if (canCurrentlyClick) {
+		    mousePressing = true;
+		    repaint();
+		}
+	    }
+
+	    @Override
+	    public void mouseReleased(MouseEvent e) {
 		if (mousePressing) {
-		    col = TestingFrame.darkerColor(col, 50);
-		} else if (mouseIn) {
-		    col = TestingFrame.darkerColor(col, 25);
-		} else if (sqr.getCoor().equals(opponentHover)) {
-		    col = TestingFrame.darkerColor(col, 25);
+		    mousePressing = false;
+		    repaint();
 		}
-		// col = TestingFrame.combineColors(col,
-		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
-		return col;
+	    }
+
+	    @Override
+	    public void mouseEntered(MouseEvent e) {
+		mouseIn = true;
+		testingFrame.mouseEntered(coor);
+
+		repaint();
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		mouseIn = false;
+		testingFrame.mouseExited(coor);
+
+		repaint();
 	    }
 
 	    @Override
@@ -443,14 +495,48 @@ public class TestingFrame extends JFrame {
 		}
 	    }
 
+	    public Color determineBackgroundColor() {
+		Color col = null;
+		if (colorToDisplay != null) {
+		    col = colorToDisplay;
+		} else {
+		    if (!isInBoard) {
+			return Color.black;
+		    }
+
+		    col = Color.lightGray;
+
+		    if (unitOnTop != null) {
+			Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
+
+			if (owner.equals(testingFrame.localPlayer)) {
+			    col = TestingFrameGUI.friendlyColor;
+			} else {
+			    col = TestingFrameGUI.enemyColor;
+			}
+		    }
+		}
+
+		if (mousePressing) {
+		    col = TestingFrameGUI.darkerColor(col, 50);
+		} else if (mouseIn) {
+		    col = TestingFrameGUI.darkerColor(col, 25);
+		} else if (coor.equals(testingFrame.opponentHover)) {
+		    col = TestingFrameGUI.darkerColor(col, 25);
+		}
+		// col = TestingFrame.combineColors(col,
+		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
+		return col;
+	    }
+
 	    public void paintComponentActual(Graphics g) {
 		Color background = determineBackgroundColor();
 		// clear
 		g.setColor(background);
 		g.fillRect(0, 0, getWidth(), getHeight());
 
-		// if outside of board
-		if (sqr == null) {
+		// if outside of testingFrame.board
+		if (!isInBoard) {
 		    return;
 		}
 		// border
@@ -504,14 +590,14 @@ public class TestingFrame extends JFrame {
 		}
 
 		// golden border if unit is picked
-		if (unitSelected != null && unitSelected == unitOnTop) {
+		if (testingFrame.unitSelected != null && testingFrame.unitSelected == unitOnTop) {
 		    g.drawImage(Images.goldenFrameImage, 1, 1, getWidth() - 2, getHeight() - 2, null);
 		}
 		// border
 		g.setColor(Color.black);
 		g.drawRect(0, 0, getWidth(), getHeight());
 
-		if (blockedSquares.contains(sqr)) {
+		if (blockedSquares.contains(testingFrame.board.getSquare(coor))) {
 		    int imgw = Images.blockedImage.getWidth(null), imgh = Images.blockedImage.getHeight(null);
 		    double scale = (double) getWidth() / imgw;
 		    int scaledimgh = (int) (imgh * scale);
@@ -519,50 +605,6 @@ public class TestingFrame extends JFrame {
 		}
 	    }
 
-	    @Override
-	    public void mouseClicked(MouseEvent e) {
-		if (sqr != null && canCurrentlyClick) {
-		    gameDataPanel.coordinateClicked(sqr.getCoor());
-		}
-	    }
-
-	    @Override
-	    public void mousePressed(MouseEvent e) {
-		if (canCurrentlyClick) {
-		    mousePressing = true;
-		    repaint();
-		}
-	    }
-
-	    @Override
-	    public void mouseReleased(MouseEvent e) {
-		if (mousePressing) {
-		    mousePressing = false;
-		    repaint();
-		}
-	    }
-
-	    @Override
-	    public void mouseEntered(MouseEvent e) {
-		setMouseInSquare(sqr);
-		mouseIn = true;
-		repaint();
-		if (sqr != null && playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn())) {
-		    transmitDataToGame(Message.HOVER);
-		    transmitDataToGame(sqr.getCoor());
-		}
-	    }
-
-	    @Override
-	    public void mouseExited(MouseEvent e) {
-		setMouseInSquare(null);
-		mouseIn = false;
-		repaint();
-		if (sqr != null && playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn())) {
-		    transmitDataToGame(Message.HOVER);
-		    transmitDataToGame(null);
-		}
-	    }
 	}
     }
 
@@ -606,6 +648,7 @@ public class TestingFrame extends JFrame {
 	    gdpgbConstrains = new GridBagConstraints();
 
 	    pickUnitTButton = new PickingButton("  Pick   ");
+
 	    pickMoveTButton = new PickingButton("  Move   ");
 	    pickAttackTButton = new PickingButton(" Attack  ");
 	    pickDirectionTButton = new PickingButton("Direction");
@@ -670,8 +713,6 @@ public class TestingFrame extends JFrame {
 
 	    organizeComponents();
 	    setupButtonLogic();
-
-	    setBackground(TestingFrame.darkerColor(Color.lightGray, 30));
 	}
 
 	public void organizeComponents() {
@@ -838,6 +879,7 @@ public class TestingFrame extends JFrame {
 	    unitInfoLabel2.setFont(normalFont);
 	    add(unitInfoLabel2, gdpgbConstrains);
 
+	    setBackground(TestingFrameGUI.darkerColor(Color.lightGray, 30));
 	}
 
 	public void setupButtonLogic() {
@@ -858,7 +900,7 @@ public class TestingFrame extends JFrame {
 		GameDataPanel.this.requestFocus();
 	    });
 	    endTurnButton.addActionListener(e -> {
-		transmitDataToGame(Message.END_TURN);
+		testingFrame.transmitDataToGame(Message.END_TURN);
 		GameDataPanel.this.requestFocus();
 	    });
 	    upDirButton.addActionListener(e -> {
@@ -898,8 +940,8 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void updateInformation() {
-	    TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
-	    boolean local = playerIsUsingThisFrame(currentPlayer);
+	    TestingPlayer currentPlayer = (TestingPlayer) testingFrame.game.getCurrentTurn().getPlayerTurn();
+	    boolean local = testingFrame.localPlayer == currentPlayer;
 	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn - " + (local ? "this" : "network"));
 	    updateUnitInfoLabels();
 	}
@@ -912,7 +954,7 @@ public class TestingFrame extends JFrame {
 		pointHoverUnitLabel = unitInfoLabel1;
 		pointPickedUnitLabel = unitInfoLabel2;
 	    }
-	    Square mouseinsqr = gamePanel.mouseInSquare;
+	    Square mouseinsqr = testingFrame.getMouseInSquare();
 	    pointHoverUnitLabel.setText(
 		    getHTMLabelInfoString(mouseinsqr == null ? null : mouseinsqr.getUnitOnTop(), "Hovering Over Unit"));
 	    pointPickedUnitLabel.setText(getHTMLabelInfoString(unitPicked, "Selected Unit"));
@@ -921,28 +963,28 @@ public class TestingFrame extends JFrame {
 
 	public boolean canCurrentlyClick(Square sqr) {
 	    if (currentlyPicking == pickUnitTButton) {
-		return game.canSelectUnit(sqr.getCoor());
+		return testingFrame.game.canSelectUnit(sqr.getCoor());
 	    } else if (currentlyPicking == pickMoveTButton) {
-		return game.canMoveTo(sqr.getCoor());
+		return testingFrame.game.canMoveTo(sqr.getCoor());
 	    } else if (currentlyPicking == pickAttackTButton) {
-		return game.canAttack(sqr.getCoor());
+		return testingFrame.game.canAttack(sqr.getCoor());
 	    } else if (currentlyPicking == pickDirectionTButton) {
-		return game.canChangeDir(null);
+		return testingFrame.game.canChangeDir(null);
 	    }
 	    return false;
 	}
 
 	public void updateColorsDisplayed() {
-	    for (Square sqr : board) {
+	    for (Square sqr : testingFrame.board) {
 		Coordinate coor = sqr.getCoor();
 		Unit unit = sqr.getUnitOnTop();
 
 		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
 
 		if (currentlyPicking == pickUnitTButton) {
-		    if (unit != null
-			    && unit.getOwnerProp().getCurrentPropertyValue() == game.getCurrentTurn().getPlayerTurn()) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightBlue);
+		    if (unit != null && unit.getOwnerProp().getCurrentPropertyValue() == testingFrame.game
+			    .getCurrentTurn().getPlayerTurn()) {
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightBlue);
 		    }
 		} else if (currentlyPicking == pickMoveTButton) {
 		    // if (unitPicked.getGamePathTo(coor) != null) {
@@ -950,12 +992,12 @@ public class TestingFrame extends JFrame {
 		    // }
 		    if (PathFinder.hasClearPathTo(unitPicked, unitPicked.getPosProp().getCurrentPropertyValue(), coor,
 			    unitPicked.getMovingProp().getCurrentPropertyValue())) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightGreen);
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightGreen);
 		    }
 		} else if (currentlyPicking == pickAttackTButton) {
 		    if (unitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty
 			    && ((ActiveTargetAbilityProperty) unitPicked.getAbilityProp()).canUseAbilityOn(sqr)) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrame.slightRed);
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightRed);
 		    }
 		} else if (currentlyPicking == pickDirectionTButton) {
 
@@ -970,10 +1012,10 @@ public class TestingFrame extends JFrame {
 		    return;
 		}
 		if (currentlyPicking == pickUnitTButton) {
-		    unitPicked = board.getUnitAt(coor);
+		    unitPicked = testingFrame.board.getUnitAt(coor);
 		}
 		currentlyPicking.hasPicked = true;
-		transmitDataToGame(coor);
+		testingFrame.transmitDataToGame(coor);
 		naturalNextPick();
 	    }
 	    updateColorsDisplayed();
@@ -981,7 +1023,7 @@ public class TestingFrame extends JFrame {
 	}
 
 	public void directionClicked(Direction dir) {
-	    transmitDataToGame(dir);
+	    testingFrame.transmitDataToGame(dir);
 	    pickDirectionTButton.hasPicked = true;
 	}
 
@@ -1005,7 +1047,8 @@ public class TestingFrame extends JFrame {
 
 	public void resetForNewTurn() {
 	    unitPicked = null;
-	    boolean inputIsEnabled = playerIsUsingThisFrame((TestingPlayer) game.getCurrentTurn().getPlayerTurn());
+	    boolean inputIsEnabled = testingFrame.localPlayer
+		    .equals(testingFrame.game.getCurrentTurn().getPlayerTurn());
 	    enableAllMoveButtons(inputIsEnabled);
 	    currentlyPicking = null;
 	    if (inputIsEnabled) {
@@ -1051,13 +1094,13 @@ public class TestingFrame extends JFrame {
 	    if (this.currentlyPicking != null) {
 
 		if (this.currentlyPicking == pickUnitTButton) {
-		    transmitDataToGame(Message.UNIT_SELECT);
+		    testingFrame.transmitDataToGame(Message.UNIT_SELECT);
 		} else if (this.currentlyPicking == pickMoveTButton) {
-		    transmitDataToGame(Message.UNIT_MOVE);
+		    testingFrame.transmitDataToGame(Message.UNIT_MOVE);
 		} else if (this.currentlyPicking == pickAttackTButton) {
-		    transmitDataToGame(Message.UNIT_ATTACK);
+		    testingFrame.transmitDataToGame(Message.UNIT_ATTACK);
 		} else if (this.currentlyPicking == pickDirectionTButton) {
-		    transmitDataToGame(Message.UNIT_DIR);
+		    testingFrame.transmitDataToGame(Message.UNIT_DIR);
 		}
 
 		this.currentlyPicking.setSelected(true);

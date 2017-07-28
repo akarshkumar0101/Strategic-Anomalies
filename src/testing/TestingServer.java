@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import game.Communication;
 import game.board.Coordinate;
+import game.board.Direction;
 import game.board.NormalBoard;
 
 public class TestingServer {
@@ -14,11 +15,11 @@ public class TestingServer {
     public static final int NUM_PLAYERS = 2;
     public static final int PORT = 37852;
 
-    public static void main(String[] args) throws IOException {
+    public static void mainf(String[] args) throws IOException {
 	long randomSeed = (long) ((Math.random() * 2 - 1) * Long.MAX_VALUE);
-	ServerSocket serverSock = new ServerSocket(PORT);
-	Communication[] clientComms = new Communication[NUM_PLAYERS];
-	for (int i = 0; i < NUM_PLAYERS; i++) {
+	ServerSocket serverSock = new ServerSocket(TestingServer.PORT);
+	Communication[] clientComms = new Communication[TestingServer.NUM_PLAYERS];
+	for (int i = 0; i < TestingServer.NUM_PLAYERS; i++) {
 	    Socket sock = serverSock.accept();
 	    clientComms[i] = new Communication(sock);
 	    final Communication comm = clientComms[i];
@@ -32,6 +33,9 @@ public class TestingServer {
 			    Object data = comm.recieveObject();
 			    if (data != null && data.getClass() == Coordinate.class) {
 				data = NormalBoard.transformCoordinateForOtherPlayerNormalBoard((Coordinate) data);
+			    }
+			    if (data != null && data.getClass() == Direction.class) {
+				data = ((Direction) data).getOpposite();
 			    }
 			    // System.out.println(data);
 
@@ -66,7 +70,7 @@ public class TestingServer {
 	}
 	boolean first = true;
 	for (Communication comm : clientComms) {
-	    comm.sendObject(INIT_STRING);
+	    comm.sendObject(TestingServer.INIT_STRING);
 	    comm.sendObject(randomSeed);
 	    comm.sendObject(first);
 	    first = false;

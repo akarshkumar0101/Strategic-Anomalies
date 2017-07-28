@@ -3,7 +3,6 @@ package testing;
 import game.Communication;
 import game.Player;
 import game.Team;
-import testing.gameframe.TestingFrame;
 
 public class TestingPlayer extends Player {
 

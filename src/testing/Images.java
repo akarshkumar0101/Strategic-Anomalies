@@ -1,4 +1,4 @@
-package testing.gameframe;
+package testing;
 
 import java.awt.Image;
 import java.awt.geom.AffineTransform;

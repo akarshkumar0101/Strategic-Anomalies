@@ -3,18 +3,35 @@ package main;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import javax.swing.UIManager;
+
 import game.Communication;
 import testing.TestingClient;
 import testing.TestingServer;
 
 public class Main {
 
+    static {
+	try {
+	    // UIManager.LookAndFeelInfo[] looks =
+	    // UIManager.getInstalledLookAndFeels();
+	    // javax.swing.plaf.metal.MetalLookAndFeel
+	    // javax.swing.plaf.nimbus.NimbusLookAndFeel
+	    // com.sun.java.swing.plaf.motif.MotifLookAndFeel
+	    // com.sun.java.swing.plaf.windows.WindowsLookAndFeel
+	    // com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel
+	    UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+    }
+
     public static void test() throws Exception {
 	Thread servThread = new Thread() {
 	    @Override
 	    public void run() {
 		try {
-		    TestingServer.main(null);
+		    TestingServer.mainf(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
@@ -24,7 +41,7 @@ public class Main {
 	    @Override
 	    public void run() {
 		try {
-		    TestingClient.main(null);
+		    TestingClient.mainf(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
@@ -34,7 +51,7 @@ public class Main {
 	    @Override
 	    public void run() {
 		try {
-		    TestingClient.main(null);
+		    TestingClient.mainf(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}

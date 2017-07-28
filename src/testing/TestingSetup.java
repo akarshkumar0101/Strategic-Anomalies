@@ -33,8 +33,6 @@ import game.unit.listofunits.Pyromancer;
 import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
 import setup.SetupTemplate;
-import testing.gameframe.Images;
-import testing.gameframe.TestingFrame;
 
 public class TestingSetup {
 
@@ -85,7 +83,7 @@ public class TestingSetup {
     }
 
     public void dispose() {
-	gui.frame.dispose();
+	gui.dispose();
     }
 
     public boolean isInSelectionBoard(Coordinate coor) {
@@ -120,7 +118,7 @@ public class TestingSetup {
 	    gui.pickPanel.setSelected(unitClass, true);
 	}
 
-	gui.frame.repaint();
+	gui.repaint();
     }
 
     public void coordinateClicked(Coordinate coor) {
@@ -137,15 +135,15 @@ public class TestingSetup {
 	    selectedUnitClass = null;
 	}
 
-	gui.frame.repaint();
+	gui.repaint();
     }
 }
 
-class TestingSetupGUI {
+class TestingSetupGUI extends JFrame {
+    private static final long serialVersionUID = -6412445808406230039L;
 
     private final TestingSetup testingSetup;
 
-    public final JFrame frame;
     private final GridBagLayout gblayout;
     private final GridBagConstraints gbc;
 
@@ -156,9 +154,9 @@ class TestingSetupGUI {
     public boolean donePressed = false;
 
     public TestingSetupGUI(TestingSetup testingSetup) {
+	super("Picking Pieces for Game");
 	this.testingSetup = testingSetup;
 
-	frame = new JFrame();
 	gblayout = new GridBagLayout();
 	gbc = new GridBagConstraints();
 
@@ -173,13 +171,13 @@ class TestingSetupGUI {
 	});
 
 	organizeComponents();
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	frame.pack();
-	frame.setVisible(true);
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	pack();
+	setVisible(true);
     }
 
     private void organizeComponents() {
-	frame.setContentPane(new JPanel() {
+	setContentPane(new JPanel() {
 	    private static final long serialVersionUID = -5960100728713917480L;
 
 	    @Override
@@ -188,8 +186,8 @@ class TestingSetupGUI {
 	    }
 	});
 
-	frame.getContentPane().setLayout(gblayout);
-	frame.getContentPane().setBackground(Color.black);
+	getContentPane().setLayout(gblayout);
+	getContentPane().setBackground(Color.black);
 	int gridx = 0, gridy = 0;
 
 	gbc.gridx = gridx;
@@ -202,7 +200,7 @@ class TestingSetupGUI {
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.insets = new Insets(0, 0, 0, 0);
 	// gbc.setFont(normalFont);
-	frame.getContentPane().add(pickPanel, gbc);
+	getContentPane().add(pickPanel, gbc);
 
 	gbc.gridx = gridx;
 	gbc.gridy = ++gridy;
@@ -214,7 +212,7 @@ class TestingSetupGUI {
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.insets = new Insets(0, 0, 0, 0);
 	// gbc.setFont(normalFont);
-	frame.getContentPane().add(placePanel, gbc);
+	getContentPane().add(placePanel, gbc);
 
 	gbc.gridx = ++gridx;
 	gbc.gridy = --gridy;
@@ -226,7 +224,7 @@ class TestingSetupGUI {
 	gbc.anchor = GridBagConstraints.CENTER;
 	gbc.insets = new Insets(0, 0, 0, 0);
 	// gbc.setFont(normalFont);
-	frame.getContentPane().add(doneButton, gbc);
+	getContentPane().add(doneButton, gbc);
 
     }
 
@@ -425,9 +423,9 @@ class TestingSetupGUI {
 	    }
 
 	    if (mousePressing || isSelected) {
-		col = TestingFrame.darkerColor(col, 50);
+		col = TestingFrameGUI.darkerColor(col, 50);
 	    } else if (mouseIn) {
-		col = TestingFrame.darkerColor(col, 25);
+		col = TestingFrameGUI.darkerColor(col, 25);
 	    }
 
 	    return col;
