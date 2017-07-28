@@ -2,7 +2,7 @@ package game.board;
 
 /**
  * Direction on the 2D Board that are possible: UP, DOWN, LEFT, RIGHT.
- * 
+ *
  * @author Akarsh
  *
  */
@@ -15,6 +15,18 @@ public enum Direction {
      */
     public Direction getOpposite() {
 	int ordin = ordinal() + 2;
+	if (ordin > 3) {
+	    ordin -= 4;
+	}
+
+	return Direction.values()[ordin];
+    }
+
+    /**
+     * @return next in rotation
+     */
+    public Direction next() {
+	int ordin = ordinal() + 1;
 	if (ordin > 3) {
 	    ordin -= 4;
 	}

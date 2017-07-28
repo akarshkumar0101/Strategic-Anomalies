@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import game.Communication;
 import game.board.Coordinate;
 import game.board.Direction;
-import game.board.NormalBoard;
 import game.unit.Unit;
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
@@ -57,7 +56,9 @@ public class TestingClient {
     }
 
     public static void newGame(Communication servComm, boolean first) {
-	SetupTemplate homeSel = first ? TestingClient.getSetupTemplate1() : TestingClient.getSetupTemplate2();
+	TestingSetup testingSetup = new TestingSetup();
+	SetupTemplate homeSel = testingSetup.getFinalTemplate();
+	testingSetup.dispose();
 	servComm.sendObject(homeSel);
 	SetupTemplate awaySel = (SetupTemplate) servComm.recieveObject();
 
@@ -103,15 +104,4 @@ public class TestingClient {
 	return tgame;
     }
 
-    public static SetupTemplate getSetupTemplate1() {
-	SetupTemplate temp = new SetupTemplate(NormalBoard.class);
-	temp.put(Warrior.class, new Coordinate(1, 1), Direction.UP);
-	return temp;
-    }
-
-    public static SetupTemplate getSetupTemplate2() {
-	SetupTemplate temp = new SetupTemplate(NormalBoard.class);
-	temp.put(Pyromancer.class, new Coordinate(1, 1), Direction.UP);
-	return temp;
-    }
 }

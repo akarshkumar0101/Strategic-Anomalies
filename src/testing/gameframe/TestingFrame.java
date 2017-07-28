@@ -260,7 +260,7 @@ public class TestingFrame extends JFrame {
     private static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
 	    slightGreen = new Color(192, 255, 192);
 
-    private static Color darkerColor(Color col, int amount) {
+    public static Color darkerColor(Color col, int amount) {
 	return new Color(Math.max(col.getRed() - amount, 0), Math.max(col.getGreen() - amount, 0),
 		Math.max(col.getBlue() - amount, 0));
     }

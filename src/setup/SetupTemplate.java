@@ -40,6 +40,26 @@ public class SetupTemplate implements Serializable {
 	template.remove(coor);
     }
 
+    public boolean pieceExistsAt(Coordinate coor) {
+	return template.containsKey(coor);
+    }
+
+    public Class<? extends Unit> getUnitClassAt(Coordinate coor) {
+	if (template.get(coor) == null) {
+	    return null;
+	} else {
+	    return template.get(coor).getUnitClass();
+	}
+    }
+
+    public Direction getDirFacing(Coordinate coor) {
+	if (template.get(coor) == null) {
+	    return null;
+	} else {
+	    return template.get(coor).getPostion().getDir();
+	}
+    }
+
     private static Unit createNewUnit(Class<? extends Unit> unitClass, Position pos, Game game, Player player) {
 	Constructor<? extends Unit> cons;
 	try {

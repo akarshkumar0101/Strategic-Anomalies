@@ -6,7 +6,6 @@ import java.net.Socket;
 import game.Communication;
 import testing.TestingClient;
 import testing.TestingServer;
-import testing.TestingSetup;
 
 public class Main {
 
@@ -68,7 +67,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-	boolean test = false;
+	boolean test = true;
 	try {
 	    if (test) {
 		Main.test();
@@ -77,7 +76,6 @@ public class Main {
 	} catch (Exception e) {
 	    return;
 	}
-	TestingSetup.startTestingSetup();
 
     }
 }
