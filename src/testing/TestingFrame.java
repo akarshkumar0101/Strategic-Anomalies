@@ -9,14 +9,16 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -25,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 
 import game.Communication;
 import game.Player;
@@ -32,10 +36,8 @@ import game.board.Board;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.Path;
-import game.board.PathFinder;
 import game.board.Square;
 import game.unit.Unit;
-import game.unit.property.ability.ActiveTargetAbilityProperty;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
 public class TestingFrame {
@@ -46,7 +48,9 @@ public class TestingFrame {
 
     private final TestingFrameGUI gui;
 
-    private final Thread gameAnnouncementThread;
+    private final FrameUpdatingThread frameUpdatingThread;
+
+    private boolean doNaturalNextPick = true;
 
     private final Object dataTransferLock = new Object();
 
@@ -58,20 +62,34 @@ public class TestingFrame {
 	gui = new TestingFrameGUI(this);
 	gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	gameAnnouncementThread = new FrameUpdatingThread();
-
-	gui.gameDataPanel.resetForNewTurn();
+	frameUpdatingThread = new FrameUpdatingThread();
 
     }
 
-    public void startFrameUpdatingThread() {
-	gameAnnouncementThread.start();
+    public void startFrame() {
+	frameUpdatingThread.start();
+	gui.setVisible(true);
     }
 
-    Coordinate opponentHover = null;
-    Unit unitSelected = null;
+    Message currentlyPicking;
+
+    private Coordinate opponentHover = null;
+    private final Object opponentHoverLockObj = new Object();
+
+    public Coordinate getOpponentHover() {
+	synchronized (opponentHoverLockObj) {
+	    return opponentHover;
+	}
+    }
+
+    public void setOpponentHover(Coordinate coor) {
+	synchronized (opponentHoverLockObj) {
+	    opponentHover = coor;
+	}
+    }
 
     class FrameUpdatingThread extends Thread {
+
 	private Communication receiveComm;
 
 	@Override
@@ -81,25 +99,39 @@ public class TestingFrame {
 
 	    // TODO add stop statement
 	    // game loop for different turns
+	    if (!TestingGame.START_GAME.equals(receiveComm.recieveObject())) {
+		throw new RuntimeException("Could not properly start frame with game");
+	    }
+	    // game is ready to be played
+	    gui.updateInformation();
+	    gui.repaint();
 	    while (true) {
 		handleTurn();
-		updateInformation();
+		gui.updateInformation();
 		gui.repaint();
 	    }
 
 	}
 
 	public void handleTurn() {
-	    opponentHover = null;
-	    unitSelected = null;
+	    setOpponentHover(null);
 	    boolean shouldRun = true;
 	    while (shouldRun) {
+		requestNextNaturalPick();
+
+		currentlyPicking = null;
+
 		shouldRun = handleCommand();
+
+		gui.updateInformation();
+		gui.gameDataPanel.setCurrentlyPicking(null);
+		gui.repaint();
 	    }
 	}
 
 	public boolean handleCommand() {
-	    Object command = null, specs = null;
+	    Message command = null;
+	    Object specs = null;
 
 	    boolean run = false;
 	    do {
@@ -109,8 +141,9 @@ public class TestingFrame {
 		if (Message.HOVER.equals(obj)) {
 		    hover((Coordinate) receiveComm.recieveObject());
 		    run = true;
-		} else if (Message.isCommand(obj)) {
-		    command = obj;
+		} else if (obj instanceof Message) {
+		    command = (Message) obj;
+		    handlePartialCoreCommand(command);
 		    run = true;
 
 		    if (Message.END_TURN.equals(command)) {
@@ -123,90 +156,220 @@ public class TestingFrame {
 
 	    } while (run);
 
-	    handleFullNonHoverCommand(command, specs);
+	    handleFullCoreCommand(command, specs);
 	    return true;
 	}
 
-	public void handleFullNonHoverCommand(Object command, Object specs) {
-	    if (!Message.isCommand(command)) {
-		throw new RuntimeException("Not a command");
+	public void handlePartialCoreCommand(Message command) {
+
+	    currentlyPicking = command;
+
+	    if (command.equals(Message.UNIT_SELECT)) {
+		unitSelect();
+	    } else if (command.equals(Message.UNIT_MOVE)) {
+		unitMove();
+	    } else if (command.equals(Message.UNIT_ATTACK)) {
+		unitAttack();
+	    } else if (command.equals(Message.UNIT_DIR)) {
+		unitChangeDir();
+	    } else if (command.equals(Message.END_TURN)) {
+		endTurn();
 	    }
+	    gui.updateInformation();
+	    gui.gameDataPanel.setCurrentlyPicking(command);
+	    gui.repaint();
+	}
+
+	public void handleFullCoreCommand(Message command, Object specs) {
+
 	    if (command.equals(Message.UNIT_SELECT)) {
 		unitSelect((Coordinate) specs);
 	    } else if (command.equals(Message.UNIT_MOVE)) {
-		unitMove((Path) receiveComm.recieveObject(), (Coordinate) specs);
+		unitMove((Path) specs, (Coordinate) receiveComm.recieveObject());
 	    } else if (command.equals(Message.UNIT_ATTACK)) {
 		unitAttack((Coordinate) specs);
 	    } else if (command.equals(Message.UNIT_DIR)) {
 		unitChangeDir((Direction) specs);
 	    }
+	    gui.updateInformation();
+	    gui.repaint();
+
 	}
 
 	public void hover(Coordinate coor) {
-	    opponentHover = coor;
+	    setOpponentHover(coor);
 	    gui.repaint();
+	}
+
+	public void unitSelect() {
 	}
 
 	public void unitSelect(Coordinate coor) {
-	    unitSelected = board.getUnitAt(coor);
-	    updateInformation();
-	    gui.repaint();
+	}
+
+	public void unitMove() {
 	}
 
 	public void unitMove(Path path, Coordinate coor) {
-	    updateInformation();
-	    gui.repaint();
+	}
+
+	public void unitAttack() {
 	}
 
 	public void unitAttack(Coordinate coor) {
-	    updateInformation();
-	    gui.repaint();
+	}
+
+	public void unitChangeDir() {
 	}
 
 	public void unitChangeDir(Direction dir) {
-	    updateInformation();
-	    gui.repaint();
 	}
 
+	public void endTurn() {
+	    // TODO feature to show end turn button click to other player?
+	    // be careful bc turn has already changed at this point
+	}
+    }
+
+    public boolean isLocalPlayerTurn() {
+	return localPlayer.equals(game.getCurrentTurn().getPlayerTurn());
     }
 
     void transmitDataToGame(Object data) {
-	TestingPlayer currentPlayer = (TestingPlayer) game.getCurrentTurn().getPlayerTurn();
-	if (!localPlayer.equals(currentPlayer)) {
+	if (!isLocalPlayerTurn()) {
 	    return;
 	}
-	Communication gameComm = currentPlayer.getGameComm();
-	// System.out.println("writing data to players out " + data);
+	Communication gameComm = localPlayer.getGameComm();
+	// Systemf.out.println("writing data to players out " + data);
 	gameComm.sendObject(data);
-    }
-
-    public void updateInformation() {
-	gui.gamePanel.updateInformation();
-	gui.gameDataPanel.updateInformation();
     }
 
     public Square getSquare(Coordinate coor) {
 	return board.getSquare(coor);
     }
 
-    public void resetForNewTurn() {
-	gui.gameDataPanel.resetForNewTurn();
+    public void resetForNewTurnf() {
+
     }
 
     public void triggerBlockAnimation(Square sqr) {
 	gui.triggerBlockAnimation(sqr);
     }
 
-    public void setVisible(boolean vis) {
-	gui.setVisible(vis);
-    }
-
-    public void repaint() {
-	gui.repaint();
-    }
-
     public boolean canCurrentlyClick(Coordinate coor) {
-	return gui.gameDataPanel.canCurrentlyClick(board.getSquare(coor));
+	if (!board.isInBoard(coor)) {
+	    return false;
+	}
+	if (currentlyPicking == Message.UNIT_SELECT) {
+	    return game.canSelectUnit(coor);
+	} else if (currentlyPicking == Message.UNIT_MOVE) {
+	    return game.canMoveTo(coor);
+	} else if (currentlyPicking == Message.UNIT_ATTACK) {
+	    return game.canAttack(coor);
+	}
+	return false;
+    }
+
+    public boolean canCurrentlyChangeDir(Direction dir) {
+	return game.canChangeDir(dir);
+    }
+
+    public void requestNextNaturalPick() {
+	if (!isLocalPlayerTurn() || !doNaturalNextPick) {
+	    return;
+	}
+	// TODO add conditions for if not target ability, can't move piece etc.
+	if (!game.hasSelectedUnit()) {
+	    pickUnitButtonClicked();
+	} else if (!game.hasMoved()) {
+	    pickMoveButtonClicked();
+	} else if (!game.hasAttacked()) {
+	    pickAttackButtonClicked();
+	} else if (!game.hasChangedDir()) {
+	    pickDirectionButtonClicked();
+	} else {
+	    // this seems kind of weird tbh lol
+	    // endTurnButtonClicked();
+	}
+
+    }
+
+    public void pickUnitButtonClicked() {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (game.hasSelectedUnit()) {
+	    throw new RuntimeException("Already selected unit");
+	}
+	transmitDataToGame(Message.UNIT_SELECT);
+    }
+
+    public void pickMoveButtonClicked() {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (game.hasMoved()) {
+	    throw new RuntimeException("Already moved");
+	}
+	if (!game.hasSelectedUnit()) {
+	    throw new RuntimeException("Hasn't selected unit");
+	}
+	transmitDataToGame(Message.UNIT_MOVE);
+    }
+
+    public void pickAttackButtonClicked() {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (game.hasAttacked()) {
+	    throw new RuntimeException("Already attacked");
+	}
+	if (!game.hasSelectedUnit()) {
+	    throw new RuntimeException("Hasn't selected unit");
+	}
+	transmitDataToGame(Message.UNIT_ATTACK);
+    }
+
+    public void pickDirectionButtonClicked() {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (game.hasChangedDir()) {
+	    throw new RuntimeException("Already changed direction");
+	}
+	if (!game.hasSelectedUnit()) {
+	    throw new RuntimeException("Hasn't selected unit");
+	}
+	transmitDataToGame(Message.UNIT_DIR);
+    }
+
+    public void endTurnButtonClicked() {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	transmitDataToGame(Message.END_TURN);
+    }
+
+    public void coordinateClicked(Coordinate coor) {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (!canCurrentlyClick(coor)) {
+	    return;
+	}
+
+	transmitDataToGame(coor);
+	gui.gamePanel.repaint();
+    }
+
+    public void directionClicked(Direction dir) {
+	if (!isLocalPlayerTurn()) {
+	    return;
+	}
+	if (!canCurrentlyChangeDir(dir)) {
+	    return;
+	}
+	transmitDataToGame(dir);
     }
 
     private final Object mouseInLock = new Object();
@@ -232,7 +395,7 @@ public class TestingFrame {
     }
 
     public void mouseEntered(Coordinate coor) {
-	if (board.isInBoard(coor) && localPlayer.equals(game.getCurrentTurn().getPlayerTurn())) {
+	if (board.isInBoard(coor) && isLocalPlayerTurn()) {
 	    synchronized (dataTransferLock) {
 		transmitDataToGame(Message.HOVER);
 		transmitDataToGame(coor);
@@ -242,7 +405,7 @@ public class TestingFrame {
     }
 
     public void mouseExited(Coordinate coor) {
-	if (board.isInBoard(coor) && localPlayer.equals(game.getCurrentTurn().getPlayerTurn())) {
+	if (board.isInBoard(coor) && isLocalPlayerTurn()) {
 	    synchronized (dataTransferLock) {
 		transmitDataToGame(Message.HOVER);
 		transmitDataToGame(null);
@@ -276,9 +439,11 @@ class TestingFrameGUI extends JFrame {
 
 	organizeComponents();
 
-	// setSize(1450, 1000);
+	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	// setSize(500, 500);
 	pack();
-	setResizable(false);
+	// setResizable(false);
     }
 
     public void organizeComponents() {
@@ -310,11 +475,16 @@ class TestingFrameGUI extends JFrame {
 	gbConstrains.anchor = GridBagConstraints.CENTER;
 
 	getContentPane().add(gameDataPanel, gbConstrains);
+
     }
 
-    public static double scale(double num, double ori1, double ori2, double new1, double new2) {
+    public void updateInformation() {
+	gamePanel.updateInformation();
+	gameDataPanel.updateInformation();
+    }
+
+    private static double scale(double num, double ori1, double ori2, double new1, double new2) {
 	double scale = (new2 - new1) / (ori2 - ori1);
-	System.out.println(ori1);
 	return (num - ori1) * scale + new1;
     }
 
@@ -385,6 +555,33 @@ class TestingFrameGUI extends JFrame {
 		    labels[x][y].updateInformation();
 		}
 	    }
+	    updateColorsDisplayed();
+	}
+
+	public void updateColorsDisplayed() {
+	    for (Square sqr : testingFrame.board) {
+		Coordinate coor = sqr.getCoor();
+
+		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
+
+		if (testingFrame.currentlyPicking == Message.UNIT_SELECT) {
+		    if (testingFrame.game.canSelectUnit(coor)) {
+			if (testingFrame.isLocalPlayerTurn()) {
+			    gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightBlue);
+			}
+		    }
+		} else if (testingFrame.currentlyPicking == Message.UNIT_MOVE) {
+		    if (testingFrame.game.canMoveTo(coor)) {
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightGreen);
+		    }
+		} else if (testingFrame.currentlyPicking == Message.UNIT_ATTACK) {
+		    if (testingFrame.game.canAttack(coor)) {
+			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightRed);
+		    }
+		} else if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
+
+		}
+	    }
 	}
 
 	private SquareLabel getSquareLabel(Coordinate coor) {
@@ -401,7 +598,7 @@ class TestingFrameGUI extends JFrame {
 	    private boolean mouseIn;
 	    private boolean mousePressing;
 
-	    private boolean canCurrentlyClick = true;
+	    private boolean canCurrentlyClick = false;
 	    private Color colorToDisplay = null;
 
 	    private Unit unitOnTop;
@@ -436,11 +633,7 @@ class TestingFrameGUI extends JFrame {
 		    Class<? extends Unit> clazz = unitOnTop.getClass();
 		    unitImg = Images.getImage(clazz);
 		}
-		updateCanCurrentlyClick();
-	    }
-
-	    public void updateCanCurrentlyClick() {
-		canCurrentlyClick = isInBoard ? testingFrame.canCurrentlyClick(coor) : false;
+		canCurrentlyClick = testingFrame.canCurrentlyClick(coor);
 	    }
 
 	    public void setColorToDisplay(Color col) {
@@ -450,7 +643,7 @@ class TestingFrameGUI extends JFrame {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
 		if (isInBoard && canCurrentlyClick) {
-		    gameDataPanel.coordinateClicked(coor);
+		    testingFrame.coordinateClicked(coor);
 		}
 	    }
 
@@ -521,7 +714,7 @@ class TestingFrameGUI extends JFrame {
 		    col = TestingFrameGUI.darkerColor(col, 50);
 		} else if (mouseIn) {
 		    col = TestingFrameGUI.darkerColor(col, 25);
-		} else if (coor.equals(testingFrame.opponentHover)) {
+		} else if (coor.equals(testingFrame.getOpponentHover())) {
 		    col = TestingFrameGUI.darkerColor(col, 25);
 		}
 		// col = TestingFrame.combineColors(col,
@@ -590,7 +783,7 @@ class TestingFrameGUI extends JFrame {
 		}
 
 		// golden border if unit is picked
-		if (testingFrame.unitSelected != null && testingFrame.unitSelected == unitOnTop) {
+		if (testingFrame.game.getSelectedUnit() == unitOnTop) {
 		    g.drawImage(Images.goldenFrameImage, 1, 1, getWidth() - 2, getHeight() - 2, null);
 		}
 		// border
@@ -616,11 +809,11 @@ class TestingFrameGUI extends JFrame {
 
 	private final JLabel turnInfoLabel;
 
-	private final PickingButton pickUnitTButton;
-	private final PickingButton pickMoveTButton;
-	private final PickingButton pickAttackTButton;
-	private final PickingButton pickDirectionTButton;
-	private final JButton endTurnButton;
+	final JToggleButton pickUnitTButton;
+	final JToggleButton pickMoveTButton;
+	final JToggleButton pickAttackTButton;
+	final JToggleButton pickDirectionTButton;
+	final JButton endTurnButton;
 
 	private final JButton upDirButton;
 	private final JButton leftDirButton;
@@ -632,74 +825,51 @@ class TestingFrameGUI extends JFrame {
 	private final JLabel unitInfoLabel1;
 	private final JLabel unitInfoLabel2;
 
-	private JLabel pointHoverUnitLabel;
-	private JLabel pointPickedUnitLabel;
+	private JLabel hoverUnitLabel;
+	private JLabel selectedUnitLabel;
 
-	private PickingButton currentlyPicking;
-
-	private Unit unitPicked;
+	private final HashMap<JToggleButton, Border> normalBorders;
 
 	public GameDataPanel() {
 	    super();
 
-	    currentlyPicking = null;
-
 	    gdpgbLayout = new GridBagLayout();
 	    gdpgbConstrains = new GridBagConstraints();
 
-	    pickUnitTButton = new PickingButton("  Pick   ");
+	    pickUnitTButton = new JToggleButton("  Pick   ");
 
-	    pickMoveTButton = new PickingButton("  Move   ");
-	    pickAttackTButton = new PickingButton(" Attack  ");
-	    pickDirectionTButton = new PickingButton("Direction");
+	    pickMoveTButton = new JToggleButton("  Move   ");
+	    pickAttackTButton = new JToggleButton(" Attack  ");
+	    pickDirectionTButton = new JToggleButton("Direction");
 
-	    endTurnButton = new JButton("End Turn ");
+	    endTurnButton = new JButton("End Turn");
+
+	    pickUnitTButton.setFocusable(false);
+	    pickMoveTButton.setFocusable(false);
+	    pickAttackTButton.setFocusable(false);
+	    pickDirectionTButton.setFocusable(false);
+	    endTurnButton.setFocusable(false);
+
 	    endTurnButton.setPreferredSize(new Dimension(100, 100));
 
 	    int arrowLength = 40;
-	    upDirButton = new JButton() {
-		private static final long serialVersionUID = -1992040650621842214L;
+	    upDirButton = new JButton(
+		    new ImageIcon(Images.getScaledImage(Images.upArrowImage, arrowLength, arrowLength)));
+	    leftDirButton = new JButton(
+		    new ImageIcon(Images.getScaledImage(Images.leftArrowImage, arrowLength, arrowLength)));
+	    rightDirButton = new JButton(
+		    new ImageIcon(Images.getScaledImage(Images.rightArrowImage, arrowLength, arrowLength)));
+	    downDirButton = new JButton(
+		    new ImageIcon(Images.getScaledImage(Images.downArrowImage, arrowLength, arrowLength)));
 
-		@Override
-		public void paintComponent(Graphics g) {
-		    super.paintComponent(g);
-		    g.drawImage(Images.upArrowImage, (getWidth() - arrowLength) / 2, (getHeight() - arrowLength) / 2,
-			    arrowLength, arrowLength, null);
-		}
-	    };
+	    upDirButton.setFocusable(false);
+	    leftDirButton.setFocusable(false);
+	    rightDirButton.setFocusable(false);
+	    downDirButton.setFocusable(false);
+
 	    upDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
-	    leftDirButton = new JButton() {
-		private static final long serialVersionUID = -3786913193009448314L;
-
-		@Override
-		public void paintComponent(Graphics g) {
-		    super.paintComponent(g);
-		    g.drawImage(Images.leftArrowImage, (getWidth() - arrowLength) / 2, (getHeight() - arrowLength) / 2,
-			    arrowLength, arrowLength, null);
-		}
-	    };
 	    leftDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
-	    rightDirButton = new JButton() {
-		private static final long serialVersionUID = 363437984462915163L;
-
-		@Override
-		public void paintComponent(Graphics g) {
-		    super.paintComponent(g);
-		    g.drawImage(Images.rightArrowImage, (getWidth() - arrowLength) / 2, (getHeight() - arrowLength) / 2,
-			    arrowLength, arrowLength, null);
-		}
-	    };
 	    rightDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
-	    downDirButton = new JButton() {
-		private static final long serialVersionUID = -6210276380909591358L;
-
-		@Override
-		public void paintComponent(Graphics g) {
-		    super.paintComponent(g);
-		    g.drawImage(Images.downArrowImage, (getWidth() - arrowLength) / 2, (getHeight() - arrowLength) / 2,
-			    arrowLength, arrowLength, null);
-		}
-	    };
 	    downDirButton.setPreferredSize(new Dimension(arrowLength + 20, arrowLength + 20));
 
 	    commandInfoSeperator = new JSeparator();
@@ -711,7 +881,9 @@ class TestingFrameGUI extends JFrame {
 	    unitInfoLabel2 = new JLabel();
 	    unitInfoLabel2.setVerticalAlignment(SwingConstants.TOP);
 
-	    organizeComponents();
+	    normalBorders = new HashMap<>();
+
+	    GameDataPanel.this.organizeComponents();
 	    setupButtonLogic();
 	}
 
@@ -880,253 +1052,201 @@ class TestingFrameGUI extends JFrame {
 	    add(unitInfoLabel2, gdpgbConstrains);
 
 	    setBackground(TestingFrameGUI.darkerColor(Color.lightGray, 30));
+
+	    normalBorders.put(pickUnitTButton, pickUnitTButton.getBorder());
+	    normalBorders.put(pickMoveTButton, pickMoveTButton.getBorder());
+	    normalBorders.put(pickAttackTButton, pickAttackTButton.getBorder());
+	    normalBorders.put(pickDirectionTButton, pickDirectionTButton.getBorder());
+
 	}
 
 	public void setupButtonLogic() {
 	    pickUnitTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickUnitTButton);
-		GameDataPanel.this.requestFocus();
+		testingFrame.pickUnitButtonClicked();
 	    });
 	    pickMoveTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickMoveTButton);
-		GameDataPanel.this.requestFocus();
+		testingFrame.pickMoveButtonClicked();
 	    });
 	    pickAttackTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickAttackTButton);
-		GameDataPanel.this.requestFocus();
+		testingFrame.pickAttackButtonClicked();
 	    });
 	    pickDirectionTButton.addActionListener(e -> {
-		setCurrentlyPicking(pickDirectionTButton);
-		GameDataPanel.this.requestFocus();
+		testingFrame.pickDirectionButtonClicked();
 	    });
 	    endTurnButton.addActionListener(e -> {
-		testingFrame.transmitDataToGame(Message.END_TURN);
-		GameDataPanel.this.requestFocus();
+		testingFrame.endTurnButtonClicked();
 	    });
 	    upDirButton.addActionListener(e -> {
-		directionClicked(Direction.UP);
-		GameDataPanel.this.requestFocus();
+		testingFrame.directionClicked(Direction.UP);
 	    });
 	    leftDirButton.addActionListener(e -> {
-		directionClicked(Direction.LEFT);
-		GameDataPanel.this.requestFocus();
+		testingFrame.directionClicked(Direction.LEFT);
 	    });
 	    rightDirButton.addActionListener(e -> {
-		directionClicked(Direction.RIGHT);
-		GameDataPanel.this.requestFocus();
+		testingFrame.directionClicked(Direction.RIGHT);
 	    });
 	    downDirButton.addActionListener(e -> {
-		directionClicked(Direction.DOWN);
-		GameDataPanel.this.requestFocus();
+		testingFrame.directionClicked(Direction.DOWN);
 	    });
 
-	    setFocusable(true);
-	    addKeyListener(new KeyListener() {
-		@Override
-		public void keyTyped(KeyEvent e) {
-		}
+	    // to use following code all the buttons above must do
+	    // gamedatapanel.requestfocus after each click
 
-		@Override
-		public void keyPressed(KeyEvent e) {
-		}
-
-		@Override
-		public void keyReleased(KeyEvent e) {
-		    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-			naturalNextPick();
-		    }
-		}
-	    });
+	    // setFocusable(true);
+	    // addKeyListener(new KeyListener() {
+	    // @Override
+	    // public void keyTyped(KeyEvent e) {
+	    // }
+	    //
+	    // @Override
+	    // public void keyPressed(KeyEvent e) {
+	    // }
+	    //
+	    // @Override
+	    // public void keyReleased(KeyEvent e) {
+	    // if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+	    // naturalNextPick();
+	    // }
+	    // }
+	    // });
 	}
+
+	private final ImageIcon greenDotIcon = new ImageIcon(Images.getScaledImage(Images.greenDotImage, 25, 25));
+	private final ImageIcon redDotIcon = new ImageIcon(Images.getScaledImage(Images.redDotImage, 25, 25));
 
 	public void updateInformation() {
 	    TestingPlayer currentPlayer = (TestingPlayer) testingFrame.game.getCurrentTurn().getPlayerTurn();
-	    boolean local = testingFrame.localPlayer == currentPlayer;
-	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn - " + (local ? "this" : "network"));
+	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn ");
+	    turnInfoLabel.setIcon(testingFrame.isLocalPlayerTurn() ? greenDotIcon : redDotIcon);
+
+	    updateEnableButtons();
+	    updateSelectButtons();
+
 	    updateUnitInfoLabels();
+
 	}
 
 	public void updateUnitInfoLabels() {
-	    if (pickUnitTButton.hasPicked) {
-		pointPickedUnitLabel = unitInfoLabel1;
-		pointHoverUnitLabel = unitInfoLabel2;
+	    if (testingFrame.game.hasSelectedUnit()) {
+		selectedUnitLabel = unitInfoLabel1;
+		hoverUnitLabel = unitInfoLabel2;
 	    } else {
-		pointHoverUnitLabel = unitInfoLabel1;
-		pointPickedUnitLabel = unitInfoLabel2;
+		hoverUnitLabel = unitInfoLabel1;
+		selectedUnitLabel = unitInfoLabel2;
 	    }
 	    Square mouseinsqr = testingFrame.getMouseInSquare();
-	    pointHoverUnitLabel.setText(
+	    hoverUnitLabel.setText(
 		    getHTMLabelInfoString(mouseinsqr == null ? null : mouseinsqr.getUnitOnTop(), "Hovering Over Unit"));
-	    pointPickedUnitLabel.setText(getHTMLabelInfoString(unitPicked, "Selected Unit"));
-
+	    selectedUnitLabel.setText(getHTMLabelInfoString(testingFrame.game.getSelectedUnit(), "Selected Unit"));
 	}
 
-	public boolean canCurrentlyClick(Square sqr) {
-	    if (currentlyPicking == pickUnitTButton) {
-		return testingFrame.game.canSelectUnit(sqr.getCoor());
-	    } else if (currentlyPicking == pickMoveTButton) {
-		return testingFrame.game.canMoveTo(sqr.getCoor());
-	    } else if (currentlyPicking == pickAttackTButton) {
-		return testingFrame.game.canAttack(sqr.getCoor());
-	    } else if (currentlyPicking == pickDirectionTButton) {
-		return testingFrame.game.canChangeDir(null);
-	    }
-	    return false;
+	void selectTurnPartButton(Message turnPart, boolean selected) {
+	    getButton(turnPart).setSelected(selected);
 	}
 
-	public void updateColorsDisplayed() {
-	    for (Square sqr : testingFrame.board) {
-		Coordinate coor = sqr.getCoor();
-		Unit unit = sqr.getUnitOnTop();
-
-		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
-
-		if (currentlyPicking == pickUnitTButton) {
-		    if (unit != null && unit.getOwnerProp().getCurrentPropertyValue() == testingFrame.game
-			    .getCurrentTurn().getPlayerTurn()) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightBlue);
-		    }
-		} else if (currentlyPicking == pickMoveTButton) {
-		    // if (unitPicked.getGamePathTo(coor) != null) {
-		    // colorsDisplayed[coor.x()][coor.y()] = Color.green;
-		    // }
-		    if (PathFinder.hasClearPathTo(unitPicked, unitPicked.getPosProp().getCurrentPropertyValue(), coor,
-			    unitPicked.getMovingProp().getCurrentPropertyValue())) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightGreen);
-		    }
-		} else if (currentlyPicking == pickAttackTButton) {
-		    if (unitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty
-			    && ((ActiveTargetAbilityProperty) unitPicked.getAbilityProp()).canUseAbilityOn(sqr)) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightRed);
-		    }
-		} else if (currentlyPicking == pickDirectionTButton) {
-
-		}
-	    }
+	void selectAllTurnPartButtons(boolean selected) {
+	    pickUnitTButton.setSelected(selected);
+	    pickMoveTButton.setSelected(selected);
+	    pickAttackTButton.setSelected(selected);
+	    pickDirectionTButton.setSelected(selected);
+	    endTurnButton.setSelected(selected);
 	}
 
-	public void coordinateClicked(Coordinate coor) {
-	    if (currentlyPicking == pickUnitTButton || currentlyPicking == pickMoveTButton
-		    || currentlyPicking == pickAttackTButton) {
-		if (currentlyPicking.hasPicked) {
-		    return;
-		}
-		if (currentlyPicking == pickUnitTButton) {
-		    unitPicked = testingFrame.board.getUnitAt(coor);
-		}
-		currentlyPicking.hasPicked = true;
-		testingFrame.transmitDataToGame(coor);
-		naturalNextPick();
-	    }
-	    updateColorsDisplayed();
-	    gamePanel.repaint();
+	void enableTurnPartButton(Message turnPart, boolean enable) {
+	    getButton(turnPart).setEnabled(enable);
 	}
 
-	public void directionClicked(Direction dir) {
-	    testingFrame.transmitDataToGame(dir);
-	    pickDirectionTButton.hasPicked = true;
-	}
-
-	public void enableAllMoveButtons(boolean enable) {
-	    if (enable) {
-		pickUnitTButton.setSelected(false);
-		pickMoveTButton.setSelected(false);
-		pickAttackTButton.setSelected(false);
-		pickDirectionTButton.setSelected(false);
-	    }
+	void enableAllTurnPartButtons(boolean enable) {
 	    pickUnitTButton.setEnabled(enable);
 	    pickMoveTButton.setEnabled(enable);
 	    pickAttackTButton.setEnabled(enable);
 	    pickDirectionTButton.setEnabled(enable);
 	    endTurnButton.setEnabled(enable);
-
-	    enableAllDirButtons(false);
-
-	    pickUnitTButton.hasPicked = pickMoveTButton.hasPicked = pickAttackTButton.hasPicked = pickDirectionTButton.hasPicked = false;
 	}
 
-	public void resetForNewTurn() {
-	    unitPicked = null;
-	    boolean inputIsEnabled = testingFrame.localPlayer
-		    .equals(testingFrame.game.getCurrentTurn().getPlayerTurn());
-	    enableAllMoveButtons(inputIsEnabled);
-	    currentlyPicking = null;
-	    if (inputIsEnabled) {
-		setCurrentlyPicking(pickUnitTButton);
-	    }
-	    updateInformation();
-	    repaint();
-	}
-
-	public void enableAllDirButtons(boolean enable) {
+	void enableAllDirButtons(boolean enable) {
 	    upDirButton.setEnabled(enable);
 	    leftDirButton.setEnabled(enable);
 	    rightDirButton.setEnabled(enable);
 	    downDirButton.setEnabled(enable);
 	}
 
-	public void setCurrentlyPicking(PickingButton currentlyPicking) {
-	    if (this.currentlyPicking == currentlyPicking) {
-		currentlyPicking.setSelected(!currentlyPicking.isSelected());
-		return;
-	    }
-	    PickingButton prev = this.currentlyPicking;
+	/**
+	 * Call update information on game data panel first
+	 */
+	public void setCurrentlyPicking(Message turnPart) {
+	    allNaturalBorders();
 
-	    if (prev == pickUnitTButton && !pickUnitTButton.hasPicked) {
-		currentlyPicking.setSelected(false);
-		System.out.println("Must pick unit first before continuing");
-		return;
-	    }
-	    if (prev == pickUnitTButton) {
-		updateUnitInfoLabels();
+	    if (turnPart == Message.UNIT_SELECT || turnPart == Message.UNIT_MOVE || turnPart == Message.UNIT_ATTACK
+		    || turnPart == Message.UNIT_DIR) {
+		JToggleButton button = (JToggleButton) getButton(turnPart);
+		setSelectingBorder(button);
+
+		selectTurnPartButton(turnPart, true);
 	    }
 
-	    this.currentlyPicking = currentlyPicking;
-	    if (prev != null) {
-		if (prev.hasPicked) {
-		    prev.setEnabled(false);
-		} else {
-		    prev.setEnabled(true);
-		    prev.setSelected(false);
-		}
-		prev.repaint();
-	    }
-	    if (this.currentlyPicking != null) {
-
-		if (this.currentlyPicking == pickUnitTButton) {
-		    testingFrame.transmitDataToGame(Message.UNIT_SELECT);
-		} else if (this.currentlyPicking == pickMoveTButton) {
-		    testingFrame.transmitDataToGame(Message.UNIT_MOVE);
-		} else if (this.currentlyPicking == pickAttackTButton) {
-		    testingFrame.transmitDataToGame(Message.UNIT_ATTACK);
-		} else if (this.currentlyPicking == pickDirectionTButton) {
-		    testingFrame.transmitDataToGame(Message.UNIT_DIR);
-		}
-
-		this.currentlyPicking.setSelected(true);
-		this.currentlyPicking.repaint();
-	    }
-	    if (this.currentlyPicking == pickDirectionTButton) {
-		enableAllDirButtons(true);
-	    } else {
-		enableAllDirButtons(false);
-	    }
-	    gamePanel.updateInformation();
-
-	    updateColorsDisplayed();
-	    gamePanel.repaint();
 	}
 
-	public void naturalNextPick() {
-	    if (currentlyPicking == pickUnitTButton && pickUnitTButton.hasPicked) {
-		setCurrentlyPicking(pickMoveTButton);
-	    } else if (currentlyPicking == pickMoveTButton) {
-		setCurrentlyPicking(pickAttackTButton);
-	    } else if (currentlyPicking == pickAttackTButton) {
-		setCurrentlyPicking(pickDirectionTButton);
-	    } else if (currentlyPicking == pickDirectionTButton) {
-		endTurnButton.doClick();
+	public void updateSelectButtons() {
+	    selectTurnPartButton(Message.UNIT_SELECT, testingFrame.game.hasSelectedUnit());
+	    selectTurnPartButton(Message.UNIT_MOVE, testingFrame.game.hasMoved());
+	    selectTurnPartButton(Message.UNIT_ATTACK, testingFrame.game.hasAttacked());
+	    selectTurnPartButton(Message.UNIT_DIR, testingFrame.game.hasChangedDir());
+	}
+
+	public void updateEnableButtons() {
+	    enableAllTurnPartButtons(false);
+	    enableAllDirButtons(false);
+
+	    if (testingFrame.isLocalPlayerTurn()) {
+		enableTurnPartButton(Message.UNIT_SELECT, !testingFrame.game.hasSelectedUnit());
+		enableTurnPartButton(Message.UNIT_MOVE,
+			!testingFrame.game.hasMoved() && testingFrame.game.hasSelectedUnit());
+		enableTurnPartButton(Message.UNIT_ATTACK,
+			!testingFrame.game.hasAttacked() && testingFrame.game.hasSelectedUnit());
+		enableTurnPartButton(Message.UNIT_DIR,
+			!testingFrame.game.hasChangedDir() && testingFrame.game.hasSelectedUnit());
+
+		if (testingFrame.currentlyPicking == Message.UNIT_DIR && !testingFrame.game.hasChangedDir()) {
+		    enableAllDirButtons(true);
+		}
+
+		enableTurnPartButton(Message.END_TURN, true);
 	    }
+
+	}
+
+	private AbstractButton getButton(Message turnPart) {
+	    if (Message.UNIT_SELECT.equals(turnPart)) {
+		return pickUnitTButton;
+	    } else if (turnPart == Message.UNIT_MOVE) {
+		return pickMoveTButton;
+	    } else if (turnPart == Message.UNIT_ATTACK) {
+		return pickAttackTButton;
+	    } else if (turnPart == Message.UNIT_DIR) {
+		return pickDirectionTButton;
+	    } else if (turnPart == Message.END_TURN) {
+		return endTurnButton;
+	    }
+	    return null;
+	}
+
+	private void allNaturalBorders() {
+	    setNaturalBorder(pickUnitTButton);
+	    setNaturalBorder(pickMoveTButton);
+	    setNaturalBorder(pickAttackTButton);
+	    setNaturalBorder(pickDirectionTButton);
+	}
+
+	private void setNaturalBorder(JToggleButton button) {
+	    button.setBorder(normalBorders.get(button));
+	}
+
+	private final Border redBottomBorder = BorderFactory.createMatteBorder(0, 0, 5, 0, Color.red);
+
+	private void setSelectingBorder(JToggleButton button) {
+	    CompoundBorder border = new CompoundBorder(redBottomBorder, normalBorders.get(button));
+	    button.setBorder(border);
 	}
 
 	private String getHTMLabelInfoString(Unit unit, String title) {
@@ -1178,26 +1298,10 @@ class TestingFrameGUI extends JFrame {
 	    }
 	}
 
-	class PickingButton extends JToggleButton {
-	    private static final long serialVersionUID = 2238679707104152403L;
-
-	    private boolean hasPicked;
-
-	    public PickingButton(String text) {
-		super(text);
-		hasPicked = false;
-	    }
-
-	    @Override
-	    public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		if (currentlyPicking == this) {
-		    g.setColor(Color.red);
-		    g.fillRect(4, getHeight() - 7, getWidth() - 8, 5);
-		}
-	    }
+	@Override
+	public void paintComponent(Graphics g) {
+	    super.paintComponent(g);
 	}
-
     }
 
 }

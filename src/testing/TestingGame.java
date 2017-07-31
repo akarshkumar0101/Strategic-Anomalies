@@ -27,10 +27,12 @@ import game.unit.property.ability.ActiveTargetAbilityProperty;
  * The game pushes one players move to other players by using the communications in the HashMap, that each player will receive on their communication.
  */
 public class TestingGame extends Game {
+    public static final String START_GAME = "game init99";
+    private final boolean first;
 
     private final Board board;
 
-    public final TestingFrame testingFrame;
+    public TestingFrame testingFrame;
 
     private final TestingPlayer player1;
     private final TestingPlayer player2;
@@ -49,6 +51,7 @@ public class TestingGame extends Game {
      */
     public TestingGame(Communication serverComm, long randomSeed, boolean first) {
 	super(null, null);
+	this.first = first;
 
 	random = new Random(randomSeed);
 
@@ -66,8 +69,6 @@ public class TestingGame extends Game {
 	    playerComms.put(player1, comm1);
 	    playerComms.put(player2, serverComm);
 
-	    currentTurn = new Turn(0, player1);
-
 	    localPlayers.add(player1);
 	} else {
 	    player2 = new TestingPlayer("Dr. Monson", null);
@@ -75,8 +76,6 @@ public class TestingGame extends Game {
 
 	    playerComms.put(player2, serverComm);
 	    playerComms.put(player1, comm1);
-
-	    currentTurn = new Turn(0, player2);
 
 	    localPlayers.add(player1);
 	}
@@ -86,22 +85,7 @@ public class TestingGame extends Game {
 	allPlayers.add(player2);
 
 	testingFrame = new TestingFrame(this, player1);
-    }
 
-    public void startGame() {
-
-	testingFrame.updateInformation();
-	testingFrame.setVisible(true);
-	testingFrame.startFrameUpdatingThread();
-
-	// TODO add stop statement
-	// game loop for different turns
-	while (true) {
-	    handleTurn();
-	    nextTurn();
-
-	    testingFrame.resetForNewTurn();
-	}
     }
 
     private TestingPlayer onTurnPlayer = null;
@@ -113,6 +97,29 @@ public class TestingGame extends Game {
     private boolean onTurnHasAttacked = false;
     private boolean onTurnHasChangedDir = false;
 
+    public void startGame() {
+	testingFrame.startFrame();
+
+	// TODO add stop statement
+	// game loop for different turns
+	establishGame();
+	announceToAllLocalPlayers(TestingGame.START_GAME);
+	while (true) {
+	    handleTurn();
+	    nextTurn();
+	}
+    }
+
+    public void establishGame() {
+	if (first) {
+	    // offset bc next turn will say next turn
+	    currentTurn = new Turn(0, player1);
+	} else {
+	    // offset bc next turn will say next turn
+	    currentTurn = new Turn(0, player2);
+	}
+    }
+
     public void handleTurn() {
 	TestingPlayer currentPlayer = (TestingPlayer) currentTurn.getPlayerTurn();
 	Communication currentComm = getCommForPlayer(currentPlayer);
@@ -122,24 +129,15 @@ public class TestingGame extends Game {
 	onTurnPlayer = currentPlayer;
 	isLocalPlayer = localPlayers.contains(currentPlayer);
 
-	onTurnHasSelectedUnit = false;
-	onTurnUnitPicked = null;
-	onTurnHasMoved = false;
-	onTurnHasAttacked = false;
-	onTurnHasChangedDir = false;
 	boolean shouldRun = true;
 
 	while (shouldRun) {
-	    testingFrame.updateInformation();
-	    testingFrame.repaint();
 	    shouldRun = handleCommand(currentComm);
 	}
+
 	if (onTurnHasAttacked) {
 	    onTurnUnitPicked.getWaitProp().triggerWaitAfterAttack();
 	}
-
-	testingFrame.updateInformation();
-	testingFrame.repaint();
     }
 
     public boolean handleCommand(Communication currentComm) {
@@ -153,8 +151,9 @@ public class TestingGame extends Game {
 	    if (Message.HOVER.equals(obj)) {
 		hover((Coordinate) currentComm.recieveObject());
 		run = true;
-	    } else if (Message.isCommand(obj)) {
+	    } else if (obj instanceof Message) {
 		command = obj;
+		// announce immediately bc command doesn't modify game
 		announceToAllPlayers(command);
 		run = true;
 
@@ -163,13 +162,14 @@ public class TestingGame extends Game {
 		}
 	    } else {
 		specs = obj;
-		announceToAllPlayers(specs);
 		run = false;
 	    }
 
 	} while (run);
 
-	handleFullNonHoverCommand(command, specs);
+	handleFullCoreCommand((Message) command, specs);
+	// annouce after game handles everything
+	announceToAllPlayers(specs);
 	return true;
     }
 
@@ -189,6 +189,14 @@ public class TestingGame extends Game {
 	    return false;
 	}
 	return true;
+    }
+
+    public Unit getSelectedUnit() {
+	if (hasSelectedUnit()) {
+	    return onTurnUnitPicked;
+	} else {
+	    return null;
+	}
     }
 
     public boolean hasMoved() {
@@ -240,10 +248,8 @@ public class TestingGame extends Game {
 	return true;
     }
 
-    public void handleFullNonHoverCommand(Object command, Object specs) {
-	if (!Message.isCommand(command)) {
-	    throw new RuntimeException("Not a command");
-	}
+    public void handleFullCoreCommand(Message command, Object specs) {
+
 	if (Message.UNIT_SELECT.equals(command)) {
 	    if (canSelectUnit((Coordinate) specs)) {
 		unitSelect((Coordinate) specs);
@@ -297,8 +303,8 @@ public class TestingGame extends Game {
     }
 
     public void unitAttack(Coordinate coor) {
-	onTurnUnitPicked.useAbility(board.getSquare(coor));
 	onTurnHasAttacked = true;
+	onTurnUnitPicked.useAbility(board.getSquare(coor));
     }
 
     public void unitChangeDir(Direction dir) {
@@ -333,7 +339,14 @@ public class TestingGame extends Game {
 
     private void nextTurn() {
 	Player player = currentTurn.getPlayerTurn() == player1 ? player2 : player1;
-	currentTurn = new Turn(currentTurn.getTurnNumber(), player);
+	currentTurn = new Turn(currentTurn.getTurnNumber() + 1, player);
+
+	onTurnHasSelectedUnit = false;
+	onTurnUnitPicked = null;
+	onTurnHasMoved = false;
+	onTurnHasAttacked = false;
+	onTurnHasChangedDir = false;
+
     }
 
     public Communication getCommForPlayer(TestingPlayer player) {

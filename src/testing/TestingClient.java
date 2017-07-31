@@ -15,7 +15,7 @@ public class TestingClient {
 
     public static long randomSeed;
 
-    public static void mainf(String[] args) throws UnknownHostException, IOException {
+    public static void main(String[] args) throws UnknownHostException, IOException {
 	Socket sock = new Socket(TestingClient.serverIP, TestingServer.PORT);
 
 	Communication servComm = new Communication(sock);

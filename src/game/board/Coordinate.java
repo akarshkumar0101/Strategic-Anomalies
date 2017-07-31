@@ -23,7 +23,7 @@ public class Coordinate implements Serializable {
 
     /**
      * Initializes coordinate with given values.
-     * 
+     *
      * @param x
      * @param y
      */
@@ -34,12 +34,16 @@ public class Coordinate implements Serializable {
 
     /**
      * Initializes coordinate with given values.
-     * 
+     *
      * @param x
      * @param y
      */
     public Coordinate(int x, int y) {
 	this((byte) x, (byte) y);
+    }
+
+    public Coordinate(Coordinate another) {
+	this(another.x, another.y);
     }
 
     /**
@@ -58,7 +62,7 @@ public class Coordinate implements Serializable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -76,7 +80,7 @@ public class Coordinate implements Serializable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#toString()
      */
     @Override

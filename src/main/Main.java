@@ -31,7 +31,7 @@ public class Main {
 	    @Override
 	    public void run() {
 		try {
-		    TestingServer.mainf(null);
+		    TestingServer.main(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
@@ -41,7 +41,7 @@ public class Main {
 	    @Override
 	    public void run() {
 		try {
-		    TestingClient.mainf(null);
+		    TestingClient.main(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}
@@ -51,7 +51,7 @@ public class Main {
 	    @Override
 	    public void run() {
 		try {
-		    TestingClient.mainf(null);
+		    TestingClient.main(null);
 		} catch (Exception e) {
 		    e.printStackTrace();
 		}

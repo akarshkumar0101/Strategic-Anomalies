@@ -15,7 +15,7 @@ public class TestingServer {
     public static final int NUM_PLAYERS = 2;
     public static final int PORT = 37852;
 
-    public static void mainf(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
 	long randomSeed = (long) ((Math.random() * 2 - 1) * Long.MAX_VALUE);
 	ServerSocket serverSock = new ServerSocket(TestingServer.PORT);
 	Communication[] clientComms = new Communication[TestingServer.NUM_PLAYERS];
