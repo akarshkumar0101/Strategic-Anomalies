@@ -46,6 +46,16 @@ public class TestingGame extends Game {
 
     public final Random random;
 
+    // The purpose of synchronizing some of the methods in TestingGame.java
+    // TestingFrame accesses some methods in TestingGame to get details about the
+    // turn and game
+    // The game's data can change while the TestingFrame accesses it from another
+    // thread causing a disaster
+    // Synchronizing all methods that give access to the data and all changes in
+    // data will prevent this
+    // The things that need to be synchronized:
+    // get values (accessed by other threads) and set values (this game thread)
+
     /**
      * run this for online game
      */
@@ -110,24 +120,26 @@ public class TestingGame extends Game {
 	}
     }
 
-    public void establishGame() {
-	if (first) {
-	    // offset bc next turn will say next turn
-	    currentTurn = new Turn(0, player1);
-	} else {
-	    // offset bc next turn will say next turn
-	    currentTurn = new Turn(0, player2);
+    private void establishGame() {
+	synchronized (this) {
+	    if (first) {
+		// offset bc next turn will say next turn
+		currentTurn = new Turn(0, player1);
+	    } else {
+		// offset bc next turn will say next turn
+		currentTurn = new Turn(0, player2);
+	    }
 	}
     }
 
-    public void handleTurn() {
+    private void handleTurn() {
 	TestingPlayer currentPlayer = (TestingPlayer) currentTurn.getPlayerTurn();
 	Communication currentComm = getCommForPlayer(currentPlayer);
 
-	Object received = null;
-
-	onTurnPlayer = currentPlayer;
-	isLocalPlayer = localPlayers.contains(currentPlayer);
+	synchronized (this) {
+	    onTurnPlayer = currentPlayer;
+	    isLocalPlayer = localPlayers.contains(currentPlayer);
+	}
 
 	boolean shouldRun = true;
 
@@ -140,7 +152,7 @@ public class TestingGame extends Game {
 	}
     }
 
-    public boolean handleCommand(Communication currentComm) {
+    private boolean handleCommand(Communication currentComm) {
 	Object command = null, specs = null;
 
 	boolean run = false;
@@ -174,81 +186,99 @@ public class TestingGame extends Game {
     }
 
     public boolean hasSelectedUnit() {
-	return onTurnHasSelectedUnit;
+	synchronized (this) {
+	    return onTurnHasSelectedUnit;
+	}
     }
 
     public boolean canSelectUnit(Coordinate coor) {
-	Unit unit = board.getUnitAt(coor);
-	// TODO make sure unit is selectable
+	synchronized (this) {
+	    Unit unit = board.getUnitAt(coor);
+	    // TODO make sure unit is selectable
 
-	if (onTurnHasSelectedUnit) {
-	    return false;
-	} else if (unit == null) {
-	    return false;
-	} else if (!unit.getOwnerProp().getCurrentPropertyValue().equals(onTurnPlayer)) {
-	    return false;
+	    if (onTurnHasSelectedUnit) {
+		return false;
+	    } else if (unit == null) {
+		return false;
+	    } else if (!unit.getOwnerProp().getCurrentPropertyValue().equals(onTurnPlayer)) {
+		return false;
+	    }
+	    return true;
 	}
-	return true;
     }
 
     public Unit getSelectedUnit() {
-	if (hasSelectedUnit()) {
-	    return onTurnUnitPicked;
-	} else {
-	    return null;
+	synchronized (this) {
+	    if (hasSelectedUnit()) {
+		return onTurnUnitPicked;
+	    } else {
+		return null;
+	    }
 	}
     }
 
     public boolean hasMoved() {
-	return onTurnHasMoved;
+	synchronized (this) {
+	    return onTurnHasMoved;
+	}
     }
 
     public boolean canMoveTo(Coordinate coor) {
-	Path path = onTurnUnitPicked.getGamePathTo(coor);
-	if (onTurnHasMoved) {
-	    return false;
-	} else if (onTurnUnitPicked.getPosProp().getCurrentPropertyValue().equals(coor)) {
-	    return false;
-	} else if (!board.getSquare(coor).isEmpty()) {
-	    return false;
-	} else if (path == null) {
-	    return false;
+	synchronized (this) {
+	    Path path = onTurnUnitPicked.getGamePathTo(coor);
+	    if (onTurnHasMoved) {
+		return false;
+	    } else if (onTurnUnitPicked.getPosProp().getCurrentPropertyValue().equals(coor)) {
+		return false;
+	    } else if (!board.getSquare(coor).isEmpty()) {
+		return false;
+	    } else if (path == null) {
+		return false;
+	    }
+	    return true;
 	}
-	return true;
     }
 
     public boolean hasAttacked() {
-	return onTurnHasAttacked;
+	synchronized (this) {
+	    return onTurnHasAttacked;
+	}
     }
 
     public boolean canAttack(Coordinate coor) {
-	if (onTurnHasAttacked) {
-	    return false;
-	} else if (!onTurnUnitPicked.getAbilityProp().isActiveAbility()) {
-	    return false;
-	} else if (!onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
-	    return false;
-	} else if (onTurnUnitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty) {
-	    if (!((ActiveTargetAbilityProperty) onTurnUnitPicked.getAbilityProp())
-		    .canUseAbilityOn(board.getSquare(coor))) {
+	synchronized (this) {
+	    if (onTurnHasAttacked) {
 		return false;
+	    } else if (!onTurnUnitPicked.getAbilityProp().isActiveAbility()) {
+		return false;
+	    } else if (!onTurnUnitPicked.getAbilityProp().canCurrentlyUseAbility()) {
+		return false;
+	    } else if (onTurnUnitPicked.getAbilityProp() instanceof ActiveTargetAbilityProperty) {
+		if (!((ActiveTargetAbilityProperty) onTurnUnitPicked.getAbilityProp())
+			.canUseAbilityOn(board.getSquare(coor))) {
+		    return false;
+		}
 	    }
+	    return true;
 	}
-	return true;
     }
 
     public boolean hasChangedDir() {
-	return onTurnHasChangedDir;
+	synchronized (this) {
+	    return onTurnHasChangedDir;
+	}
     }
 
     public boolean canChangeDir(Direction dir) {
-	if (onTurnHasChangedDir) {
-	    return false;
+	synchronized (this) {
+	    if (onTurnHasChangedDir) {
+		return false;
+	    }
+	    return true;
 	}
-	return true;
     }
 
-    public void handleFullCoreCommand(Message command, Object specs) {
+    private void handleFullCoreCommand(Message command, Object specs) {
 
 	if (Message.UNIT_SELECT.equals(command)) {
 	    if (canSelectUnit((Coordinate) specs)) {
@@ -278,7 +308,7 @@ public class TestingGame extends Game {
 	}
     }
 
-    public void hover(Coordinate coor) {
+    private void hover(Coordinate coor) {
 	if (isLocalPlayer) {
 	    announceToAllNonLocalPlayers(Message.HOVER);
 	    announceToAllNonLocalPlayers(coor);
@@ -288,31 +318,39 @@ public class TestingGame extends Game {
 	}
     }
 
-    public void unitSelect(Coordinate coor) {
-	onTurnUnitPicked = board.getUnitAt(coor);
-	onTurnHasSelectedUnit = true;
+    private void unitSelect(Coordinate coor) {
+	synchronized (this) {
+	    onTurnUnitPicked = board.getUnitAt(coor);
+	    onTurnHasSelectedUnit = true;
+	}
     }
 
-    public Path unitMove(Coordinate coor) {
-	Path path = onTurnUnitPicked.getGamePathTo(coor);
+    private Path unitMove(Coordinate coor) {
+	synchronized (this) {
+	    Path path = onTurnUnitPicked.getGamePathTo(coor);
 
-	onTurnUnitPicked.moveTakePath(path, onTurnPlayer);
-	onTurnHasMoved = true;
+	    onTurnUnitPicked.moveTakePath(path, onTurnPlayer);
+	    onTurnHasMoved = true;
 
-	return path;
+	    return path;
+	}
     }
 
-    public void unitAttack(Coordinate coor) {
-	onTurnHasAttacked = true;
-	onTurnUnitPicked.useAbility(board.getSquare(coor));
+    private void unitAttack(Coordinate coor) {
+	synchronized (this) {
+	    onTurnHasAttacked = true;
+	    onTurnUnitPicked.useAbility(board.getSquare(coor));
+	}
     }
 
-    public void unitChangeDir(Direction dir) {
-	onTurnUnitPicked.getPosProp().getDirFacingProp().setPropertyValue(dir, onTurnPlayer);
-	onTurnHasChangedDir = true;
+    private void unitChangeDir(Direction dir) {
+	synchronized (this) {
+	    onTurnUnitPicked.getPosProp().getDirFacingProp().setPropertyValue(dir, onTurnPlayer);
+	    onTurnHasChangedDir = true;
+	}
     }
 
-    public void announceToAllPlayers(Object obj) {
+    private void announceToAllPlayers(Object obj) {
 	// if it is being notified of a move from another game
 	if (!isLocalPlayer) {
 	    announceToAllLocalPlayers(obj);
@@ -323,13 +361,13 @@ public class TestingGame extends Game {
 	}
     }
 
-    public void announceToAllLocalPlayers(Object obj) {
+    private void announceToAllLocalPlayers(Object obj) {
 	for (TestingPlayer player : localPlayers) {
 	    getCommForPlayer(player).sendObject(obj);
 	}
     }
 
-    public void announceToAllNonLocalPlayers(Object obj) {
+    private void announceToAllNonLocalPlayers(Object obj) {
 	for (TestingPlayer player : allPlayers) {
 	    if (!localPlayers.contains(player)) {
 		getCommForPlayer(player).sendObject(obj);
@@ -338,18 +376,19 @@ public class TestingGame extends Game {
     }
 
     private void nextTurn() {
-	Player player = currentTurn.getPlayerTurn() == player1 ? player2 : player1;
-	currentTurn = new Turn(currentTurn.getTurnNumber() + 1, player);
+	synchronized (this) {
+	    Player player = currentTurn.getPlayerTurn() == player1 ? player2 : player1;
+	    currentTurn = new Turn(currentTurn.getTurnNumber() + 1, player);
 
-	onTurnHasSelectedUnit = false;
-	onTurnUnitPicked = null;
-	onTurnHasMoved = false;
-	onTurnHasAttacked = false;
-	onTurnHasChangedDir = false;
-
+	    onTurnHasSelectedUnit = false;
+	    onTurnUnitPicked = null;
+	    onTurnHasMoved = false;
+	    onTurnHasAttacked = false;
+	    onTurnHasChangedDir = false;
+	}
     }
 
-    public Communication getCommForPlayer(TestingPlayer player) {
+    private Communication getCommForPlayer(TestingPlayer player) {
 	if (!playerComms.containsKey(player)) {
 	    playerComms.put(player, new Communication());
 	}
@@ -371,7 +410,9 @@ public class TestingGame extends Game {
 
     @Override
     public Turn getCurrentTurn() {
-	return currentTurn;
+	synchronized (this) {
+	    return currentTurn;
+	}
     }
 
 }
