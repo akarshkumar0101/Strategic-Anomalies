@@ -21,6 +21,7 @@ public class TestingClient {
 	System.out.println("Enter server ip: ");
 	String ip = scan.nextLine();
 	Socket sock = new Socket(ip, TestingServer.PORT);
+	System.out.println("connected");
 
 	Communication servComm = new Communication(sock);
 
