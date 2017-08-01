@@ -5,6 +5,7 @@ import java.util.List;
 
 import game.board.Board;
 import game.unit.Unit;
+import testing.TestingGame;
 
 public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
 
@@ -14,10 +15,12 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
 	super(unitOwner, initialPower, initialAttackRange);
 
 	currentlyAffectedUnits = new ArrayList<>(5);
+
+	((TestingGame) (unitOwner.getGame())).gameStartReporter.add(specifications -> onGameStart());
     }
 
-    public void onGameStart() {
-	List<Unit> units = getUnitOwner().getGame().getAllUnits();
+    private void onGameStart() {
+	List<Unit> units = ((TestingGame) (getUnitOwner().getGame())).getAllUnits();
 
 	for (Unit unit : units) {
 	    if (!unit.equals(getUnitOwner())) {
@@ -35,7 +38,7 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
 	    checkSituation(unit);
 	});
 	getAbilityRangeProperty().addPropertyListener((oldValue, newValue, unitOwner, property, specifications) -> {
-	    List<Unit> units = getUnitOwner().getGame().getAllUnits();
+	    List<Unit> units = ((TestingGame) (getUnitOwner().getGame())).getAllUnits();
 
 	    for (Unit u : units) {
 		if (!unit.equals(getUnitOwner())) {
@@ -47,14 +50,14 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
     }
 
     private void checkSituation(Unit unit) {
-	if (!currentlyAffectedUnits.contains(unit) && canAffect(unit) && isInRange(unit)) {
+	if (!currentlyAffectedUnits.contains(unit) && canAffect(unit) && isInAOERange(unit)) {
 	    addAffectedUnit(unit);
-	} else if (currentlyAffectedUnits.contains(unit) && !isInRange(unit)) {
+	} else if (currentlyAffectedUnits.contains(unit) && !isInAOERange(unit)) {
 	    removeAffectedUnit(unit);
 	}
     }
 
-    private boolean isInRange(Unit unit) {
+    protected boolean isInAOERange(Unit unit) {
 	return Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
 		unit.getPosProp().getCurrentPropertyValue()) <= getAbilityRangeProperty().getCurrentPropertyValue();
     }

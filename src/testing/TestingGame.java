@@ -14,8 +14,11 @@ import game.board.Coordinate;
 import game.board.Direction;
 import game.board.NormalBoard;
 import game.board.Path;
+import game.board.Square;
+import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 import game.unit.property.ability.ActiveTargetAbilityProperty;
+import setup.SetupTemplate;
 
 /*
  * Communications:
@@ -27,7 +30,9 @@ import game.unit.property.ability.ActiveTargetAbilityProperty;
  * The game pushes one players move to other players by using the communications in the HashMap, that each player will receive on their communication.
  */
 public class TestingGame extends Game {
+
     public static final String START_GAME = "game init99";
+
     private final boolean first;
 
     private final Board board;
@@ -45,6 +50,10 @@ public class TestingGame extends Game {
     private Turn currentTurn;
 
     public final Random random;
+
+    private final List<Unit> allUnits;
+
+    public final IncidentReporter gameStartReporter;
 
     // The purpose of synchronizing some of the methods in TestingGame.java
     // TestingFrame accesses some methods in TestingGame to get details about the
@@ -96,6 +105,23 @@ public class TestingGame extends Game {
 
 	testingFrame = new TestingFrame(this, player1);
 
+	allUnits = new ArrayList<>();
+
+	gameStartReporter = new IncidentReporter();
+    }
+
+    public void setupBoardWithTemplates(SetupTemplate homeSel, SetupTemplate awaySel) {
+	board.setupBoard(this, player1, player2, homeSel, awaySel);
+
+	for (Square sqr : board) {
+	    if (!sqr.isEmpty()) {
+		allUnits.add(sqr.getUnitOnTop());
+	    }
+	}
+    }
+
+    public List<Unit> getAllUnits() {
+	return allUnits;
     }
 
     private TestingPlayer onTurnPlayer = null;
@@ -113,6 +139,9 @@ public class TestingGame extends Game {
 	// TODO add stop statement
 	// game loop for different turns
 	establishGame();
+
+	gameStartReporter.reportIncident();
+
 	announceToAllLocalPlayers(TestingGame.START_GAME);
 	while (true) {
 	    handleTurn();

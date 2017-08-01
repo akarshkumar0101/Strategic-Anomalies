@@ -18,7 +18,7 @@ import game.unit.Unit;
  * Property values change ONLY according to PropertyEffects. Permanent effects,
  * such as setting the armor permanently to 5, should be declared permanent.
  * Active effects will be piled on according to priority.
- * 
+ *
  * @author Akarsh
  *
  * @param <T>
@@ -32,8 +32,8 @@ public abstract class Property<T> {
     private final Unit unitOwner;
 
     /**
-     * The IncidentReporter used to track PropertyListeners listening to changes
-     * in the property of this.
+     * The IncidentReporter used to track PropertyListeners listening to changes in
+     * the property of this.
      */
     private final IncidentReporter changeReporter;
 
@@ -43,8 +43,8 @@ public abstract class Property<T> {
     private final T defaultPropValue;
 
     /**
-     * The PropertyEffects that have permanently affected the property. Just
-     * used to keep track of what has interacted with this property.
+     * The PropertyEffects that have permanently affected the property. Just used to
+     * keep track of what has interacted with this property.
      */
     private final List<PropertyEffect<T>> permanentPropEffects;
     /**
@@ -53,8 +53,8 @@ public abstract class Property<T> {
     private final List<PropertyEffect<T>> activePropEffects;
 
     /**
-     * The value of the property after permanent effects have been applied.
-     * Note*: needs to be updated.
+     * The value of the property after permanent effects have been applied. Note*:
+     * needs to be updated.
      */
     private T currentBasePropValue;
     /**
@@ -65,22 +65,22 @@ public abstract class Property<T> {
     private T currentPropValue;
 
     /**
-     * The last value of the property that the listeners were notified of. Used
-     * to tell if the value was changed. Note*: needs to be updated.
+     * The last value of the property that the listeners were notified of. Used to
+     * tell if the value was changed. Note*: needs to be updated.
      */
     private T lastCurrentPropValue;
 
     /**
-     * This comparator orders the PropertyEffects in a higher priority gets more
-     * of a "last say." Priority 10 effects get the last say always in how to
-     * affect the property.
+     * This comparator orders the PropertyEffects in a higher priority gets more of
+     * a "last say." Priority 10 effects get the last say always in how to affect
+     * the property.
      */
     private static final Comparator<PropertyEffect<?>> normalPropEffectComparator = (effect1,
 	    effect2) -> (int) ((effect1.getPriority() - effect2.getPriority()) * 1000);
 
     /**
      * Initializes the Property with the given Unit and the given initial Value.
-     * 
+     *
      * @param unit
      *            Unit the Property is assigned to
      * @param initValue
@@ -97,7 +97,7 @@ public abstract class Property<T> {
     }
 
     /**
-     * 
+     *
      * @return the Unit this Property is assigned to
      */
     public Unit getUnitOwner() {
@@ -105,8 +105,7 @@ public abstract class Property<T> {
     }
 
     /**
-     * @return the current value of the property after all effects have affected
-     *         it
+     * @return the current value of the property after all effects have affected it
      */
     public T getCurrentPropertyValue() {
 	return currentPropValue;
@@ -147,8 +146,8 @@ public abstract class Property<T> {
     }
 
     /**
-     * @return the list of effects that are currently affecting the value of
-     *         this property.
+     * @return the list of effects that are currently affecting the value of this
+     *         property.
      */
     public List<PropertyEffect<T>> getActivePropEffects() {
 	return activePropEffects;
@@ -157,7 +156,7 @@ public abstract class Property<T> {
     /**
      * Sets the base value of the property as the value by adding a permanent
      * PropertyEffect that changes the base value to that.
-     * 
+     *
      * @param value
      *            the new value to set it to
      */
@@ -188,7 +187,7 @@ public abstract class Property<T> {
 
 	    // only place needed to sort the properties, because properties are
 	    // being added.
-	    Collections.sort(activePropEffects, normalPropEffectComparator);
+	    Collections.sort(activePropEffects, Property.normalPropEffectComparator);
 	}
 
 	updateCurrentPropertyValue();
@@ -214,10 +213,9 @@ public abstract class Property<T> {
     }
 
     /**
-     * Updates and makes sure only non-expired effects are acting on the
-     * property.
+     * Updates and makes sure only non-expired effects are acting on the property.
      */
-    public void updatePropEffectExistances() {
+    public void updateProperty() {
 	Iterator<PropertyEffect<T>> it = activePropEffects.iterator();
 	while (it.hasNext()) {
 	    PropertyEffect<T> propEffect = it.next();
@@ -225,16 +223,16 @@ public abstract class Property<T> {
 		it.remove();
 	    }
 	}
-
+	updateBasePropertyValue();
 	updateCurrentPropertyValue();
 
 	valueUpdated();
     }
 
     /**
-     * Adds the given PropertyListener<T> to the list of PropertyListeners. It
-     * will be notified on Property change.
-     * 
+     * Adds the given PropertyListener<T> to the list of PropertyListeners. It will
+     * be notified on Property change.
+     *
      * @param pl
      *            the PropertyListener<T> to be notified
      */
@@ -243,9 +241,9 @@ public abstract class Property<T> {
     }
 
     /**
-     * Removes the given PropertyListener<T> from the list of PropertyListeners.
-     * It will be no longer be notified on Property change.
-     * 
+     * Removes the given PropertyListener<T> from the list of PropertyListeners. It
+     * will be no longer be notified on Property change.
+     *
      * @param pl
      *            the PropertyListener<T> to no longer be notified
      */
@@ -254,9 +252,9 @@ public abstract class Property<T> {
     }
 
     /**
-     * Runs when it is suggested that the property value may have changed. If it
-     * did change, then run the code for it to register the change and notify
-     * the listeners.
+     * Runs when it is suggested that the property value may have changed. If it did
+     * change, then run the code for it to register the change and notify the
+     * listeners.
      */
     protected void valueUpdated() {
 	if (!currentPropValue.equals(lastCurrentPropValue)) {
@@ -268,7 +266,7 @@ public abstract class Property<T> {
 
     /**
      * Specify the change of the property with an Object[]
-     * 
+     *
      * @param oldValue
      * @param newValue
      * @return the Object[] specifications of the change
@@ -282,14 +280,14 @@ public abstract class Property<T> {
      * The property listeners will be notified with the following arguments:
      * incidentReported(T oldValue, T newValue, Unit unit, Property<T>
      * changedProperty, Object[] specifications);
-     * 
+     *
      * @param oldValue
      *            the old value of the property
      * @param newValue
      *            the new value of the property
      * @param specifications
-     *            additional specifications about the circumstances of the
-     *            property change
+     *            additional specifications about the circumstances of the property
+     *            change
      */
     protected void notifyPropertyChanged(T oldValue, T newValue, Object... specifications) {
 	changeReporter.reportIncident(oldValue, newValue, unitOwner, this, specifications);

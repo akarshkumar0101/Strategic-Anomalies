@@ -3,6 +3,7 @@ package testing;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 import game.Communication;
 import setup.SetupTemplate;
@@ -16,7 +17,10 @@ public class TestingClient {
     public static long randomSeed;
 
     public static void main(String[] args) throws UnknownHostException, IOException {
-	Socket sock = new Socket(TestingClient.serverIP, TestingServer.PORT);
+	Scanner scan = new Scanner(System.in);
+	System.out.println("Enter server ip: ");
+	String ip = scan.nextLine();
+	Socket sock = new Socket(ip, TestingServer.PORT);
 
 	Communication servComm = new Communication(sock);
 
@@ -40,8 +44,7 @@ public class TestingClient {
 	SetupTemplate awaySel = (SetupTemplate) servComm.recieveObject();
 
 	TestingGame tgame = new TestingGame(servComm, TestingClient.randomSeed, first);
-	TestingPlayer player1 = (TestingPlayer) tgame.getPlayer1(), player2 = (TestingPlayer) tgame.getPlayer2();
-	tgame.getBoard().setupBoard(tgame, player1, player2, homeSel, awaySel);
+	tgame.setupBoardWithTemplates(homeSel, awaySel);
 	tgame.startGame();
     }
 

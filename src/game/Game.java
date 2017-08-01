@@ -1,11 +1,7 @@
 package game;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import game.board.Board;
 import game.board.NormalBoard;
-import game.unit.Unit;
 import main.Account;
 
 public class Game {
@@ -15,8 +11,6 @@ public class Game {
     private final Team team1, team2;
 
     private final TurnOrder turnOrder;
-
-    private final List<Unit> allUnits;
 
     // TODO in the future make it to where it accepts game input streams and a
     // turn order from the server.
@@ -28,7 +22,6 @@ public class Game {
 
 	turnOrder = new TurnOrder(team1, team2);
 
-	allUnits = new ArrayList<>(30);
     }
 
     public Board getBoard() {
@@ -47,9 +40,6 @@ public class Game {
 	return turnOrder.currentTurn();
     }
 
-    public List<Unit> getAllUnits() {
-	return allUnits;
-    }
 }
 
 class TurnOrder {

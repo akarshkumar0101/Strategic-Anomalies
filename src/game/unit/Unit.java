@@ -121,9 +121,6 @@ public abstract class Unit extends Affectable {
 	return defaultStat;
     }
 
-    public void runOnStart() {
-    }
-
     public void triggerDeath() {
 	deathReporter.reportIncident(this);
     }
