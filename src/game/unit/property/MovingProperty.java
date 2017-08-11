@@ -25,19 +25,18 @@ public class MovingProperty extends Property<Integer> {
     }
 
     public boolean isInRangeOfWalking(Coordinate moveToCoor) {
-	return Board.walkDist(moveToCoor,
-		getUnitOwner().getPosProp().getCurrentPropertyValue()) <= getCurrentPropertyValue();
+	return Board.walkDist(moveToCoor, getUnitOwner().getPosProp().getValue()) <= getValue();
     }
 
     public boolean canCurrentlyMove() {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue() || getUnitOwner().getWaitProp().isWaiting()) {
+	if (getUnitOwner().getStunnedProp().getValue() || getUnitOwner().getWaitProp().isWaiting()) {
 	    return false;
 	}
 	return getUnitOwner().getDefaultStat().canDefaultMove;
     }
 
     public boolean isCurrentlyStoic() {
-	if (getUnitOwner().getStunnedProp().getCurrentPropertyValue()) {
+	if (getUnitOwner().getStunnedProp().getValue()) {
 	    return true;
 	}
 	return getUnitOwner().getDefaultStat().isDefaultStoic;

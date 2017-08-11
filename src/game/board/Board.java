@@ -96,7 +96,7 @@ public abstract class Board implements Iterable<Square> {
     }
 
     public void linkBoardToUnit(Unit unit) {
-	Coordinate coor = unit.getPosProp().getCurrentPropertyValue();
+	Coordinate coor = unit.getPosProp().getValue();
 	checkCoordinateRange(coor);
 	getSquare(coor).setUnitOnTop(unit);
 
@@ -109,8 +109,7 @@ public abstract class Board implements Iterable<Square> {
 	    oldsqr.removeUnitOnTop();
 	    newsqr.setUnitOnTop(unit1);
 	});
-	unit.getDeathReporter()
-		.add(specifications -> getSquare(unit.getPosProp().getCurrentPropertyValue()).removeUnitOnTop());
+	unit.getDeathReporter().add(specifications -> getSquare(unit.getPosProp().getValue()).removeUnitOnTop());
     }
 
     public void linkBoardToUnits(List<Unit> units) {

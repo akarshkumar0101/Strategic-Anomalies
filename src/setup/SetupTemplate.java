@@ -61,13 +61,13 @@ public class SetupTemplate implements Serializable {
     }
 
     private static Unit createNewUnit(Class<? extends Unit> unitClass, Position pos, Game game, Player player) {
-	Constructor<? extends Unit> cons;
 	try {
-	    cons = unitClass.getConstructor(Game.class, Player.class, Direction.class, Coordinate.class);
+	    Constructor<? extends Unit> cons = unitClass.getConstructor(Game.class, Player.class, Direction.class,
+		    Coordinate.class);
 	    Unit unit = cons.newInstance(game, player, pos.getDir(), pos.getCoor());
 	    return unit;
 	} catch (Exception e) {
-	    throw new RuntimeException("Could not find/create new unit");
+	    throw new RuntimeException("Could not find/create new unit", e);
 	}
     }
 

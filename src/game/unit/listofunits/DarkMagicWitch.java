@@ -13,8 +13,11 @@ import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.unit.Unit;
 import game.unit.UnitStat;
-import game.unit.property.ability.AbilityProperty;
-import game.unit.property.ability.ActiveTargetAbilityProperty;
+import game.unit.property.Property;
+import game.unit.property.ability.Ability;
+import game.unit.property.ability.AbilityPower;
+import game.unit.property.ability.AbilityRange;
+import game.unit.property.ability.ActiveTargetAbility;
 
 public class DarkMagicWitch extends Unit {
 
@@ -23,31 +26,45 @@ public class DarkMagicWitch extends Unit {
     }
 
     @Override
-    public AbilityProperty getDefaultAbilityProperty() {
+    public Ability getDefaultAbility() {
 	UnitStat defaultStat = getDefaultStat();
-	AbilityProperty abilityProp = new WitchAbilityProperty(this, defaultStat.defaultPower,
-		defaultStat.defaultAttackRange, defaultStat.defaultWaitTime);
-	return abilityProp;
+	Ability ability = new WitchAbility(this, defaultStat.defaultPower, defaultStat.defaultAttackRange,
+		defaultStat.defaultWaitTime);
+	return ability;
     }
 }
 
-class WitchAbilityProperty extends ActiveTargetAbilityProperty {
+class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange {
     // TODO set ability range property to permanently be 3
+    private final Property<Integer> abilityPowerProperty;
+    private final Property<Integer> abilityRangeProperty;
 
-    public WitchAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
-	super(unitOwner, initialPower, initialAttackRange, maxWaitTime);
+    public WitchAbility(Unit unitOwner, int initialPower, int initialAttackRange, int maxWaitTime) {
+	super(unitOwner, maxWaitTime);
+	abilityPowerProperty = new Property<>(unitOwner, initialPower);
+	abilityRangeProperty = new Property<>(unitOwner, initialAttackRange);
+    }
+
+    @Override
+    public Property<Integer> getAbilityPowerProperty() {
+	return abilityPowerProperty;
+    }
+
+    @Override
+    public Property<Integer> getAbilityRangeProperty() {
+	return abilityRangeProperty;
     }
 
     // TODO look at whether target can be empty/ be friendly, etc
     @Override
     public boolean canUseAbilityOn(Square target) {
-	Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
 	Coordinate targetcoor = target.getCoor();
 
 	boolean inRange = Coordinate.inDirectDirection(thiscoor, targetcoor) != null
-		&& Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getCurrentPropertyValue();
+		&& Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getValue();
 
-	if (!canCurrentlyUseAbility() || !inRange) {
+	if (!canUseAbility() || !inRange) {
 	    return false;
 	} else {
 	    return true;
@@ -58,10 +75,10 @@ class WitchAbilityProperty extends ActiveTargetAbilityProperty {
     public List<Square> getAOESqaures(Square target) {
 	List<Square> list = new ArrayList<>(1);
 
-	Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
 	Coordinate targetcoor = target.getCoor();
 
-	if (Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getCurrentPropertyValue()) {
+	if (Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getValue()) {
 
 	    Direction dir = Coordinate.inDirectDirection(thiscoor, targetcoor);
 	    Coordinate current = thiscoor;
@@ -78,13 +95,15 @@ class WitchAbilityProperty extends ActiveTargetAbilityProperty {
     }
 
     @Override
-    public void performAbility(Square target) {
+    protected void performAbility(Object... specs) {
+	Square target = (Square) specs[0];
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
 	List<Square> targets = getAOESqaures(target);
 	for (Square ss : targets) {
-	    Damage damage = new Damage(getCurrentPropertyValue(), DamageType.MAGIC, getUnitOwner(), ss.getUnitOnTop());
+	    Damage damage = new Damage(getAbilityPowerProperty().getValue(), DamageType.MAGIC, getUnitOwner(),
+		    ss.getUnitOnTop());
 	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
 	}
     }

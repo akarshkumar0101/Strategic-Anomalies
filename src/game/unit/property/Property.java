@@ -3,7 +3,6 @@ package game.unit.property;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 import game.interaction.effect.EffectType;
@@ -24,7 +23,7 @@ import game.unit.Unit;
  * @param <T>
  *            the type of property base. Example: Integer, Coordinate, etc.
  */
-public abstract class Property<T> {
+public class Property<T> {
 
     /**
      * The Unit this Property is tied to.
@@ -40,7 +39,7 @@ public abstract class Property<T> {
     /**
      * The original value of this property at the start of the game.
      */
-    private final T defaultPropValue;
+    private final T defaultValue;
 
     /**
      * The PropertyEffects that have permanently affected the property. Just used to
@@ -56,19 +55,19 @@ public abstract class Property<T> {
      * The value of the property after permanent effects have been applied. Note*:
      * needs to be updated.
      */
-    private T currentBasePropValue;
+    private T currentBaseValue;
     /**
      * The current value of the property, calculated after the effects of the
      * PropertyEffects affecting it. The value should be up to date before being
      * used. Note*: needs to be updated.
      */
-    private T currentPropValue;
+    private T currentValue;
 
     /**
      * The last value of the property that the listeners were notified of. Used to
      * tell if the value was changed. Note*: needs to be updated.
      */
-    private T lastCurrentPropValue;
+    private T lastCurrentValue;
 
     /**
      * This comparator orders the PropertyEffects in a higher priority gets more of
@@ -88,12 +87,12 @@ public abstract class Property<T> {
      */
     public Property(Unit unitOwner, T initValue) {
 	this.unitOwner = unitOwner;
-	this.lastCurrentPropValue = this.currentPropValue = this.currentBasePropValue = this.defaultPropValue = initValue;
+	this.lastCurrentValue = this.currentValue = this.currentBaseValue = defaultValue = initValue;
 
 	changeReporter = new IncidentReporter();
 
-	permanentPropEffects = new ArrayList<>(5);
-	activePropEffects = new ArrayList<>(2);
+	permanentPropEffects = new ArrayList<>();
+	activePropEffects = new ArrayList<>();
     }
 
     /**
@@ -105,30 +104,30 @@ public abstract class Property<T> {
     }
 
     /**
-     * @return the current value of the property after all effects have affected it
+     * @return the original value of this property at the start of the game
      */
-    public T getCurrentPropertyValue() {
-	return currentPropValue;
+    public T getDefaultValue() {
+	return defaultValue;
     }
 
     /**
-     * @return the original value of this property at the start of the game
+     * @return the current value of the property after all effects have affected it
      */
-    public T getDefaultPropertyValue() {
-	return defaultPropValue;
+    public T getValue() {
+	return currentValue;
     }
 
     /**
      * Updates the base value of the property T defaultPropValue and
      * List<PropertyEffects<T>> permanentPropEffects. and permanent effects.
      */
-    private void updateBasePropertyValue() {
-	T val = defaultPropValue;
+    private void updateBaseValue() {
+	T val = defaultValue;
 
 	for (PropertyEffect<T> propEffect : permanentPropEffects) {
 	    val = propEffect.affectProperty(val);
 	}
-	currentBasePropValue = val;
+	currentBaseValue = val;
 
     }
 
@@ -136,13 +135,26 @@ public abstract class Property<T> {
      * Updates the current value using the T currentBasePropValue and
      * List<PropertyEffects<T>> activePropEffects.
      */
-    private void updateCurrentPropertyValue() {
-	T val = currentBasePropValue;
+    private void updateCurrentValue() {
+	T val = currentBaseValue;
 
 	for (PropertyEffect<T> propEffect : activePropEffects) {
 	    val = propEffect.affectProperty(val);
 	}
-	currentPropValue = val;
+	currentValue = val;
+    }
+
+    /**
+     * Should be used if the active/passive PropertyEffects use other game
+     * dependencies to calculate values(uses health of another unit, which could
+     * change over time). This value updates the values and can be called by a
+     * IncidentListener or anything else.
+     */
+    public void updateValue() {
+	updateBaseValue();
+	updateCurrentValue();
+
+	valueUpdated();
     }
 
     /**
@@ -160,12 +172,12 @@ public abstract class Property<T> {
      * @param value
      *            the new value to set it to
      */
-    public void setPropertyValue(T value) {
-	setPropertyValue(value, unitOwner);
+    public void setValue(T value) {
+	setValue(value, unitOwner);
     }
 
-    public void setPropertyValue(T value, Object source) {
-	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT, source, null, 0) {
+    public void setValue(T value, Object source) {
+	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT, source, 0) {
 	    @Override
 	    public T affectProperty(T init) {
 		return value;
@@ -181,7 +193,7 @@ public abstract class Property<T> {
 	if (effect.getEffectType() == EffectType.PERMANENT) {
 	    permanentPropEffects.add(effect);
 
-	    updateBasePropertyValue();
+	    updateBaseValue();
 	} else {
 	    activePropEffects.add(effect);
 
@@ -190,7 +202,7 @@ public abstract class Property<T> {
 	    Collections.sort(activePropEffects, Property.normalPropEffectComparator);
 	}
 
-	updateCurrentPropertyValue();
+	updateCurrentValue();
 
 	valueUpdated();
     }
@@ -202,29 +214,12 @@ public abstract class Property<T> {
 	if (effect.getEffectType() == EffectType.PERMANENT) {
 	    permanentPropEffects.remove(effect);
 
-	    updateBasePropertyValue();
+	    updateBaseValue();
 	} else {
 	    activePropEffects.remove(effect);
 	}
 
-	updateCurrentPropertyValue();
-
-	valueUpdated();
-    }
-
-    /**
-     * Updates and makes sure only non-expired effects are acting on the property.
-     */
-    public void updateProperty() {
-	Iterator<PropertyEffect<T>> it = activePropEffects.iterator();
-	while (it.hasNext()) {
-	    PropertyEffect<T> propEffect = it.next();
-	    if (!propEffect.shouldExist()) {
-		it.remove();
-	    }
-	}
-	updateBasePropertyValue();
-	updateCurrentPropertyValue();
+	updateCurrentValue();
 
 	valueUpdated();
     }
@@ -257,21 +252,24 @@ public abstract class Property<T> {
      * listeners.
      */
     protected void valueUpdated() {
-	if (!currentPropValue.equals(lastCurrentPropValue)) {
-	    Object[] specifications = getSpecificationsOfPropertyChange(lastCurrentPropValue, currentPropValue);
-	    notifyPropertyChanged(lastCurrentPropValue, currentPropValue, specifications);
-	    lastCurrentPropValue = currentPropValue;
+	if (!currentValue.equals(lastCurrentValue)) {
+	    Object[] specifications = getSpecificationsOfPropertyChange(lastCurrentValue, currentValue);
+	    notifyPropertyChanged(lastCurrentValue, currentValue, specifications);
+	    lastCurrentValue = currentValue;
 	}
     }
 
     /**
-     * Specify the change of the property with an Object[]
+     * Specify the change of the property with an Object[], should be overwritten
+     * for proper use.
      *
      * @param oldValue
      * @param newValue
      * @return the Object[] specifications of the change
      */
-    protected abstract Object[] getSpecificationsOfPropertyChange(T oldValue, T newValue);
+    protected Object[] getSpecificationsOfPropertyChange(T oldValue, T newValue) {
+	return null;
+    }
 
     /**
      * Internal method that will be called by the subclass when the value of the
@@ -289,7 +287,7 @@ public abstract class Property<T> {
      *            additional specifications about the circumstances of the property
      *            change
      */
-    protected void notifyPropertyChanged(T oldValue, T newValue, Object... specifications) {
+    private void notifyPropertyChanged(T oldValue, T newValue, Object... specifications) {
 	changeReporter.reportIncident(oldValue, newValue, unitOwner, this, specifications);
     }
 }

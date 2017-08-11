@@ -7,7 +7,6 @@ import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
-import testing.TestingGame;
 
 public class ArmorProperty extends Property<Integer> {
 
@@ -26,7 +25,7 @@ public class ArmorProperty extends Property<Integer> {
 	// determine if it blocked the damage
 	double blockPercent = determineBlockPercentage(damage);
 	// double random = Math.random();
-	double random = ((TestingGame) getUnitOwner().getGame()).random.nextDouble();
+	double random = getUnitOwner().getGame().random.nextDouble();
 	if (damage.getDamageType().equals(DamageType.PHYSICAL) && random < blockPercent) {
 	    triggerBlock(damage);
 	    return true;
@@ -55,19 +54,17 @@ public class ArmorProperty extends Property<Integer> {
     private void triggerBlock(Damage damage) {
 	// turn this unit to block
 	if (damage.getSource() instanceof Unit) {
-	    Coordinate thiscoor = getUnitOwner().getPosProp().getCurrentPropertyValue();
+	    Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
 	    Coordinate othercoor = getUnitOwner().getGame().getBoard().locationOf((Unit) damage.getSource()).getCoor();
 
 	    Direction damageDir = Coordinate.inGeneralDirection(thiscoor, othercoor);
 
-	    getUnitOwner().getPosProp().getDirFacingProp().setPropertyValue(damageDir, this);
+	    getUnitOwner().getPosProp().getDirFacingProp().setValue(damageDir, this);
 
 	}
 	turnPreviouslyBlockedOn = getUnitOwner().getGame().getCurrentTurn();
 	blockReporter.reportIncident(damage);
-	((TestingGame) getUnitOwner().getGame()).testingFrame
-		.triggerBlockAnimation(((TestingGame) getUnitOwner().getGame()).getBoard()
-			.getSquare(getUnitOwner().getPosProp().getCurrentPropertyValue()));
+
     }
 
     public IncidentReporter getBlockReporter() {

@@ -11,6 +11,7 @@ import javax.imageio.ImageIO;
 import game.unit.Unit;
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
+import game.unit.listofunits.Cleric;
 import game.unit.listofunits.DarkMagicWitch;
 import game.unit.listofunits.Guardian;
 import game.unit.listofunits.Hunter;
@@ -62,6 +63,9 @@ public class Images {
 		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/darkmagicwitch.png")));
 	    Images.classImages.put(LightMagicWitch.class,
 		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/lightmagicwitch.png")));
+
+	    Images.classImages.put(Cleric.class,
+		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/cleric.png")));
 
 	    Images.stunnedImage = ImageIO.read(Images.class.getResourceAsStream("/temp_pics/dizzy.png"));
 

@@ -6,7 +6,7 @@ import game.board.Coordinate;
 import game.board.Direction;
 import game.unit.Unit;
 import game.unit.UnitStat;
-import game.unit.property.ability.AbilityProperty;
+import game.unit.property.ability.Ability;
 
 public class Guardian extends Unit {
 
@@ -15,10 +15,10 @@ public class Guardian extends Unit {
     }
 
     @Override
-    public AbilityProperty getDefaultAbilityProperty() {
+    public Ability getDefaultAbility() {
 	UnitStat defaultStat = getDefaultStat();
-	AbilityProperty abilityProp = new KnightAbilityProperty(this, defaultStat.defaultPower,
-		defaultStat.defaultAttackRange, defaultStat.defaultWaitTime);
-	return abilityProp;
+	Ability ability = new KnightAbility(this, defaultStat.defaultPower, defaultStat.defaultAttackRange,
+		defaultStat.defaultWaitTime);
+	return ability;
     }
 }

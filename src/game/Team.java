@@ -1,7 +1,5 @@
 package game;
 
-import main.Account;
-
 public class Team {
 
     /**
@@ -9,16 +7,8 @@ public class Team {
      */
     private final Player[] players;
 
-    public Team(Account[] accounts) {
-	if (accounts == null) {
-	    players = new Player[] { new Player(null), new Player(null) };
-	    return;
-	}
-	players = new Player[accounts.length];
-	for (int i = 0; i < accounts.length; i++) {
-	    // TODO manage stuff
-	    players[i] = new Player(this);
-	}
+    public Team(Player player) {
+	players = new Player[] { player };
     }
 
     /**

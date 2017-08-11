@@ -34,6 +34,7 @@ import game.unit.listofunits.Scout;
 import game.unit.listofunits.Warrior;
 import setup.SetupTemplate;
 
+@SuppressWarnings("unchecked")
 public class TestingSetup {
 
     public static final Class<? extends Unit>[] unitClasses;
@@ -57,9 +58,8 @@ public class TestingSetup {
     private SetupTemplate template;
 
     public TestingSetup() {
-	gui = new TestingSetupGUI(this);
 	template = new SetupTemplate(NormalBoard.class);
-
+	gui = new TestingSetupGUI(this);
     }
 
     public SetupTemplate getTemplateInUse() {
@@ -249,7 +249,9 @@ class TestingSetupGUI extends JFrame {
 	private void organizeComponents() {
 	    setLayout(gridLayout);
 
-	    for (Button button : pickButtons.values()) {
+	    for (Class<? extends Unit> clazz : TestingSetup.unitClasses) {
+		Button button = pickButtons.get(clazz);
+		button.setToolTipText(clazz.getSimpleName());
 		add(button);
 	    }
 	}
@@ -461,8 +463,17 @@ class TestingSetupGUI extends JFrame {
 	    }
 
 	    // draw image in the center
-	    double ratio = (double) getHeight() / imageToDraw.getHeight(null);
-	    int imgWidth = (int) (ratio * imageToDraw.getWidth(null)), imgHeight = getHeight();
+	    double aspectratio = (double) getHeight() / getWidth();
+	    double imgaspectratio = (double) imageToDraw.getHeight(null) / imageToDraw.getWidth(null);
+	    double ratio = 0;
+	    if (imgaspectratio > aspectratio) {
+		ratio = (double) getHeight() / imageToDraw.getHeight(null);
+	    } else {
+		ratio = (double) getWidth() / imageToDraw.getWidth(null);
+	    }
+
+	    int imgWidth = (int) (ratio * imageToDraw.getWidth(null)),
+		    imgHeight = (int) (ratio * imageToDraw.getHeight(null));
 	    g.drawImage(imageToDraw, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight,
 		    null);
 

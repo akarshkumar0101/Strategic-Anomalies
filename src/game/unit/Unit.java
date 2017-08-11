@@ -27,8 +27,9 @@ import game.unit.property.OwnerProperty;
 import game.unit.property.PositionProperty;
 import game.unit.property.StunnedProperty;
 import game.unit.property.WaitProperty;
-import game.unit.property.ability.AbilityProperty;
-import game.unit.property.ability.ActiveAbilityProperty;
+import game.unit.property.ability.Ability;
+import game.unit.property.ability.ActiveAbility;
+import game.unit.property.ability.ActiveTargetAbility;
 
 public abstract class Unit extends Affectable {
 
@@ -41,23 +42,20 @@ public abstract class Unit extends Affectable {
 
     private final Game game;
 
+    private final UnitStat defaultStat;
+
     private final OwnerProperty ownerProp;
-
     private final PositionProperty posProp;
-
     private final HealthProperty healthProp;
-
     private final MovingProperty movingProp;
-
-    private final AbilityProperty abilityProp;
-
     private final StunnedProperty stunnedProp;
+
+    private final Ability ability;
 
     private final IncidentReporter deathReporter;
 
-    private final UnitStat defaultStat;
-
     public Unit(Game game, Player playerOwner, Direction directionFacing, Coordinate coor) {
+	super();
 	this.game = game;
 
 	defaultStat = UnitDefaults.getStat(this.getClass());
@@ -66,7 +64,6 @@ public abstract class Unit extends Affectable {
 	posProp = new PositionProperty(this, coor, directionFacing);
 	healthProp = new HealthProperty(this, defaultStat.defaultHealth, defaultStat.defaultArmor);
 	movingProp = new MovingProperty(this, defaultStat.defaultMoveRange, defaultStat.canDefaultTeleport);
-	abilityProp = getDefaultAbilityProperty();
 	stunnedProp = new StunnedProperty(this, false);
 
 	deathReporter = new IncidentReporter() {
@@ -76,6 +73,8 @@ public abstract class Unit extends Affectable {
 	    }
 	};
 
+	ability = getDefaultAbility();
+
 	// TODO add the inital wait time if going first etc.
     }
 
@@ -83,7 +82,7 @@ public abstract class Unit extends Affectable {
 	return game;
     }
 
-    public abstract AbilityProperty getDefaultAbilityProperty();
+    public abstract Ability getDefaultAbility();
 
     public OwnerProperty getOwnerProp() {
 	return ownerProp;
@@ -101,8 +100,8 @@ public abstract class Unit extends Affectable {
 	return movingProp;
     }
 
-    public AbilityProperty getAbilityProp() {
-	return abilityProp;
+    public Ability getAbility() {
+	return ability;
     }
 
     public StunnedProperty getStunnedProp() {
@@ -110,7 +109,7 @@ public abstract class Unit extends Affectable {
     }
 
     public WaitProperty getWaitProp() {
-	return abilityProp.isActiveAbility() ? ((ActiveAbilityProperty) abilityProp).getWaitProp() : null;
+	return ability instanceof ActiveAbility ? ((ActiveAbility) ability).getWaitProp() : null;
     }
 
     public IncidentReporter getDeathReporter() {
@@ -130,23 +129,23 @@ public abstract class Unit extends Affectable {
 	try {
 	    newdirFacing = Coordinate.inGeneralDirection(path.getPreviousPath().getEndCoor(), path.getEndCoor());
 	} catch (Exception e) {
-	    newdirFacing = Coordinate.inGeneralDirection(getPosProp().getCurrentPropertyValue(), path.getEndCoor());
+	    newdirFacing = Coordinate.inGeneralDirection(getPosProp().getValue(), path.getEndCoor());
 	}
-	getPosProp().setPropertyValue(path.getEndCoor(), sourceOfMovement);
-	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, path);
+	getPosProp().setValue(path.getEndCoor(), sourceOfMovement);
+	getPosProp().getDirFacingProp().setValue(newdirFacing, path);
     }
 
     public void useAbility(Square sqr) {
-	((ActiveAbilityProperty) getAbilityProp()).performAbility(sqr);
-	Direction newdirFacing = Coordinate.inGeneralDirection(getPosProp().getCurrentPropertyValue(), sqr.getCoor());
-	getPosProp().getDirFacingProp().setPropertyValue(newdirFacing, getAbilityProp());
+	((ActiveTargetAbility) getAbility()).useAbility(sqr);
+	Direction newdirFacing = Coordinate.inGeneralDirection(getPosProp().getValue(), sqr.getCoor());
+	getPosProp().getDirFacingProp().setValue(newdirFacing, getAbility());
     }
 
     // TODO make sure all units should consider overriding these methods
     public Path getGamePathTo(Coordinate moveToCoor) {
 	if (!movingProp.canCurrentlyMove() || !movingProp.isInRangeOfWalking(moveToCoor)) {
 	    return null;
-	} else if (movingProp.getTeleportingProp().getCurrentPropertyValue()) {
+	} else if (movingProp.getTeleportingProp().getValue()) {
 	    return PathFinder.getTeleportedPath(this, moveToCoor);
 	} else {
 	    return PathFinder.getPath(this, moveToCoor);

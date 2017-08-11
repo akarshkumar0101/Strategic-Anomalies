@@ -5,22 +5,21 @@ import java.util.List;
 
 import game.board.Board;
 import game.unit.Unit;
-import testing.TestingGame;
 
-public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
+public abstract class AOEPassiveAbility extends PassiveAbility implements AbilityRange {
 
     private final List<Unit> currentlyAffectedUnits;
 
-    public AOEPassiveAbilityProperty(Unit unitOwner, int initialPower, int initialAttackRange) {
-	super(unitOwner, initialPower, initialAttackRange);
+    public AOEPassiveAbility(Unit unitOwner) {
+	super(unitOwner);
 
-	currentlyAffectedUnits = new ArrayList<>(5);
+	currentlyAffectedUnits = new ArrayList<>();
 
-	((TestingGame) (unitOwner.getGame())).gameStartReporter.add(specifications -> onGameStart());
+	unitOwner.getGame().gameStartReporter.add(specifications -> onGameStart(specifications));
     }
 
-    private void onGameStart() {
-	List<Unit> units = ((TestingGame) (getUnitOwner().getGame())).getAllUnits();
+    private void onGameStart(Object... specifications) {
+	List<Unit> units = getUnitOwner().getGame().getAllUnits();
 
 	for (Unit unit : units) {
 	    if (!unit.equals(getUnitOwner())) {
@@ -38,7 +37,7 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
 	    checkSituation(unit);
 	});
 	getAbilityRangeProperty().addPropertyListener((oldValue, newValue, unitOwner, property, specifications) -> {
-	    List<Unit> units = ((TestingGame) (getUnitOwner().getGame())).getAllUnits();
+	    List<Unit> units = getUnitOwner().getGame().getAllUnits();
 
 	    for (Unit u : units) {
 		if (!unit.equals(getUnitOwner())) {
@@ -58,8 +57,8 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
     }
 
     protected boolean isInAOERange(Unit unit) {
-	return Board.walkDist(getUnitOwner().getPosProp().getCurrentPropertyValue(),
-		unit.getPosProp().getCurrentPropertyValue()) <= getAbilityRangeProperty().getCurrentPropertyValue();
+	return Board.walkDist(getUnitOwner().getPosProp().getValue(),
+		unit.getPosProp().getValue()) <= getAbilityRangeProperty().getValue();
     }
 
     private void addAffectedUnit(Unit unit) {
@@ -77,4 +76,5 @@ public abstract class AOEPassiveAbilityProperty extends PassiveAbilityProperty {
     protected abstract void affectUnit(Unit unit);
 
     protected abstract void unaffectUnit(Unit unit);
+
 }

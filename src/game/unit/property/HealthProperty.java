@@ -3,7 +3,6 @@ package game.unit.property;
 import game.interaction.Damage;
 import game.interaction.Healing;
 import game.interaction.effect.EffectType;
-import game.interaction.incident.Condition;
 import game.unit.Unit;
 
 public class HealthProperty extends Property<Integer> {
@@ -33,7 +32,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public double currentPercentageHealth() {
-	return (double) getCurrentPropertyValue() / getDefaultPropertyValue();
+	return (double) getValue() / getDefaultValue();
     }
 
     public void takeHealing(Healing healing) {
@@ -42,21 +41,20 @@ public class HealthProperty extends Property<Integer> {
 	    return;
 	}
 
-	int maxHealth = maxHealthProperty.getCurrentPropertyValue();
-	int currentHealth = getCurrentPropertyValue();
+	int maxHealth = maxHealthProperty.getValue();
+	int currentHealth = getValue();
 	if (currentHealth + healingAmount > maxHealth) {
 	    healingAmount = maxHealth - currentHealth;
 	}
 	int healingAmountFinal = healingAmount;
 
-	addPropEffect(
-		new PropertyEffect<Integer>(EffectType.PERMANENT, healing.getSource(), Condition.trueCondition, 0) {
-		    @Override
-		    public Integer affectProperty(Integer initHealth) {
-			return initHealth + healingAmountFinal;
-		    }
-		});
-	if (getCurrentPropertyValue() <= 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, healing.getSource(), 0) {
+	    @Override
+	    public Integer affectProperty(Integer initHealth) {
+		return initHealth + healingAmountFinal;
+	    }
+	});
+	if (getValue() <= 0) {
 	    getUnitOwner().triggerDeath();
 	}
     }
@@ -75,14 +73,13 @@ public class HealthProperty extends Property<Integer> {
 	    return;
 	}
 
-	addPropEffect(
-		new PropertyEffect<Integer>(EffectType.PERMANENT, damage.getSource(), Condition.trueCondition, 0) {
-		    @Override
-		    public Integer affectProperty(Integer initHealth) {
-			return initHealth - damageAmount;
-		    }
-		});
-	if (getCurrentPropertyValue() <= 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, damage.getSource(), 0) {
+	    @Override
+	    public Integer affectProperty(Integer initHealth) {
+		return initHealth - damageAmount;
+	    }
+	});
+	if (getValue() <= 0) {
 	    getUnitOwner().triggerDeath();
 	}
     }

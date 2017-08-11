@@ -31,6 +31,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
 import game.Communication;
+import game.Game;
 import game.Player;
 import game.board.Board;
 import game.board.Coordinate;
@@ -38,13 +39,16 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
+import game.unit.property.ability.AbilityPower;
+import game.unit.property.ability.AbilityRange;
+import game.unit.property.ability.ActiveAbility;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
 public class TestingFrame {
 
-    final TestingGame game;
+    final Game game;
     final Board board;
-    final TestingPlayer localPlayer;
+    final Player localPlayer;
 
     private final TestingFrameGUI gui;
 
@@ -54,7 +58,7 @@ public class TestingFrame {
 
     private final Object dataTransferLock = new Object();
 
-    public TestingFrame(TestingGame game, TestingPlayer localPlayer) {
+    public TestingFrame(Game game, Player localPlayer) {
 	this.game = game;
 	board = game.getBoard();
 	this.localPlayer = localPlayer;
@@ -67,8 +71,17 @@ public class TestingFrame {
     }
 
     public void startFrame() {
+	setupBlockAnimationTriggers();
 	frameUpdatingThread.start();
 	gui.setVisible(true);
+    }
+
+    private void setupBlockAnimationTriggers() {
+	for (Unit unit : game.getAllUnits()) {
+	    unit.getHealthProp().getArmorProp().getBlockReporter().add(specifications -> {
+		gui.triggerBlockAnimation(board.getSquare(unit.getPosProp().getValue()));
+	    });
+	}
     }
 
     Message currentlyPicking;
@@ -99,7 +112,7 @@ public class TestingFrame {
 
 	    // TODO add stop statement
 	    // game loop for different turns
-	    if (!TestingGame.START_GAME.equals(receiveComm.recieveObject())) {
+	    if (!Game.START_GAME.equals(receiveComm.recieveObject())) {
 		throw new RuntimeException("Could not properly start frame with game");
 	    }
 	    // game is ready to be played
@@ -235,7 +248,7 @@ public class TestingFrame {
 	return localPlayer.equals(game.getCurrentTurn().getPlayerTurn());
     }
 
-    void transmitDataToGame(Object data) {
+    private void transmitDataToGame(Object data) {
 	if (!isLocalPlayerTurn()) {
 	    return;
 	}
@@ -250,10 +263,6 @@ public class TestingFrame {
 
     public void resetForNewTurnf() {
 
-    }
-
-    public void triggerBlockAnimation(Square sqr) {
-	gui.triggerBlockAnimation(sqr);
     }
 
     public boolean canCurrentlyClick(Coordinate coor) {
@@ -284,7 +293,9 @@ public class TestingFrame {
 	} else if (!game.hasMoved()) {
 	    pickMoveButtonClicked();
 	} else if (!game.hasAttacked()) {
-	    pickAttackButtonClicked();
+	    if (game.getSelectedUnit().getAbility() instanceof ActiveAbility) {
+		pickAttackButtonClicked();
+	    }
 	} else if (!game.hasChangedDir()) {
 	    pickDirectionButtonClicked();
 	} else {
@@ -503,13 +514,13 @@ class TestingFrameGUI extends JFrame {
 
     public void triggerBlockAnimation(Square sqr) {
 	blockedSquares.add(sqr);
-	repaint();
+	gamePanel.repaint();
 	Timer timer = new Timer();
 	timer.schedule(new TimerTask() {
 	    @Override
 	    public void run() {
 		blockedSquares.remove(sqr);
-		repaint();
+		gamePanel.repaint();
 	    }
 	}, TestingFrameGUI.BLOCK_ANIMATION_TIME);
     }
@@ -623,7 +634,7 @@ class TestingFrameGUI extends JFrame {
 		waitingImg = null;
 		dizzyImg = null;
 		if (unitOnTop != null) {
-		    if (unitOnTop.getStunnedProp().getCurrentPropertyValue()) {
+		    if (unitOnTop.getStunnedProp().getValue()) {
 			dizzyImg = Images.stunnedImage;
 		    }
 		    if (unitOnTop.getWaitProp().isWaiting()) {
@@ -700,7 +711,7 @@ class TestingFrameGUI extends JFrame {
 		    col = Color.lightGray;
 
 		    if (unitOnTop != null) {
-			Player owner = unitOnTop.getOwnerProp().getCurrentPropertyValue();
+			Player owner = unitOnTop.getOwnerProp().getValue();
 
 			if (owner.equals(testingFrame.localPlayer)) {
 			    col = TestingFrameGUI.friendlyColor;
@@ -742,8 +753,17 @@ class TestingFrameGUI extends JFrame {
 		}
 
 		// draw image in the center
-		double ratio = (double) getHeight() / unitImg.getHeight(null);
-		int imgWidth = (int) (ratio * unitImg.getWidth(null)), imgHeight = getHeight();
+		double aspectratio = (double) getHeight() / getWidth();
+		double imgaspectratio = (double) unitImg.getHeight(null) / unitImg.getWidth(null);
+		double ratio = 0;
+		if (imgaspectratio > aspectratio) {
+		    ratio = (double) getHeight() / unitImg.getHeight(null);
+		} else {
+		    ratio = (double) getWidth() / unitImg.getWidth(null);
+		}
+
+		int imgWidth = (int) (ratio * unitImg.getWidth(null)),
+			imgHeight = (int) (ratio * unitImg.getHeight(null));
 		g.drawImage(unitImg, (getWidth() - imgWidth) / 2, (getHeight() - imgHeight) / 2, imgWidth, imgHeight,
 			null);
 
@@ -762,7 +782,7 @@ class TestingFrameGUI extends JFrame {
 		g.fillRect(1, 1, (int) (healthPercentage * getWidth()) - 1, healthBarHeight);
 
 		// draw direction facing arrow
-		Direction dir = unitOnTop.getPosProp().getDirFacingProp().getCurrentPropertyValue();
+		Direction dir = unitOnTop.getPosProp().getDirFacingProp().getValue();
 		int arrowWidth = (int) (.5 * getWidth()), arrowHeight = (int) (.2 * getHeight());
 		g.setColor(Color.red);
 		if (dir == Direction.UP) {
@@ -1115,7 +1135,7 @@ class TestingFrameGUI extends JFrame {
 	private final ImageIcon redDotIcon = new ImageIcon(Images.getScaledImage(Images.redDotImage, 25, 25));
 
 	public void updateInformation() {
-	    TestingPlayer currentPlayer = (TestingPlayer) testingFrame.game.getCurrentTurn().getPlayerTurn();
+	    Player currentPlayer = testingFrame.game.getCurrentTurn().getPlayerTurn();
 	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn ");
 	    turnInfoLabel.setIcon(testingFrame.isLocalPlayerTurn() ? greenDotIcon : redDotIcon);
 
@@ -1257,23 +1277,23 @@ class TestingFrameGUI extends JFrame {
 
 		str += "<strong><u>" + title + "</u></strong>";
 
-		TestingPlayer owner = (TestingPlayer) unit.getOwnerProp().getCurrentPropertyValue();
+		Player owner = unit.getOwnerProp().getValue();
 		str += "<br>" + owner.getName() + "'s " + unit.getClass().getSimpleName();
 
-		int health = unit.getHealthProp().getCurrentPropertyValue();
+		int health = unit.getHealthProp().getValue();
 		double percentHealth = unit.getHealthProp().currentPercentageHealth();
 		str += "<br>Health: "
 			+ colorize(health + "(" + (int) (percentHealth * 100) + "%)", percentHealth, 1, true);
 
-		int power = unit.getAbilityProp().getCurrentPropertyValue();
-		int defaultPower = unit.getAbilityProp().getDefaultPropertyValue();
+		int power = ((AbilityPower) unit.getAbility()).getAbilityPowerProperty().getValue();
+		int defaultPower = ((AbilityRange) unit.getAbility()).getAbilityRangeProperty().getDefaultValue();
 		str += "<br>Power: " + colorize(power + "", power, defaultPower, true);
 
-		int armor = unit.getHealthProp().getArmorProp().getCurrentPropertyValue();
-		int defaultArmor = unit.getHealthProp().getArmorProp().getDefaultPropertyValue();
+		int armor = unit.getHealthProp().getArmorProp().getValue();
+		int defaultArmor = unit.getHealthProp().getArmorProp().getDefaultValue();
 		str += "<br>Armor: " + colorize(armor + "", armor, defaultArmor, true);
 
-		if (unit.getStunnedProp().getCurrentPropertyValue()) {
+		if (unit.getStunnedProp().getValue()) {
 		    str += "<br>" + colorize("stunned*", 1, 2, true);
 		}
 		if (unit.getWaitProp().isWaiting()) {

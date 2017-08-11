@@ -1,7 +1,5 @@
 package game.interaction.effect;
 
-import game.interaction.incident.Condition;
-
 /**
  * Effect is the interface to perform an action or series of actions some time
  * in the future. The performEffect() method will always be triggered by a
@@ -16,7 +14,7 @@ import game.interaction.incident.Condition;
  * @author Akarsh
  *
  */
-public abstract class Effect extends EffectSkeleton {
+public abstract class Effect extends AbstractEffect {
 
     /**
      * Default initializer for Effect.
@@ -25,11 +23,9 @@ public abstract class Effect extends EffectSkeleton {
      *            the type of Effect it is.
      * @param source
      *            the source of the Effect.
-     * @param shouldExist
-     *            the Condition in which it will still exist.
      */
-    public Effect(EffectType effectType, Object source, Condition shouldExist) {
-	super(effectType, source, shouldExist);
+    public Effect(EffectType effectType, Object source) {
+	super(effectType, source);
     }
 
     /**

@@ -15,8 +15,8 @@ public class PathFinder {
     /**
      * @param unit
      * @param moveToCoor
-     * @return the Path the given Unit will take to the given Coordinate if it
-     *         can teleport to it.
+     * @return the Path the given Unit will take to the given Coordinate if it can
+     *         teleport to it.
      */
     public static Path getTeleportedPath(Unit unit, Coordinate moveToCoor) {
 	return new Path(moveToCoor);
@@ -33,8 +33,8 @@ public class PathFinder {
     // */
     // public static Path getPath(Unit unit, Coordinate moveToCoor) {
     // Board board = unit.getGame().getBoard();
-    // int moveRange = unit.getMovingProp().getCurrentPropertyValue();
-    // Coordinate from = unit.getPosProp().getCurrentPropertyValue();
+    // int moveRange = unit.getMovingProp().getValue();
+    // Coordinate from = unit.getPosProp().getValue();
     //
     // if (!board.isInBoard(moveToCoor)) {
     // return null;
@@ -110,8 +110,8 @@ public class PathFinder {
     // }
 
     public static Path getPath(Unit unit, Coordinate moveTo) {
-	return PathFinder.getClearPathTo(unit, unit.getGame().getBoard(), unit.getPosProp().getCurrentPropertyValue(),
-		moveTo, unit.getMovingProp().getCurrentPropertyValue());
+	return PathFinder.getClearPathTo(unit, unit.getGame().getBoard(), unit.getPosProp().getValue(), moveTo,
+		unit.getMovingProp().getValue());
     }
 
     private static Path getClearPathTo(Unit unit, Board board, Coordinate from, Coordinate to, int moveRange) {

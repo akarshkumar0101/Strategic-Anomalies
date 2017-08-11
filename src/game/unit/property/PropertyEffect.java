@@ -1,8 +1,7 @@
 package game.unit.property;
 
-import game.interaction.effect.EffectSkeleton;
+import game.interaction.effect.AbstractEffect;
 import game.interaction.effect.EffectType;
-import game.interaction.incident.Condition;
 
 /**
  * PropertyEffects are used to add an effect that is altering the value of a
@@ -17,15 +16,15 @@ import game.interaction.incident.Condition;
  * @param <T>
  *            should match up with the Property<T> in order to affect it.
  */
-public abstract class PropertyEffect<T> extends EffectSkeleton {
+public abstract class PropertyEffect<T> extends AbstractEffect {
 
     /**
-     * This should be a value [0,10] basing on how important it is that this
-     * effect have an effect on the property. The higher the priority, the more
-     * "last say" this effect gets when affecting a property. Ex. if priority =
-     * 10, then it will always get the last say when effecting the property.
+     * This should be a value [0,10] basing on how important it is that this effect
+     * have an effect on the property. The higher the priority, the more "last say"
+     * this effect gets when affecting a property. Ex. if priority = 10, then it
+     * will always get the last say when effecting the property.
      */
-    private double priority;
+    private final double priority;
 
     /**
      * Default initializer for PropertyEffect.
@@ -37,13 +36,19 @@ public abstract class PropertyEffect<T> extends EffectSkeleton {
      * @param shouldExist
      *            the Condition in which it will still exist.
      */
-    public PropertyEffect(EffectType effectType, Object source, Condition shouldExist, double priority) {
-	super(effectType, source, shouldExist);
-	this.priority = priority;
+    public PropertyEffect(EffectType effectType, Object source, double priority) {
+	super(effectType, source);
 
 	if (effectType == EffectType.PERMANENT) {
-	    priority = 0;
+	    this.priority = 0;
+	} else {
+	    this.priority = priority;
 	}
+
+    }
+
+    public double getPriority() {
+	return priority;
     }
 
     /**
@@ -53,14 +58,6 @@ public abstract class PropertyEffect<T> extends EffectSkeleton {
      *            the given value of the property to alter.
      * @return the affected value of the property.
      */
-    public abstract T affectProperty(T init);
-
-    public void setPriority(double priority) {
-	this.priority = priority;
-    }
-
-    public double getPriority() {
-	return priority;
-    }
+    public abstract T affectProperty(T initValue);
 
 }

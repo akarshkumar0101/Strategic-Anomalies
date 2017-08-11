@@ -2,10 +2,8 @@ package game.interaction.effect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import game.interaction.incident.Condition;
@@ -27,7 +25,7 @@ public abstract class Affectable {
      */
     private final Map<Effect, EffectTrigger> effects;
 
-    {
+    public Affectable() {
 	effects = new HashMap<>(2);
     }
 
@@ -39,11 +37,11 @@ public abstract class Affectable {
     }
 
     /**
-     * Adds the given Effect to the list of Effects and manages all of the
-     * trigger issues about when, how, and what triggers it by adding the an
+     * Adds the given Effect to the list of Effects and manages all of the trigger
+     * issues about when, how, and what triggers it by adding the an
      * IncidentListener to the IncidentReporter trigger. The Effect will
-     * automatically timeout and all ties will be removed by regularly calling
-     * the updateEffectExistances() method.
+     * automatically timeout and all ties will be removed by regularly calling the
+     * updateEffectExistances() method.
      *
      * @param effect
      *            the effect to perform
@@ -51,23 +49,23 @@ public abstract class Affectable {
      *            what must trigger for this to run
      */
     public void addEffect(Effect effect, IncidentReporter... triggers) {
-	addEffect(effect, args -> true, triggers);
+	addEffect(effect, Condition.trueCondition, triggers);
     }
 
     /**
-     * Adds the given Effect to the list of Effects and manages all of the
-     * trigger issues about when, how, and what triggers it by adding the an
+     * Adds the given Effect to the list of Effects and manages all of the trigger
+     * issues about when, how, and what triggers it by adding the an
      * IncidentListener to the IncidentReporter trigger. The Effect will
-     * automatically timeout and all ties will be removed by regularly calling
-     * the updateEffectExistances() method.
+     * automatically timeout and all ties will be removed by regularly calling the
+     * updateEffectExistances() method.
      *
      * @param effect
      *            the effect to perform
      * @param trigger
      *            what must trigger for this to run
      * @param conditionToRunOn
-     *            will trigger the effect only if this condition is met at the
-     *            time of the incident report
+     *            will trigger the effect only if this condition is met at the time
+     *            of the incident report
      */
     public void addEffect(Effect effect, Condition conditionToRunOn, IncidentReporter... triggers) {
 	EffectTrigger effectTrigger = new EffectTrigger(effect, conditionToRunOn, triggers);
@@ -75,8 +73,8 @@ public abstract class Affectable {
     }
 
     /**
-     * Removes and deletes the Effect from existence by deleting all ties
-     * associated with it.
+     * Removes and deletes the Effect from existence by deleting all ties associated
+     * with it.
      *
      * @param effect
      */
@@ -85,21 +83,6 @@ public abstract class Affectable {
 
 	effectTrigger.removeAllTriggers();
 	effects.remove(effect, effectTrigger);
-    }
-
-    /**
-     * Updates the existences of the Effects. This method should be called
-     * regularly to keep the Effects up to date.
-     */
-    public void updateEffectExistences() {
-	Iterator<Entry<Effect, EffectTrigger>> it = effects.entrySet().iterator();
-	while (it.hasNext()) {
-	    Entry<Effect, EffectTrigger> entry = it.next();
-	    if (!entry.getKey().shouldExist()) {
-		entry.getValue().removeAllTriggers();
-		it.remove();
-	    }
-	}
     }
 
     public void addTriggersToEffect(Effect effect, IncidentReporter... triggers) {

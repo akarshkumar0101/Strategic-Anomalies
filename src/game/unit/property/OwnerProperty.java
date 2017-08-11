@@ -11,7 +11,7 @@ public class OwnerProperty extends Property<Player> {
     }
 
     public Team getTeam() {
-	return getCurrentPropertyValue().getTeam();
+	return getValue().getTeam();
     }
 
     @Override

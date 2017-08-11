@@ -2,6 +2,7 @@ package game.interaction.incident;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -14,12 +15,12 @@ import java.util.Set;
 public class IncidentReporter {
 
     /**
-     * Listeners listening to this for broadcasts from this reporter. The
-     * boolean value suggests if the listener is only listening for one
-     * broadcast. If it is true, the listener will be removed from the list of
-     * listeners after it has received one broadcast.
+     * Listeners listening to this for broadcasts from this reporter. The boolean
+     * value suggests if the listener is only listening for one broadcast. If it is
+     * true, the listener will be removed from the list of listeners after it has
+     * received one broadcast.
      */
-    private final HashMap<IncidentListener, Boolean> listeners;
+    private final Map<IncidentListener, Boolean> listeners;
 
     /**
      * Initializes the IncidentReporter.
@@ -29,18 +30,18 @@ public class IncidentReporter {
     }
 
     /**
-     * Notifies all of the IncidentListeners that a incident has been reported
-     * with the given specifications.
+     * Notifies all of the IncidentListeners that a incident has been reported with
+     * the given specifications.
      * 
      * @param specifications
      *            for the listeners
      */
-    public void reportIncident(Object... specifications) {
+    public void reportIncident(Object... args) {
 	Iterator<IncidentListener> it = listeners.keySet().iterator();
 	while (it.hasNext()) {
 	    IncidentListener listener = it.next();
 
-	    listener.incidentReported(specifications);
+	    listener.incidentReported(args);
 
 	    if (listeners.get(listener)) {
 		it.remove();
@@ -67,9 +68,9 @@ public class IncidentReporter {
 
     /**
      * Adds the given listener to the list of listeners that will be notified on
-     * broadcast of this IncidentReporter. If the onlyOnce paramter is true then
-     * the listener will be removed after the first broadcast; it will only be
-     * notified once.
+     * broadcast of this IncidentReporter. If the onlyOnce paramter is true then the
+     * listener will be removed after the first broadcast; it will only be notified
+     * once.
      * 
      * @param listener
      * @param onlyOnce

@@ -132,8 +132,18 @@ public class Coordinate implements Serializable {
 	int ydist = coor2.y() - coor1.y();
 	if (Math.abs(xdist) > Math.abs(ydist)) {
 	    dir = xdist > 0 ? Direction.RIGHT : Direction.LEFT;
-	} else {
+	} else if (Math.abs(ydist) > Math.abs(xdist)) {
 	    dir = ydist > 0 ? Direction.UP : Direction.DOWN;
+	} else {
+	    if (xdist > 0 && ydist > 0) {
+		dir = Direction.UP;
+	    } else if (xdist > 0 && ydist < 0) {
+		dir = Direction.RIGHT;
+	    } else if (xdist < 0 && ydist < 0) {
+		dir = Direction.DOWN;
+	    } else if (xdist < 0 && ydist > 0) {
+		dir = Direction.LEFT;
+	    }
 	}
 	return dir;
     }
