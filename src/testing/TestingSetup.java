@@ -21,37 +21,10 @@ import game.board.Coordinate;
 import game.board.Direction;
 import game.board.NormalBoard;
 import game.unit.Unit;
-import game.unit.listofunits.Aquamancer;
-import game.unit.listofunits.Archer;
-import game.unit.listofunits.Cleric;
-import game.unit.listofunits.DarkMagicWitch;
-import game.unit.listofunits.Guardian;
-import game.unit.listofunits.Hunter;
-import game.unit.listofunits.LightMagicWitch;
-import game.unit.listofunits.Lightningmancer;
-import game.unit.listofunits.Pyromancer;
-import game.unit.listofunits.Scout;
-import game.unit.listofunits.Warrior;
 import setup.SetupTemplate;
 
 @SuppressWarnings("unchecked")
 public class TestingSetup {
-
-    public static final Class<? extends Unit>[] unitClasses;
-    static {
-	unitClasses = new Class[11];
-	TestingSetup.unitClasses[0] = Aquamancer.class;
-	TestingSetup.unitClasses[1] = Archer.class;
-	TestingSetup.unitClasses[2] = Cleric.class;
-	TestingSetup.unitClasses[3] = DarkMagicWitch.class;
-	TestingSetup.unitClasses[4] = Guardian.class;
-	TestingSetup.unitClasses[5] = Hunter.class;
-	TestingSetup.unitClasses[6] = LightMagicWitch.class;
-	TestingSetup.unitClasses[7] = Lightningmancer.class;
-	TestingSetup.unitClasses[8] = Pyromancer.class;
-	TestingSetup.unitClasses[9] = Scout.class;
-	TestingSetup.unitClasses[10] = Warrior.class;
-    }
 
     private final TestingSetupGUI gui;
 
@@ -236,9 +209,9 @@ class TestingSetupGUI extends JFrame {
 
 	public PickPiecePanel() {
 	    pickButtons = new HashMap<>();
-	    gridLayout = new GridLayout(2, 6);
+	    gridLayout = new GridLayout(6, 6);
 
-	    for (Class<? extends Unit> clazz : TestingSetup.unitClasses) {
+	    for (Class<? extends Unit> clazz : Unit.UNITCLASSES) {
 		Button button = new Button(clazz);
 		pickButtons.put(clazz, button);
 	    }
@@ -249,7 +222,7 @@ class TestingSetupGUI extends JFrame {
 	private void organizeComponents() {
 	    setLayout(gridLayout);
 
-	    for (Class<? extends Unit> clazz : TestingSetup.unitClasses) {
+	    for (Class<? extends Unit> clazz : Unit.UNITCLASSES) {
 		Button button = pickButtons.get(clazz);
 		button.setToolTipText(clazz.getSimpleName());
 		add(button);
@@ -425,9 +398,9 @@ class TestingSetupGUI extends JFrame {
 	    }
 
 	    if (mousePressing || isSelected) {
-		col = TestingFrameGUI.darkerColor(col, 50);
+		col = TestingFrameGUI.lighterColor(col, -50);
 	    } else if (mouseIn) {
-		col = TestingFrameGUI.darkerColor(col, 25);
+		col = TestingFrameGUI.lighterColor(col, -25);
 	    }
 
 	    return col;

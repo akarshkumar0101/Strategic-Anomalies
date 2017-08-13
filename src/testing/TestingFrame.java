@@ -12,6 +12,8 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -39,6 +41,7 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
+import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveAbility;
@@ -58,6 +61,8 @@ public class TestingFrame {
 
     private final Object dataTransferLock = new Object();
 
+    final Map<Coordinate, List<Square>> aoeHighlightData;
+
     public TestingFrame(Game game, Player localPlayer) {
 	this.game = game;
 	board = game.getBoard();
@@ -68,6 +73,7 @@ public class TestingFrame {
 
 	frameUpdatingThread = new FrameUpdatingThread();
 
+	aoeHighlightData = new HashMap<>();
     }
 
     public void startFrame() {
@@ -119,6 +125,7 @@ public class TestingFrame {
 	    gui.updateInformation();
 	    gui.repaint();
 	    while (true) {
+		aoeHighlightData.clear();
 		handleTurn();
 		gui.updateInformation();
 		gui.repaint();
@@ -338,6 +345,14 @@ public class TestingFrame {
 	if (!game.hasSelectedUnit()) {
 	    throw new RuntimeException("Hasn't selected unit");
 	}
+
+	if (game.getSelectedUnit().getAbility() instanceof AbilityAOE) {
+	    for (Square sqr : board) {
+		aoeHighlightData.put(sqr.getCoor(),
+			((AbilityAOE) game.getSelectedUnit().getAbility()).getAOESqaures(sqr));
+	    }
+	}
+
 	transmitDataToGame(Message.UNIT_ATTACK);
     }
 
@@ -391,6 +406,7 @@ public class TestingFrame {
 	    if (this.mouseInCoordinate != mouseInCoordinate) {
 		this.mouseInCoordinate = mouseInCoordinate;
 		gui.gameDataPanel.updateUnitInfoLabels();
+		gui.gamePanel.repaint();
 	    }
 	}
     }
@@ -494,18 +510,44 @@ class TestingFrameGUI extends JFrame {
 	gameDataPanel.updateInformation();
     }
 
-    private static double scale(double num, double ori1, double ori2, double new1, double new2) {
+    public static double scale(double num, double ori1, double ori2, double new1, double new2) {
 	double scale = (new2 - new1) / (ori2 - ori1);
 	return (num - ori1) * scale + new1;
     }
 
-    private static final Color friendlyColor = new Color(192, 192, 220), enemyColor = new Color(220, 192, 192);
     private static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
 	    slightGreen = new Color(192, 255, 192);
+    private static final Color friendlyUnitColor = new Color(192, 220, 192), enemyUnitColor = new Color(220, 192, 192);
+    private static final Color canSelectColor = lighterColor(Color.blue, 150),
+	    canMoveColor = lighterColor(Color.blue, 150), canAttackColor = lighterColor(Color.blue, 150);
+    private static final Color aoeColor = lighterColor(Color.blue, 200);
 
-    public static Color darkerColor(Color col, int amount) {
-	return new Color(Math.max(col.getRed() - amount, 0), Math.max(col.getGreen() - amount, 0),
-		Math.max(col.getBlue() - amount, 0));
+    private static final Color gameDataPanelBackgroundColor = lighterColor(Color.lightGray, -30);
+
+    public static Color lighterColor(Color col, int amount) {
+	return new Color(makeRGBRange(col.getRed() + amount), makeRGBRange(col.getGreen() + amount),
+		makeRGBRange(col.getBlue() + amount));
+    }
+
+    public static Color mixColors(Color col1, Color col2) {
+	return new Color(makeRGBRange((col1.getRed() + col2.getRed()) / 2),
+		makeRGBRange((col1.getGreen() + col2.getGreen()) / 2),
+		makeRGBRange((col1.getBlue() + col2.getBlue()) / 2));
+    }
+
+    public static Color addColors(Color col1, Color col2) {
+	return new Color(makeRGBRange(col1.getRed() + col2.getRed()), makeRGBRange(col1.getGreen() + col2.getGreen()),
+		makeRGBRange(col1.getBlue() + col2.getBlue()));
+    }
+
+    private static int makeRGBRange(int a) {
+	if (a > 255) {
+	    return 255;
+	} else if (a < 0) {
+	    return 0;
+	} else {
+	    return a;
+	}
     }
 
     private final Vector<Square> blockedSquares = new Vector<>();
@@ -575,23 +617,21 @@ class TestingFrameGUI extends JFrame {
 
 		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
 
-		if (testingFrame.currentlyPicking == Message.UNIT_SELECT) {
-		    if (testingFrame.game.canSelectUnit(coor)) {
-			if (testingFrame.isLocalPlayerTurn()) {
-			    gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightBlue);
-			}
-		    }
-		} else if (testingFrame.currentlyPicking == Message.UNIT_MOVE) {
-		    if (testingFrame.game.canMoveTo(coor)) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightGreen);
-		    }
-		} else if (testingFrame.currentlyPicking == Message.UNIT_ATTACK) {
-		    if (testingFrame.game.canAttack(coor)) {
-			gamePanel.getSquareLabel(coor).setColorToDisplay(TestingFrameGUI.slightRed);
-		    }
-		} else if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
-
-		}
+		// if (testingFrame.currentlyPicking == Message.UNIT_SELECT) {
+		// if (testingFrame.game.canSelectUnit(coor)) {
+		// gamePanel.getSquareLabel(coor).setColorToDisplay(canSelectColor);
+		// }
+		// } else if (testingFrame.currentlyPicking == Message.UNIT_MOVE) {
+		// if (testingFrame.game.canMoveTo(coor)) {
+		// gamePanel.getSquareLabel(coor).setColorToDisplay(canMoveColor);
+		// }
+		// } else if (testingFrame.currentlyPicking == Message.UNIT_ATTACK) {
+		// if (testingFrame.game.canAttack(coor)) {
+		// gamePanel.getSquareLabel(coor).setColorToDisplay(canAttackColor);
+		// }
+		// } else if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
+		//
+		// }
 	    }
 	}
 
@@ -699,34 +739,49 @@ class TestingFrameGUI extends JFrame {
 		}
 	    }
 
-	    public Color determineBackgroundColor() {
+	    private Color getUnitOwnershipColor() {
+		if (unitOnTop != null) {
+		    Player owner = unitOnTop.getOwnerProp().getValue();
+		    if (owner.equals(testingFrame.localPlayer)) {
+			return TestingFrameGUI.friendlyUnitColor;
+		    } else {
+			return TestingFrameGUI.enemyUnitColor;
+		    }
+		}
+		return null;
+	    }
+
+	    private Color determineBackgroundColor() {
+		if (!isInBoard) {
+		    return Color.black;
+		}
 		Color col = null;
 		if (colorToDisplay != null) {
 		    col = colorToDisplay;
 		} else {
-		    if (!isInBoard) {
-			return Color.black;
+		    col = getUnitOwnershipColor();
+
+		    if (col == null) {
+			col = Color.lightGray;
 		    }
-
-		    col = Color.lightGray;
-
-		    if (unitOnTop != null) {
-			Player owner = unitOnTop.getOwnerProp().getValue();
-
-			if (owner.equals(testingFrame.localPlayer)) {
-			    col = TestingFrameGUI.friendlyColor;
-			} else {
-			    col = TestingFrameGUI.enemyColor;
+		    if (canCurrentlyClick) {
+			// col = mixColors(col, lighterColor(Color.blue, 200));
+		    }
+		    if (testingFrame.currentlyPicking == Message.UNIT_ATTACK && testingFrame.aoeHighlightData != null
+			    && testingFrame.getMouseInSquare() != null) {
+			List<Square> aoe = testingFrame.aoeHighlightData.get(testingFrame.getMouseInSquare().getCoor());
+			if (aoe != null && aoe.contains(testingFrame.board.getSquare(coor))) {
+			    col = aoeColor;
 			}
 		    }
 		}
 
 		if (mousePressing) {
-		    col = TestingFrameGUI.darkerColor(col, 50);
+		    col = TestingFrameGUI.lighterColor(col, -50);
 		} else if (mouseIn) {
-		    col = TestingFrameGUI.darkerColor(col, 25);
+		    col = TestingFrameGUI.lighterColor(col, -25);
 		} else if (coor.equals(testingFrame.getOpponentHover())) {
-		    col = TestingFrameGUI.darkerColor(col, 25);
+		    col = TestingFrameGUI.lighterColor(col, -25);
 		}
 		// col = TestingFrame.combineColors(col,
 		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
@@ -738,6 +793,12 @@ class TestingFrameGUI extends JFrame {
 		// clear
 		g.setColor(background);
 		g.fillRect(0, 0, getWidth(), getHeight());
+
+		if (canCurrentlyClick) {
+		    Color circleCol = lighterColor(background, -50);
+		    g.setColor(circleCol);
+		    g.fillOval(0, 0, getWidth(), getHeight());
+		}
 
 		// if outside of testingFrame.board
 		if (!isInBoard) {
@@ -1071,7 +1132,7 @@ class TestingFrameGUI extends JFrame {
 	    unitInfoLabel2.setFont(normalFont);
 	    add(unitInfoLabel2, gdpgbConstrains);
 
-	    setBackground(TestingFrameGUI.darkerColor(Color.lightGray, 30));
+	    setBackground(gameDataPanelBackgroundColor);
 
 	    normalBorders.put(pickUnitTButton, pickUnitTButton.getBorder());
 	    normalBorders.put(pickMoveTButton, pickMoveTButton.getBorder());
@@ -1286,7 +1347,11 @@ class TestingFrameGUI extends JFrame {
 			+ colorize(health + "(" + (int) (percentHealth * 100) + "%)", percentHealth, 1, true);
 
 		int power = ((AbilityPower) unit.getAbility()).getAbilityPowerProperty().getValue();
-		int defaultPower = ((AbilityRange) unit.getAbility()).getAbilityRangeProperty().getDefaultValue();
+		int defaultPower = 0;
+		try {
+		    defaultPower = ((AbilityRange) unit.getAbility()).getAbilityRangeProperty().getDefaultValue();
+		} catch (ClassCastException e) {
+		}
 		str += "<br>Power: " + colorize(power + "", power, defaultPower, true);
 
 		int armor = unit.getHealthProp().getArmorProp().getValue();

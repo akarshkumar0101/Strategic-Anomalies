@@ -69,11 +69,11 @@ public abstract class Board implements Iterable<Square> {
 
     // TODO public? private?
     // TODO go through everything in game package to see visibility
-    private final void checkCoordinateRange(Coordinate coor) {
-	if (coor == null || !isInBoard(coor)) {
-	    throw new RuntimeException("Invalid Coordinate: " + coor);
-	}
-    }
+    // private final void checkCoordinateRange(Coordinate coor) {
+    // if (coor == null || !isInBoard(coor)) {
+    // throw new RuntimeException("Invalid Coordinate: " + coor);
+    // }
+    // }
 
     /**
      * @param coor
@@ -81,8 +81,12 @@ public abstract class Board implements Iterable<Square> {
      * @return the Square that is at the Coordinate
      */
     public Square getSquare(Coordinate coor) {
-	checkCoordinateRange(coor);
-	return grid[coor.x()][coor.y()];
+	// checkCoordinateRange(coor);
+	try {
+	    return grid[coor.x()][coor.y()];
+	} catch (ArrayIndexOutOfBoundsException e) {
+	    return null;
+	}
     }
 
     /**
@@ -91,18 +95,18 @@ public abstract class Board implements Iterable<Square> {
      * @return the Unit that is on top of the Square at the Coordinate
      */
     public Unit getUnitAt(Coordinate coor) {
-	checkCoordinateRange(coor);
+	// checkCoordinateRange(coor);
 	return grid[coor.x()][coor.y()].getUnitOnTop();
     }
 
     public void linkBoardToUnit(Unit unit) {
 	Coordinate coor = unit.getPosProp().getValue();
-	checkCoordinateRange(coor);
+	// checkCoordinateRange(coor);
 	getSquare(coor).setUnitOnTop(unit);
 
 	unit.getPosProp().addPropertyListener((oldValue, newValue, unit1, property, specifications) -> {
-	    checkCoordinateRange(oldValue);
-	    checkCoordinateRange(newValue);
+	    // checkCoordinateRange(oldValue);
+	    // checkCoordinateRange(newValue);
 
 	    Square oldsqr = getSquare(oldValue);
 	    Square newsqr = getSquare(newValue);

@@ -13,9 +13,4 @@ public class OwnerProperty extends Property<Player> {
     public Team getTeam() {
 	return getValue().getTeam();
     }
-
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Player oldValue, Player newValue) {
-	return new Object[] { !newValue.getTeam().equals(oldValue.getTeam()) };
-    }
 }

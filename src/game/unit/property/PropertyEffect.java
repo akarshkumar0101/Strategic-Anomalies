@@ -33,8 +33,6 @@ public abstract class PropertyEffect<T> extends AbstractEffect {
      *            the type of Effect it is.
      * @param source
      *            the source of the Effect.
-     * @param shouldExist
-     *            the Condition in which it will still exist.
      */
     public PropertyEffect(EffectType effectType, Object source, double priority) {
 	super(effectType, source);

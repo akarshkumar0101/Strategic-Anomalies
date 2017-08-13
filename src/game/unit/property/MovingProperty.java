@@ -11,13 +11,7 @@ public class MovingProperty extends Property<Integer> {
     public MovingProperty(Unit unitOwner, Integer initMoveRange, Boolean initTeleportingValue) {
 	super(unitOwner, initMoveRange);
 
-	teleportingProp = new Property<Boolean>(unitOwner, initTeleportingValue) {
-
-	    @Override
-	    protected Object[] getSpecificationsOfPropertyChange(Boolean oldValue, Boolean newValue) {
-		return null;
-	    }
-	};
+	teleportingProp = new Property<>(unitOwner, initTeleportingValue);
     }
 
     public Property<Boolean> getTeleportingProp() {
@@ -28,23 +22,18 @@ public class MovingProperty extends Property<Integer> {
 	return Board.walkDist(moveToCoor, getUnitOwner().getPosProp().getValue()) <= getValue();
     }
 
-    public boolean canCurrentlyMove() {
+    public boolean canMove() {
 	if (getUnitOwner().getStunnedProp().getValue() || getUnitOwner().getWaitProp().isWaiting()) {
 	    return false;
 	}
 	return getUnitOwner().getDefaultStat().canDefaultMove;
     }
 
-    public boolean isCurrentlyStoic() {
+    public boolean isStoic() {
 	if (getUnitOwner().getStunnedProp().getValue()) {
 	    return true;
 	}
 	return getUnitOwner().getDefaultStat().isDefaultStoic;
-    }
-
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
-	return null;
     }
 
 }

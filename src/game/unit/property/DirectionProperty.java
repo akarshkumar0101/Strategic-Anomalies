@@ -9,9 +9,4 @@ public class DirectionProperty extends Property<Direction> {
 	super(unit, direction);
     }
 
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Direction oldValue, Direction newValue) {
-	return null;
-    }
-
 }

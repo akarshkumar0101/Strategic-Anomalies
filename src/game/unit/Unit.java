@@ -12,14 +12,39 @@ import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
 import game.unit.listofunits.Aquamancer;
 import game.unit.listofunits.Archer;
+import game.unit.listofunits.Assassin;
+import game.unit.listofunits.BarrierWard;
+import game.unit.listofunits.Basilisk;
+import game.unit.listofunits.Beasty;
+import game.unit.listofunits.Berserker;
+import game.unit.listofunits.BronzeGolem;
+import game.unit.listofunits.Chanty;
+import game.unit.listofunits.ClayGolem;
 import game.unit.listofunits.Cleric;
 import game.unit.listofunits.DarkMagicWitch;
+import game.unit.listofunits.DragonTyrant;
+import game.unit.listofunits.EagleTyrant;
+import game.unit.listofunits.Furgon;
+import game.unit.listofunits.GiantMole;
+import game.unit.listofunits.GolemAmbusher;
 import game.unit.listofunits.Guardian;
 import game.unit.listofunits.Hunter;
+import game.unit.listofunits.LavaGolem;
 import game.unit.listofunits.LightMagicWitch;
+import game.unit.listofunits.LightningWard;
 import game.unit.listofunits.Lightningmancer;
+import game.unit.listofunits.Monk;
+import game.unit.listofunits.MudGolem;
+import game.unit.listofunits.Poise;
 import game.unit.listofunits.Pyromancer;
+import game.unit.listofunits.RockBeast;
+import game.unit.listofunits.Sage;
+import game.unit.listofunits.SandGolem;
 import game.unit.listofunits.Scout;
+import game.unit.listofunits.Siren;
+import game.unit.listofunits.StoneGolem;
+import game.unit.listofunits.TurtleTyrant;
+import game.unit.listofunits.VineWard;
 import game.unit.listofunits.Warrior;
 import game.unit.property.HealthProperty;
 import game.unit.property.MovingProperty;
@@ -31,14 +56,19 @@ import game.unit.property.ability.Ability;
 import game.unit.property.ability.ActiveAbility;
 import game.unit.property.ability.ActiveTargetAbility;
 
+//36
 public abstract class Unit extends Affectable {
 
     // TODO go through and document EVERYTHING
     // TODO go through and determine visibility of ALL members in every class.
     @SuppressWarnings("unchecked")
-    public static final Class<? extends Unit>[] UNITCLASSES = (Class<? extends Unit>[]) new Class<?>[] {
-	    Aquamancer.class, Archer.class, Cleric.class, DarkMagicWitch.class, Guardian.class, Hunter.class,
-	    LightMagicWitch.class, Lightningmancer.class, Pyromancer.class, Scout.class, Warrior.class };
+    public static final Class<? extends Unit>[] UNITCLASSES = (Class<? extends Unit>[]) new Class<?>[] { Warrior.class,
+	    Guardian.class, Pyromancer.class, Aquamancer.class, Lightningmancer.class, Scout.class, Archer.class,
+	    Hunter.class, DarkMagicWitch.class, LightMagicWitch.class, Cleric.class, Sage.class, Monk.class,
+	    Assassin.class, Berserker.class, Siren.class, Chanty.class, BarrierWard.class, LightningWard.class,
+	    VineWard.class, Basilisk.class, RockBeast.class, Beasty.class, Furgon.class, GiantMole.class, Poise.class,
+	    DragonTyrant.class, TurtleTyrant.class, EagleTyrant.class, MudGolem.class, GolemAmbusher.class,
+	    SandGolem.class, LavaGolem.class, StoneGolem.class, BronzeGolem.class, ClayGolem.class };
 
     private final Game game;
 
@@ -143,7 +173,7 @@ public abstract class Unit extends Affectable {
 
     // TODO make sure all units should consider overriding these methods
     public Path getGamePathTo(Coordinate moveToCoor) {
-	if (!movingProp.canCurrentlyMove() || !movingProp.isInRangeOfWalking(moveToCoor)) {
+	if (!movingProp.canMove() || !movingProp.isInRangeOfWalking(moveToCoor)) {
 	    return null;
 	} else if (movingProp.getTeleportingProp().getValue()) {
 	    return PathFinder.getTeleportedPath(this, moveToCoor);

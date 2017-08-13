@@ -133,7 +133,7 @@ public class PathFinder {
 		Unit intersecting = board.getUnitAt(next);
 
 		if (intersecting != null
-			&& (!Unit.areAllies(unit, intersecting) || intersecting.getMovingProp().isCurrentlyStoic())) {
+			&& (!Unit.areAllies(unit, intersecting) || intersecting.getMovingProp().isStoic())) {
 		    continue;
 		}
 		Path newPath = builtPath == null ? new Path(next) : builtPath.add(next);
@@ -178,7 +178,7 @@ public class PathFinder {
 		Unit intersecting = unit.getGame().getBoard().getUnitAt(next);
 
 		if (intersecting != null
-			&& (!Unit.areAllies(unit, intersecting) || intersecting.getMovingProp().isCurrentlyStoic())) {
+			&& (!Unit.areAllies(unit, intersecting) || intersecting.getMovingProp().isStoic())) {
 		    continue;
 		}
 

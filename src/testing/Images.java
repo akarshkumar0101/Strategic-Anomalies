@@ -4,22 +4,12 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
 import game.unit.Unit;
-import game.unit.listofunits.Aquamancer;
-import game.unit.listofunits.Archer;
-import game.unit.listofunits.Cleric;
-import game.unit.listofunits.DarkMagicWitch;
-import game.unit.listofunits.Guardian;
-import game.unit.listofunits.Hunter;
-import game.unit.listofunits.LightMagicWitch;
-import game.unit.listofunits.Lightningmancer;
-import game.unit.listofunits.Pyromancer;
-import game.unit.listofunits.Scout;
-import game.unit.listofunits.Warrior;
 
 public class Images {
     public static final HashMap<Class<? extends Unit>, Image> classImages = new HashMap<>();
@@ -41,31 +31,16 @@ public class Images {
 
     static {
 	try {
-	    Images.classImages.put(Warrior.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/warrior.png")));
-	    Images.classImages.put(Guardian.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/guardian.png")));
+	    for (Class<? extends Unit> clazz : Unit.UNITCLASSES) {
+		String filename = clazz.getSimpleName().toLowerCase() + ".png";
+		InputStream is = Images.class.getResourceAsStream("/temp_pics/" + filename);
 
-	    Images.classImages.put(Pyromancer.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/pyromancer.png")));
-	    Images.classImages.put(Aquamancer.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/aquamancer.png")));
-	    Images.classImages.put(Lightningmancer.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/lightningmancer.png")));
+		if (is != null) {
+		    Image img = ImageIO.read(is);
 
-	    Images.classImages.put(Scout.class, ImageIO.read(Images.class.getResourceAsStream("/temp_pics/scout.png")));
-	    Images.classImages.put(Archer.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/archer.png")));
-	    Images.classImages.put(Hunter.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/hunter.png")));
-
-	    Images.classImages.put(DarkMagicWitch.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/darkmagicwitch.png")));
-	    Images.classImages.put(LightMagicWitch.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/lightmagicwitch.png")));
-
-	    Images.classImages.put(Cleric.class,
-		    ImageIO.read(Images.class.getResourceAsStream("/temp_pics/cleric.png")));
+		    Images.classImages.put(clazz, img);
+		}
+	    }
 
 	    Images.stunnedImage = ImageIO.read(Images.class.getResourceAsStream("/temp_pics/dizzy.png"));
 

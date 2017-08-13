@@ -1,8 +1,5 @@
 package game.unit.listofunits;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import game.Game;
 import game.Player;
 import game.board.Board;
@@ -69,24 +66,14 @@ class KnightAbility extends ActiveTargetAbility implements AbilityPower, Ability
     }
 
     @Override
-    public List<Square> getAOESqaures(Square target) {
-	List<Square> list = new ArrayList<>(1);
-	list.add(target);
-	return list;
-    }
-
-    @Override
     public void performAbility(Object... specs) {
 	Square target = (Square) specs[0];
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	List<Square> targets = getAOESqaures(target);
-	for (Square ss : targets) {
-	    Damage damage = new Damage(abilityPowerProperty.getValue(), DamageType.PHYSICAL, getUnitOwner(),
-		    ss.getUnitOnTop());
-	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
-	}
+	Damage damage = new Damage(abilityPowerProperty.getValue(), DamageType.PHYSICAL, getUnitOwner(),
+		target.getUnitOnTop());
+	target.getUnitOnTop().getHealthProp().takeDamage(damage);
     }
 
 }

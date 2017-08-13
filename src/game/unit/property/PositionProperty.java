@@ -16,10 +16,4 @@ public class PositionProperty extends Property<Coordinate> {
     public DirectionProperty getDirFacingProp() {
 	return dirFacingProp;
     }
-
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Coordinate oldValue, Coordinate newValue) {
-	return null;
-    }
-
 }

@@ -13,14 +13,20 @@ public class HealthProperty extends Property<Integer> {
 
     public HealthProperty(Unit unit, int initialHealth, int initialArmor) {
 	super(unit, initialHealth);
-	maxHealthProperty = new Property<Integer>(unit, initialHealth) {
+	maxHealthProperty = new Property<>(unit, initialHealth);
 
-	    @Override
-	    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
-		return null;
-	    }
-	};
 	armorProp = new ArmorProperty(unit, initialArmor);
+
+	addPropEffect(new PropertyEffect<Integer>(EffectType.OTHER, this, 10) {
+	    @Override
+	    public Integer affectProperty(Integer initValue) {
+		if (initValue > maxHealthProperty.getValue()) {
+		    return maxHealthProperty.getValue();
+		} else {
+		    return initValue;
+		}
+	    }
+	});
     }
 
     public Property<Integer> getMaxHealthProperty() {
@@ -36,27 +42,13 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public void takeHealing(Healing healing) {
-	int healingAmount = healing.getHealingAmount();
-	if (healingAmount == 0) {
-	    return;
-	}
-
-	int maxHealth = maxHealthProperty.getValue();
-	int currentHealth = getValue();
-	if (currentHealth + healingAmount > maxHealth) {
-	    healingAmount = maxHealth - currentHealth;
-	}
-	int healingAmountFinal = healingAmount;
-
-	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, healing.getSource(), 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, healing, 0) {
 	    @Override
 	    public Integer affectProperty(Integer initHealth) {
-		return initHealth + healingAmountFinal;
+		return initHealth + healing.getHealingAmount();
 	    }
 	});
-	if (getValue() <= 0) {
-	    getUnitOwner().triggerDeath();
-	}
+	checkDeath();
     }
 
     public void takeDamage(Damage damage) {
@@ -67,25 +59,18 @@ public class HealthProperty extends Property<Integer> {
     }
 
     private void takeRawDamage(Damage damage) {
-	int damageAmount = damage.getDamageAmount();
-
-	if (damageAmount == 0) {
-	    return;
-	}
-
-	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, damage.getSource(), 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, damage, 0) {
 	    @Override
 	    public Integer affectProperty(Integer initHealth) {
-		return initHealth - damageAmount;
+		return initHealth - damage.getDamageAmount();
 	    }
 	});
+	checkDeath();
+    }
+
+    private void checkDeath() {
 	if (getValue() <= 0) {
 	    getUnitOwner().triggerDeath();
 	}
-    }
-
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
-	return null;
     }
 }

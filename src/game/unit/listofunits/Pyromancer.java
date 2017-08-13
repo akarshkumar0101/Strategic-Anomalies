@@ -15,6 +15,7 @@ import game.unit.Unit;
 import game.unit.UnitStat;
 import game.unit.property.Property;
 import game.unit.property.ability.Ability;
+import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveTargetAbility;
@@ -33,7 +34,7 @@ public class Pyromancer extends Unit {
     }
 }
 
-class MageAbilty extends ActiveTargetAbility implements AbilityPower, AbilityRange {
+class MageAbilty extends ActiveTargetAbility implements AbilityPower, AbilityRange, AbilityAOE {
 
     private final Property<Integer> abilityPowerProperty;
     private final Property<Integer> abilityRangeProperty;
@@ -68,7 +69,7 @@ class MageAbilty extends ActiveTargetAbility implements AbilityPower, AbilityRan
 
     @Override
     public List<Square> getAOESqaures(Square target) {
-	List<Square> list = new ArrayList<>(1);
+	List<Square> list = new ArrayList<>();
 	list.add(target);
 
 	Board board = getUnitOwner().getGame().getBoard();

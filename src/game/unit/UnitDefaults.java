@@ -18,7 +18,7 @@ public class UnitDefaults {
 
 		Class<? extends Unit> unitClass = null;
 		for (Class<? extends Unit> clazz : Unit.UNITCLASSES) {
-		    if (clazz.getSimpleName().equals(unitName)) {
+		    if (clazz.getSimpleName().equalsIgnoreCase(unitName)) {
 			unitClass = clazz;
 			break;
 		    }
@@ -48,10 +48,10 @@ public class UnitDefaults {
     }
 
     private static double parseNumber(String str) {
-	if (str.equals("Special")) {
+	str = str.toLowerCase();
+	if (str.equals("special") || str.equals("n/a")) {
 	    return -1;
-	}
-	if (str.contains("%")) {
+	} else if (str.contains("%")) {
 	    str = str.substring(0, str.indexOf('%'));
 	    return Double.parseDouble(str) / 100;
 	} else {

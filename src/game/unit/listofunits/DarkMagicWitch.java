@@ -15,6 +15,7 @@ import game.unit.Unit;
 import game.unit.UnitStat;
 import game.unit.property.Property;
 import game.unit.property.ability.Ability;
+import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveTargetAbility;
@@ -34,7 +35,7 @@ public class DarkMagicWitch extends Unit {
     }
 }
 
-class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange {
+class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange, AbilityAOE {
     // TODO set ability range property to permanently be 3
     private final Property<Integer> abilityPowerProperty;
     private final Property<Integer> abilityRangeProperty;
