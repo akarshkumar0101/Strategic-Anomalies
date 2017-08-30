@@ -45,8 +45,8 @@ public class TestingClient {
     }
 
     public static void newGame(Communication servComm, boolean first) {
-	File file = new File("C:\\Users\\akars\\Documents\\GitHub\\Strategic-Anomalies\\template" + (first ? "1" : "2")
-		+ ".TAOtmplt");
+	File file = new File("C:\\Users\\akars\\Documents\\GitHub\\Strategic-Anomalies\\resources\\template"
+		+ (first ? "1" : "2") + ".TAOtmplt");
 
 	// *display input*:
 
