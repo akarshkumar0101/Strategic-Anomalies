@@ -1,9 +1,7 @@
 package testing;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -50,19 +48,19 @@ public class TestingClient {
 
 	// *display input*:
 
-	// TestingSetup testingSetup = new TestingSetup();
-	// SetupTemplate homeSel = testingSetup.getFinalTemplate();
-	// testingSetup.dispose();
+	TestingSetup testingSetup = new TestingSetup();
+	SetupTemplate homeSel = testingSetup.getFinalTemplate();
+	testingSetup.dispose();
 
 	// *input*:
-	SetupTemplate homeSel = null;
-	try {
-	    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-	    homeSel = (SetupTemplate) ois.readObject();
-	    ois.close();
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+	// SetupTemplate homeSel = null;
+	// try {
+	// ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+	// homeSel = (SetupTemplate) ois.readObject();
+	// ois.close();
+	// } catch (Exception e) {
+	// e.printStackTrace();
+	// }
 
 	// *output*:
 

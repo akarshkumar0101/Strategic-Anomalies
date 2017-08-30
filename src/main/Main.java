@@ -10,6 +10,13 @@ import game.Communication;
 import testing.TestingClient;
 import testing.TestingServer;
 
+// magic witch select 4
+
+// can select unit
+//can attack friendly unit
+//if it kills iteself, dont crash.
+//dont use template
+
 public class Main {
 
     static {
@@ -86,7 +93,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-	boolean test = true;
+	boolean test = false;
 	try {
 	    if (test) {
 		Main.test();
