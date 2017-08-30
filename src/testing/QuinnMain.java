@@ -13,6 +13,8 @@ public class QuinnMain {
 		}
 	    }
 	};
+	
+	//Inserting the servThread.starting() - Quinn
 	servThread.start();
 	TestingClient.main(null);
     }
