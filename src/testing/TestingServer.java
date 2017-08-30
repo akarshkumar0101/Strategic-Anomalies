@@ -28,7 +28,7 @@ public class TestingServer {
 		@Override
 		public void run() {
 		    try {
-			Object prevData = null;
+			// Object prevData = null;
 			while (true) {
 			    Object data = comm.recieveObject();
 			    if (data != null && data.getClass() == Coordinate.class) {
@@ -75,6 +75,7 @@ public class TestingServer {
 	    comm.sendObject(first);
 	    first = false;
 	}
+	serverSock.close();
     }
 
 }

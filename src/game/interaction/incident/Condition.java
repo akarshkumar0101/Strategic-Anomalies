@@ -13,7 +13,7 @@ public interface Condition {
 
     public static final Condition trueCondition = args -> true;
     public static final Condition falseCondition = args -> false;
-    public static final Condition randomCondition = args -> Math.random() > .5 ? true : false;
+    // public static final Condition randomCondition = args -> Math.random() > .5;
 
     /**
      * Performs calculations to determine whether the condition is being met. Be

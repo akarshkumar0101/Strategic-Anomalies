@@ -37,7 +37,7 @@ public abstract class PropertyEffect<T> extends AbstractEffect {
     public PropertyEffect(EffectType effectType, Object source, double priority) {
 	super(effectType, source);
 
-	if (effectType == EffectType.PERMANENT) {
+	if (effectType == EffectType.PERMANENT_BASE) {
 	    this.priority = 0;
 	} else {
 	    this.priority = priority;

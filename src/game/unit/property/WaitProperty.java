@@ -30,9 +30,4 @@ public class WaitProperty extends Property<Integer> {
 	return getValue() > 0;
     }
 
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
-	return null;
-    }
-
 }

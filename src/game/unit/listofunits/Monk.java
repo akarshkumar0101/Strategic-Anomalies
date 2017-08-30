@@ -62,10 +62,8 @@ class MonkAbility extends ActiveTargetAbility implements AbilityPower, AbilityRa
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (!canUseAbility()
-		|| target.getUnitOnTop() == null || Board.walkDist(getUnitOwner().getPosProp().getValue(),
-			target.getCoor()) > getAbilityRangeProperty().getValue()
-		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	if (!canUseAbility() || Board.walkDist(getUnitOwner().getPosProp().getValue(),
+		target.getCoor()) > getAbilityRangeProperty().getValue()) {
 	    return false;
 	} else {
 	    return true;

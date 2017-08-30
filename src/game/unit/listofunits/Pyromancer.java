@@ -1,6 +1,5 @@
 package game.unit.listofunits;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import game.Game;
@@ -47,10 +46,8 @@ class MageAbilty extends ActiveTargetAbility implements AbilityPower, AbilityRan
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (!canUseAbility()
-		|| target.getUnitOnTop() == null || Board.walkDist(getUnitOwner().getPosProp().getValue(),
-			target.getCoor()) > getAbilityRangeProperty().getValue()
-		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	if (!canUseAbility() || Board.walkDist(getUnitOwner().getPosProp().getValue(),
+		target.getCoor()) > getAbilityRangeProperty().getValue()) {
 	    return false;
 	} else {
 	    return true;
@@ -69,29 +66,7 @@ class MageAbilty extends ActiveTargetAbility implements AbilityPower, AbilityRan
 
     @Override
     public List<Square> getAOESqaures(Square target) {
-	List<Square> list = new ArrayList<>();
-	list.add(target);
-
-	Board board = getUnitOwner().getGame().getBoard();
-	Square left = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.LEFT));
-	Square up = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.UP));
-	Square right = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.RIGHT));
-	Square down = board.getSquare(Coordinate.shiftCoor(target.getCoor(), Direction.DOWN));
-
-	if (left != null) {
-	    list.add(left);
-	}
-	if (up != null) {
-	    list.add(up);
-	}
-	if (right != null) {
-	    list.add(right);
-	}
-	if (down != null) {
-	    list.add(down);
-	}
-
-	return list;
+	return getUnitOwner().getGame().getBoard().squaresInRange(target, 1);
     }
 
     @Override

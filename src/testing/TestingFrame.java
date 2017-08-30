@@ -515,14 +515,14 @@ class TestingFrameGUI extends JFrame {
 	return (num - ori1) * scale + new1;
     }
 
-    private static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
+    public static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
 	    slightGreen = new Color(192, 255, 192);
-    private static final Color friendlyUnitColor = new Color(192, 220, 192), enemyUnitColor = new Color(220, 192, 192);
-    private static final Color canSelectColor = lighterColor(Color.blue, 150),
+    public static final Color friendlyUnitColor = new Color(192, 220, 192), enemyUnitColor = new Color(220, 192, 192);
+    public static final Color canSelectColor = lighterColor(Color.blue, 150),
 	    canMoveColor = lighterColor(Color.blue, 150), canAttackColor = lighterColor(Color.blue, 150);
-    private static final Color aoeColor = lighterColor(Color.blue, 200);
+    public static final Color aoeColor = lighterColor(Color.blue, 200);
 
-    private static final Color gameDataPanelBackgroundColor = lighterColor(Color.lightGray, -30);
+    public static final Color gameDataPanelBackgroundColor = lighterColor(Color.lightGray, -30);
 
     public static Color lighterColor(Color col, int amount) {
 	return new Color(makeRGBRange(col.getRed() + amount), makeRGBRange(col.getGreen() + amount),
@@ -797,7 +797,9 @@ class TestingFrameGUI extends JFrame {
 		if (canCurrentlyClick) {
 		    Color circleCol = lighterColor(background, -50);
 		    g.setColor(circleCol);
-		    g.fillOval(0, 0, getWidth(), getHeight());
+		    double percentCircle = .9;
+		    int width = (int) (getWidth() * percentCircle), height = (int) (getHeight() * percentCircle);
+		    g.fillOval((getWidth() - width) / 2, (getHeight() - height) / 2, width, height);
 		}
 
 		// if outside of testingFrame.board

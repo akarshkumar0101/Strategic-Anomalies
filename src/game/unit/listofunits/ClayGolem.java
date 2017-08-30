@@ -15,7 +15,6 @@ public class ClayGolem extends Unit {
 
     @Override
     public Ability getDefaultAbility() {
-
 	return null;
     }
 }

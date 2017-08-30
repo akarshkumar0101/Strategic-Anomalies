@@ -157,6 +157,10 @@ public class Property<T> {
 	valueUpdated();
     }
 
+    public void updateValueOnReporter(IncidentReporter reporter) {
+	reporter.add(specifications -> updateValue());
+    }
+
     /**
      * @return the list of effects that are currently affecting the value of this
      *         property.
@@ -177,7 +181,7 @@ public class Property<T> {
     }
 
     public void setValue(T value, Object source) {
-	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT, source, 0) {
+	addPropEffect(new PropertyEffect<T>(EffectType.PERMANENT_BASE, source, 0) {
 	    @Override
 	    public T affectProperty(T init) {
 		return value;
@@ -190,7 +194,7 @@ public class Property<T> {
      * time/another limit.
      */
     public void addPropEffect(PropertyEffect<T> effect) {
-	if (effect.getEffectType() == EffectType.PERMANENT) {
+	if (effect.getEffectType() == EffectType.PERMANENT_BASE) {
 	    permanentPropEffects.add(effect);
 
 	    updateBaseValue();
@@ -211,7 +215,7 @@ public class Property<T> {
      * Remove an effect that is currently affecting the value of this property.
      */
     public void removePropEffect(PropertyEffect<T> effect) {
-	if (effect.getEffectType() == EffectType.PERMANENT) {
+	if (effect.getEffectType() == EffectType.PERMANENT_BASE) {
 	    permanentPropEffects.remove(effect);
 
 	    updateBaseValue();
@@ -244,6 +248,10 @@ public class Property<T> {
      */
     public void removePropertyListener(PropertyListener<T> pl) {
 	changeReporter.remove(pl);
+    }
+
+    public IncidentReporter getChangeReporter() {
+	return changeReporter;
     }
 
     /**

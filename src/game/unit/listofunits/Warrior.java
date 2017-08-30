@@ -55,10 +55,8 @@ class KnightAbility extends ActiveTargetAbility implements AbilityPower, Ability
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	if (!canUseAbility()
-		|| target.getUnitOnTop() == null || Board.walkDist(getUnitOwner().getPosProp().getValue(),
-			target.getCoor()) > getAbilityRangeProperty().getValue()
-		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	if (!canUseAbility() || Board.walkDist(getUnitOwner().getPosProp().getValue(),
+		target.getCoor()) > getAbilityRangeProperty().getValue()) {
 	    return false;
 	} else {
 	    return true;
@@ -71,9 +69,10 @@ class KnightAbility extends ActiveTargetAbility implements AbilityPower, Ability
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	Damage damage = new Damage(abilityPowerProperty.getValue(), DamageType.PHYSICAL, getUnitOwner(),
-		target.getUnitOnTop());
-	target.getUnitOnTop().getHealthProp().takeDamage(damage);
+	Damage damage = new Damage(abilityPowerProperty.getValue(), DamageType.PHYSICAL, this, target.getUnitOnTop());
+	if (!target.isEmpty()) {
+	    target.getUnitOnTop().getHealthProp().takeDamage(damage);
+	}
     }
 
 }

@@ -1,8 +1,5 @@
 package game.unit.listofunits;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import game.Game;
 import game.Player;
 import game.board.Board;
@@ -15,7 +12,6 @@ import game.unit.Unit;
 import game.unit.UnitStat;
 import game.unit.property.Property;
 import game.unit.property.ability.Ability;
-import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveTargetAbility;
@@ -35,7 +31,7 @@ public class DarkMagicWitch extends Unit {
     }
 }
 
-class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange, AbilityAOE {
+class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange {
     // TODO set ability range property to permanently be 3
     private final Property<Integer> abilityPowerProperty;
     private final Property<Integer> abilityRangeProperty;
@@ -59,40 +55,14 @@ class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityR
     // TODO look at whether target can be empty/ be friendly, etc
     @Override
     public boolean canUseAbilityOn(Square target) {
-	Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
-	Coordinate targetcoor = target.getCoor();
-
-	boolean inRange = Coordinate.inDirectDirection(thiscoor, targetcoor) != null
-		&& Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getValue();
-
-	if (!canUseAbility() || !inRange) {
+	Coordinate coor = getUnitOwner().getPosProp().getValue(), targetcoor = target.getCoor();
+	boolean inRange = Board.walkDist(coor, targetcoor) <= getAbilityRangeProperty().getValue();
+	boolean inPattern = coor.x() == targetcoor.x() || coor.y() == targetcoor.y();
+	if (!canUseAbility() || !inRange || !inPattern) {
 	    return false;
 	} else {
 	    return true;
 	}
-    }
-
-    @Override
-    public List<Square> getAOESqaures(Square target) {
-	List<Square> list = new ArrayList<>(1);
-
-	Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
-	Coordinate targetcoor = target.getCoor();
-
-	if (Board.walkDist(thiscoor, targetcoor) <= getAbilityRangeProperty().getValue()) {
-
-	    Direction dir = Coordinate.inDirectDirection(thiscoor, targetcoor);
-	    Coordinate current = thiscoor;
-	    for (int i = 0; i < 3; i++) {
-		current = Coordinate.shiftCoor(current, dir);
-		Square sqr = getUnitOwner().getGame().getBoard().getSquare(current);
-		if (sqr != null) {
-		    list.add(sqr);
-		}
-	    }
-
-	}
-	return list;
     }
 
     @Override
@@ -101,12 +71,12 @@ class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityR
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	List<Square> targets = getAOESqaures(target);
-	for (Square ss : targets) {
-	    Damage damage = new Damage(getAbilityPowerProperty().getValue(), DamageType.MAGIC, getUnitOwner(),
-		    ss.getUnitOnTop());
-	    ss.getUnitOnTop().getHealthProp().takeDamage(damage);
+	Damage damage = new Damage(getAbilityPowerProperty().getValue(), DamageType.MAGIC, getUnitOwner(),
+		target.getUnitOnTop());
+	if (!target.isEmpty()) {
+	    target.getUnitOnTop().getHealthProp().takeDamage(damage);
 	}
+
     }
 
 }

@@ -7,30 +7,35 @@ import game.unit.Unit;
 
 public class HealthProperty extends Property<Integer> {
 
-    private final Property<Integer> maxHealthProperty;
+    private final Property<Integer> maxHealthProp;
 
     private final ArmorProperty armorProp;
 
     public HealthProperty(Unit unit, int initialHealth, int initialArmor) {
 	super(unit, initialHealth);
-	maxHealthProperty = new Property<>(unit, initialHealth);
+	maxHealthProp = new Property<>(unit, initialHealth);
 
 	armorProp = new ArmorProperty(unit, initialArmor);
 
+	setupNaturalPropEffects();
+    }
+
+    private void setupNaturalPropEffects() {
 	addPropEffect(new PropertyEffect<Integer>(EffectType.OTHER, this, 10) {
 	    @Override
 	    public Integer affectProperty(Integer initValue) {
-		if (initValue > maxHealthProperty.getValue()) {
-		    return maxHealthProperty.getValue();
+		if (initValue > maxHealthProp.getValue()) {
+		    return maxHealthProp.getValue();
 		} else {
 		    return initValue;
 		}
 	    }
 	});
+	updateValueOnReporter(maxHealthProp.getChangeReporter());
     }
 
     public Property<Integer> getMaxHealthProperty() {
-	return maxHealthProperty;
+	return maxHealthProp;
     }
 
     public ArmorProperty getArmorProp() {
@@ -42,7 +47,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     public void takeHealing(Healing healing) {
-	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, healing, 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT_BASE, healing, 0) {
 	    @Override
 	    public Integer affectProperty(Integer initHealth) {
 		return initHealth + healing.getHealingAmount();
@@ -59,7 +64,7 @@ public class HealthProperty extends Property<Integer> {
     }
 
     private void takeRawDamage(Damage damage) {
-	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT, damage, 0) {
+	addPropEffect(new PropertyEffect<Integer>(EffectType.PERMANENT_BASE, damage, 0) {
 	    @Override
 	    public Integer affectProperty(Integer initHealth) {
 		return initHealth - damage.getDamageAmount();

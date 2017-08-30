@@ -1,6 +1,9 @@
 package testing;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -16,12 +19,16 @@ public class TestingClient {
 
     public static long randomSeed;
 
-    public static void main(String[] args) throws UnknownHostException, IOException {
+    public static void main(String... args) throws UnknownHostException, IOException {
 	// Scanner scan = new Scanner(System.in);
 	// System.out.println("Enter server ip: ");
 	// String ip = scan.nextLine();
-	Socket sock = new Socket(serverIP, TestingServer.PORT);
-	System.out.println("connected");
+	String servip = serverIP;
+	if (args != null) {
+	    servip = args[0];
+	}
+	Socket sock = new Socket(servip, TestingServer.PORT);
+	System.out.println("connected to " + servip + "!");
 
 	Communication servComm = new Communication(sock);
 
@@ -38,9 +45,35 @@ public class TestingClient {
     }
 
     public static void newGame(Communication servComm, boolean first) {
-	TestingSetup testingSetup = new TestingSetup();
-	SetupTemplate homeSel = testingSetup.getFinalTemplate();
-	testingSetup.dispose();
+	File file = new File("C:\\Users\\akars\\Documents\\GitHub\\Strategic-Anomalies\\template" + (first ? "1" : "2")
+		+ ".TAOtmplt");
+
+	// *display input*:
+
+	// TestingSetup testingSetup = new TestingSetup();
+	// SetupTemplate homeSel = testingSetup.getFinalTemplate();
+	// testingSetup.dispose();
+
+	// *input*:
+	SetupTemplate homeSel = null;
+	try {
+	    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+	    homeSel = (SetupTemplate) ois.readObject();
+	    ois.close();
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+
+	// *output*:
+
+	// try {
+	// ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+	// oos.writeObject(homeSel);
+	// oos.close();
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// }
+
 	servComm.sendObject(homeSel);
 	SetupTemplate awaySel = (SetupTemplate) servComm.recieveObject();
 

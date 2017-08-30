@@ -23,7 +23,6 @@ import game.board.NormalBoard;
 import game.unit.Unit;
 import setup.SetupTemplate;
 
-@SuppressWarnings("unchecked")
 public class TestingSetup {
 
     private final TestingSetupGUI gui;

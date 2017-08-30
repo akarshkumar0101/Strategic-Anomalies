@@ -12,7 +12,7 @@ public class ArmorProperty extends Property<Integer> {
 
     private final IncidentReporter blockReporter;
 
-    private Turn turnPreviouslyBlockedOn;
+    public Turn turnPreviouslyBlockedOn;
 
     public ArmorProperty(Unit unit, int initialArmor) {
 	super(unit, initialArmor);
@@ -43,7 +43,9 @@ public class ArmorProperty extends Property<Integer> {
 	// TODO make algorithm for determining whether it blocks it based on
 	// previous blocks, direction of incoming damage, whether it
 	// is stunned, etc.
-	return .65;
+
+	// fix this lol
+	return .5;
     }
 
     private int filterThroughArmor(int damageAmount) {
@@ -69,11 +71,6 @@ public class ArmorProperty extends Property<Integer> {
 
     public IncidentReporter getBlockReporter() {
 	return blockReporter;
-    }
-
-    @Override
-    protected Object[] getSpecificationsOfPropertyChange(Integer oldValue, Integer newValue) {
-	return null;
     }
 
 }

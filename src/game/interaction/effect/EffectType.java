@@ -8,5 +8,5 @@ package game.interaction.effect;
  *
  */
 public enum EffectType {
-    PERMANENT, TURN_BASED, RANGE_BASED, OTHER;
+    PERMANENT_BASE, PERMANENT_ACTIVE, TURN_BASED, RANGE_BASED, OTHER;
 }

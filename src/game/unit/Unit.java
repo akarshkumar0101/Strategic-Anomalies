@@ -112,7 +112,7 @@ public abstract class Unit extends Affectable {
 	return game;
     }
 
-    public abstract Ability getDefaultAbility();
+    protected abstract Ability getDefaultAbility();
 
     public OwnerProperty getOwnerProp() {
 	return ownerProp;
@@ -173,7 +173,7 @@ public abstract class Unit extends Affectable {
 
     // TODO make sure all units should consider overriding these methods
     public Path getGamePathTo(Coordinate moveToCoor) {
-	if (!movingProp.canMove() || !movingProp.isInRangeOfWalking(moveToCoor)) {
+	if (!movingProp.getCanMoveProp().getValue() || !movingProp.isInRangeOfWalking(moveToCoor)) {
 	    return null;
 	} else if (movingProp.getTeleportingProp().getValue()) {
 	    return PathFinder.getTeleportedPath(this, moveToCoor);
@@ -188,5 +188,58 @@ public abstract class Unit extends Affectable {
 	}
 	return unit1.ownerProp.getTeam().equals(unit2.ownerProp.getTeam());
     }
-
 }
+
+// class UnitProperty {
+// public final Property<Player> ownerProp;
+//
+// public final Property<Coordinate> posProp;
+// public final Property<Direction> dirFacingProp;
+//
+// public final Property<Integer> healthProp;
+// public final Property<Integer> maxHealthProp;
+// public final Property<Integer> armorProp;
+//
+// public final Property<Boolean> canMoveProp;
+// public final Property<Integer> movingProp;
+// public final Property<Boolean> teleportingProp;
+// // stoic true means they do not move aside
+// public final Property<Boolean> stoicProp;
+//
+// public final Property<Boolean> stunnedProp;
+//
+// public final Ability ability;
+//
+// public final IncidentReporter deathReporter;
+//
+// public UnitProperty(Unit unit, Player playerOwner, Coordinate coor, Direction
+// dirFacing) {
+// ownerProp = new Property<>(unit, playerOwner);
+//
+// posProp = new Property<>(unit, coor);
+// dirFacingProp = new Property<>(unit, dirFacing);
+//
+// healthProp = new Property<>(unit, unit.getDefaultStat().defaultHealth);
+// maxHealthProp = new Property<>(unit, unit.getDefaultStat().defaultHealth);
+// armorProp = new Property<>(unit, unit.getDefaultStat().defaultArmor);
+//
+// canMoveProp = new Property<>(unit, unit.getDefaultStat().canDefaultMove);
+// movingProp = new Property<>(unit, unit.getDefaultStat().defaultMoveRange);
+// teleportingProp = new Property<>(unit,
+// unit.getDefaultStat().canDefaultTeleport);
+// stoicProp = new Property<>(unit, unit.getDefaultStat().isDefaultStoic);
+//
+// stunnedProp = new Property<>(unit, false);
+//
+// ability = unit.getDefaultAbility();
+//
+// deathReporter = new IncidentReporter() {
+// @Override
+// public void add(IncidentListener listener, boolean onlyOnce) {
+// super.add(listener, true);
+// }
+// };
+//
+// // TODO add the inital wait time if going first etc.
+// }
+// }

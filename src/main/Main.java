@@ -2,6 +2,7 @@ package main;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 import javax.swing.UIManager;
 
@@ -71,6 +72,7 @@ public class Main {
 	System.out.println("serv running");
 	System.out.println(comm.recieveObject());
 	comm.sendObject("this is serv message");
+	servsock.close();
 	return true;
     }
 
@@ -83,7 +85,7 @@ public class Main {
 	return true;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
 	boolean test = true;
 	try {
 	    if (test) {
@@ -93,6 +95,11 @@ public class Main {
 	} catch (Exception e) {
 	    return;
 	}
+	System.out.println("Server ip: ");
+	Scanner scan = new Scanner(System.in);
+	String ip = scan.nextLine();
+	scan.close();
+	TestingClient.main(ip);
 
     }
 }

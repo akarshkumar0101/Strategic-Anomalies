@@ -22,18 +22,26 @@ public abstract class ActiveAbility extends Ability {
 
 	canUseProperty = new Property<>(unitOwner, true);
 
-	canUseProperty.addPropEffect(new PropertyEffect<Boolean>(EffectType.PERMANENT, ActiveAbility.this, 1.0) {
-	    @Override
-	    public Boolean affectProperty(Boolean init) {
-		return init && !getUnitOwner().getStunnedProp().getValue();
-	    }
-	});
-	canUseProperty.addPropEffect(new PropertyEffect<Boolean>(EffectType.PERMANENT, ActiveAbility.this, 1.0) {
-	    @Override
-	    public Boolean affectProperty(Boolean init) {
-		return init && !waitProp.isWaiting();
-	    }
-	});
+	unitOwner.getGame().gameStartReporter.add(specifications -> setupNaturalPropEffects());
+    }
+
+    private void setupNaturalPropEffects() {
+	canUseProperty.addPropEffect(
+		new PropertyEffect<Boolean>(EffectType.PERMANENT_ACTIVE, getUnitOwner().getStunnedProp(), 1.0) {
+		    @Override
+		    public Boolean affectProperty(Boolean init) {
+			return init && !getUnitOwner().getStunnedProp().getValue();
+		    }
+		});
+	canUseProperty.updateValueOnReporter(getUnitOwner().getStunnedProp().getChangeReporter());
+	canUseProperty.addPropEffect(
+		new PropertyEffect<Boolean>(EffectType.PERMANENT_ACTIVE, getUnitOwner().getWaitProp(), 1.0) {
+		    @Override
+		    public Boolean affectProperty(Boolean init) {
+			return init && !waitProp.isWaiting();
+		    }
+		});
+	canUseProperty.updateValueOnReporter(getUnitOwner().getWaitProp().getChangeReporter());
     }
 
     public Property<Boolean> getCanUseProperty() {

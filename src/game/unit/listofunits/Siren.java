@@ -42,12 +42,21 @@ class SirenAbility extends ActiveTargetAbility implements AbilityRange {
 
     @Override
     public boolean canUseAbilityOn(Square target) {
-	return false;
+	if (target.isEmpty() || Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	    return false;
+	}
+	return true;
     }
 
     @Override
     protected void performAbility(Object... specs) {
-
+	Square target = (Square) specs[0];
+	if (!canUseAbilityOn(target)) {
+	    return;
+	}
+	Unit enemyUnit = target.getUnitOnTop();
+	// temporary
+	enemyUnit.getOwnerProp().setValue(getUnitOwner().getOwnerProp().getValue());
     }
 
 }

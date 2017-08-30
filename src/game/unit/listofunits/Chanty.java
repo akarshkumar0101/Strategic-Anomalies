@@ -1,5 +1,7 @@
 package game.unit.listofunits;
 
+import java.util.List;
+
 import game.Game;
 import game.Player;
 import game.board.Coordinate;
@@ -7,10 +9,9 @@ import game.board.Direction;
 import game.board.Square;
 import game.unit.Unit;
 import game.unit.UnitStat;
-import game.unit.property.Property;
 import game.unit.property.ability.Ability;
-import game.unit.property.ability.AbilityRange;
-import game.unit.property.ability.ActiveTargetAbility;
+import game.unit.property.ability.AbilityAOE;
+import game.unit.property.ability.ActiveAbility;
 
 public class Chanty extends Unit {
 
@@ -26,28 +27,26 @@ public class Chanty extends Unit {
     }
 }
 
-class ChantyAbility extends ActiveTargetAbility implements AbilityRange {
-
-    private final Property<Integer> abilityRangeProperty;
+class ChantyAbility extends ActiveAbility implements AbilityAOE {
 
     public ChantyAbility(Unit unitOwner, int initialRange, int maxWaitTime) {
 	super(unitOwner, maxWaitTime);
-	abilityRangeProperty = new Property<>(unitOwner, initialRange);
+
     }
 
     @Override
-    public Property<Integer> getAbilityRangeProperty() {
-	return abilityRangeProperty;
-    }
-
-    @Override
-    public boolean canUseAbilityOn(Square target) {
-	return false;
+    public List<Square> getAOESqaures(Square target) {
+	return getUnitOwner().getGame().getBoard().squaresInRange(target, 2);
     }
 
     @Override
     protected void performAbility(Object... specs) {
-
+	Square target = (Square) specs[0];
+	for (Square s : getAOESqaures(target)) {
+	    if (!s.isEmpty()) {
+		s.getUnitOnTop().getStunnedProp().setValue(true);
+	    }
+	}
     }
 
 }
