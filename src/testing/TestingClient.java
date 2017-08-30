@@ -1,9 +1,11 @@
 package testing;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 import game.Communication;
 import game.Game;
@@ -39,29 +41,34 @@ public class TestingClient {
 
 	boolean first = (boolean) servComm.recieveObject();
 
-	TestingClient.newGame(servComm, first);
+	Scanner scan = new Scanner(System.in);
+	System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
+	int option = scan.nextInt();
+
+	TestingClient.newGame(servComm, first, option == 1);
     }
 
-    public static void newGame(Communication servComm, boolean first) {
-	File file = new File("/Users/GANGSTATOP/git/Strategic-Anomalies/resources/template"
-		+ (first ? "1" : "2") + ".TAOtmplt");
-
+    public static void newGame(Communication servComm, boolean first, boolean chooseTemplate) {
+	SetupTemplate homeSel = null;
 	// *display input*:
+	if (chooseTemplate) {
+	    TestingSetup testingSetup = new TestingSetup();
+	    homeSel = testingSetup.getFinalTemplate();
+	    testingSetup.dispose();
+	}
+	// *file input*:
+	else {
+	    InputStream templateis = TestingClient.class
+		    .getResourceAsStream("/template" + (first ? "1" : "2") + ".TAOtmplt");
 
-	TestingSetup testingSetup = new TestingSetup();
-	SetupTemplate homeSel = testingSetup.getFinalTemplate();
-	testingSetup.dispose();
-
-	// *input*:
-	// SetupTemplate homeSel = null;
-	// try {
-	// ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-	// homeSel = (SetupTemplate) ois.readObject();
-	// ois.close();
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-
+	    try {
+		ObjectInputStream ois = new ObjectInputStream(templateis);
+		homeSel = (SetupTemplate) ois.readObject();
+		ois.close();
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
+	}
 	// *output*:
 
 	// try {

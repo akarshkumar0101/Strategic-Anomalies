@@ -2,7 +2,6 @@ package main;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Scanner;
 
 import javax.swing.UIManager;
 
@@ -12,10 +11,10 @@ import testing.TestingServer;
 
 // magic witch select 4
 
-// can select unit
-//can attack friendly unit
-//if it kills iteself, dont crash.
-//dont use template
+// can select unit after selecting
+//can attack friendly unit/blank square
+//if it kills itself, don't crash.
+//don't use template
 
 public class Main {
 
@@ -93,7 +92,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-	boolean test = false;
+	boolean test = true;
 	try {
 	    if (test) {
 		Main.test();
@@ -102,12 +101,6 @@ public class Main {
 	} catch (Exception e) {
 	    return;
 	}
-	System.out.println("Server ip: ");
-	Scanner scan = new Scanner(System.in);
-	String ip = scan.nextLine();
-	scan.close();
-	TestingClient.main(ip);
-
     }
 }
 // Game game = new Game(new Account[] { new Account() }, new Account[] { new

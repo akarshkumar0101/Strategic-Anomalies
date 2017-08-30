@@ -56,10 +56,8 @@ class BowmenAbility extends ActiveTargetAbility implements AbilityPower, Ability
     @Override
     public boolean canUseAbilityOn(Square target) {
 	// TODO other stuff deciding scout?
-	if (!canUseAbility()
-		|| target.getUnitOnTop() == null || Board.walkDist(getUnitOwner().getPosProp().getValue(),
-			target.getCoor()) > getAbilityRangeProperty().getValue()
-		|| Unit.areAllies(getUnitOwner(), target.getUnitOnTop())) {
+	if (!canUseAbility() || Board.walkDist(getUnitOwner().getPosProp().getValue(),
+		target.getCoor()) > getAbilityRangeProperty().getValue()) {
 	    return false;
 	} else {
 	    return true;
