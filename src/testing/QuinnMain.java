@@ -13,6 +13,7 @@ public class QuinnMain {
 		}
 	    }
 	};
+	servThread.start();
 	TestingClient.main(null);
     }
 
