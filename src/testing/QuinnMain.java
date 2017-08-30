@@ -14,7 +14,8 @@ public class QuinnMain {
 	    }
 	};
 	
-	//Inserting the servThread.starting() - Quinn
+	//Inserting the servThread.starting() - QT 
+	//Another comment to test
 	servThread.start();
 	TestingClient.main(null);
     }
