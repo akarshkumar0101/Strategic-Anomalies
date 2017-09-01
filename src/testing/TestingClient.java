@@ -1,51 +1,54 @@
 package testing;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.Scanner;
 
 import game.Communication;
 import game.Game;
+import main.Main;
 import setup.SetupTemplate;
 
 public class TestingClient {
 
     // GOAL FOR TODAY: FINISH A PROTOTYPE CLIENT AND SERVER PROGRAM COMPLETELY.
 
-    public static final String serverIP = "localhost";
-
     public static long randomSeed;
 
-    public static void main(String... args) throws UnknownHostException, IOException {
-	// Scanner scan = new Scanner(System.in);
-	// System.out.println("Enter server ip: ");
-	// String ip = scan.nextLine();
-	String servip = serverIP;
-	if (args != null) {
-	    servip = args[0];
+    public static void main(String... args) {
+	try {
+
+	    String serverIP = null;
+	    if (args == null || args.length == 0) {
+		System.out.println("Type in serverIP: ");
+		serverIP = Main.getStringInput();
+	    } else {
+		serverIP = args[0];
+	    }
+	    Socket sock;
+	    sock = new Socket(serverIP, TestingServer.PORT);
+	    System.out.println("Client connected to " + serverIP + "!");
+
+	    Communication servComm;
+	    servComm = new Communication(sock);
+
+	    if (!TestingServer.INIT_STRING.equals(servComm.recieveObject())) {
+		return;
+	    }
+
+	    TestingClient.randomSeed = (long) servComm.recieveObject();
+	    // System.out.println(randomSeed);
+
+	    boolean first = (boolean) servComm.recieveObject();
+
+	    System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
+	    int option = Main.getIntInput();
+
+	    TestingClient.newGame(servComm, first, option == 1);
+
+	} catch (Exception e) {
+	    throw new RuntimeException("Something went wrong with client", e);
 	}
-	Socket sock = new Socket(servip, TestingServer.PORT);
-	System.out.println("connected to " + servip + "!");
-
-	Communication servComm = new Communication(sock);
-
-	if (!TestingServer.INIT_STRING.equals(servComm.recieveObject())) {
-	    return;
-	}
-
-	TestingClient.randomSeed = (long) servComm.recieveObject();
-	// System.out.println(randomSeed);
-
-	boolean first = (boolean) servComm.recieveObject();
-
-	Scanner scan = new Scanner(System.in);
-	System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
-	int option = scan.nextInt();
-
-	TestingClient.newGame(servComm, first, option == 1);
     }
 
     public static void newGame(Communication servComm, boolean first, boolean chooseTemplate) {
