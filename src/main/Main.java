@@ -93,7 +93,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-	boolean test = false;
+	boolean test = true;
 	try {
 	    if (test) {
 		Main.test();

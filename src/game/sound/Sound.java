@@ -8,8 +8,11 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class Sound { {
+public class Sound { 
 	/*insert sound into the game... Quinn*/
+	
+	public void toggleSound(){
+		//Function that makes noise when you toggle over unit
     try {
         // Open an audio input stream.
         java.net.URL url = this.getClass().getClassLoader().getResource("resources/sound/sound15.wav");
@@ -25,8 +28,8 @@ public class Sound { {
         e.printStackTrace();
      } catch (LineUnavailableException e) {
         e.printStackTrace();
-     }
+     } }
   
-}
+
 
 }
