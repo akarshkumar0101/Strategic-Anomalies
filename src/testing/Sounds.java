@@ -45,6 +45,7 @@ public class Sounds {
 	}
 	FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
 	gainControl.setValue(20f * (float) Math.log10(volume));
+	//
     }
 }
 
