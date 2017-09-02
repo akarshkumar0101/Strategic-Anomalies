@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import javax.swing.UIManager;
 
+import testing.Sounds;
 import testing.TestingClient;
 import testing.TestingServer;
 
@@ -33,12 +34,19 @@ public class Main {
 	}
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
 	boolean test = true;
-
 	if (test) {
 	    Main.test();
 	    return;
+	}
+	while (true) {
+	    Sounds.playSound(Sounds.beepSound);
+	    try {
+		Thread.sleep(10000);
+	    } catch (InterruptedException e) {
+		e.printStackTrace();
+	    }
 	}
 
     }

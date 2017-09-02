@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashMap;
@@ -80,6 +81,7 @@ public class TestingFrame {
 	setupBlockAnimationTriggers();
 	frameUpdatingThread.start();
 	gui.setVisible(true);
+	Sounds.playSound(Sounds.headlinesSongSound);
     }
 
     private void setupBlockAnimationTriggers() {
@@ -427,8 +429,9 @@ public class TestingFrame {
 		transmitDataToGame(Message.HOVER);
 		transmitDataToGame(coor);
 	    }
+
+	    setMouseInCoordinate(coor);
 	}
-	setMouseInCoordinate(coor);
     }
 
     public void mouseExited(Coordinate coor) {
@@ -439,6 +442,10 @@ public class TestingFrame {
 	    }
 	}
 	setMouseInCoordinate(null);
+    }
+
+    public void mouseEnteredButton() {
+	Sounds.playSound(Sounds.beepSound);
     }
 }
 
@@ -518,26 +525,29 @@ class TestingFrameGUI extends JFrame {
     public static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
 	    slightGreen = new Color(192, 255, 192);
     public static final Color friendlyUnitColor = new Color(192, 220, 192), enemyUnitColor = new Color(220, 192, 192);
-    public static final Color canSelectColor = lighterColor(Color.blue, 150),
-	    canMoveColor = lighterColor(Color.blue, 150), canAttackColor = lighterColor(Color.blue, 150);
-    public static final Color aoeColor = lighterColor(Color.blue, 200);
+    public static final Color canSelectColor = TestingFrameGUI.lighterColor(Color.blue, 150),
+	    canMoveColor = TestingFrameGUI.lighterColor(Color.blue, 150),
+	    canAttackColor = TestingFrameGUI.lighterColor(Color.blue, 150);
+    public static final Color aoeColor = TestingFrameGUI.lighterColor(Color.blue, 200);
 
-    public static final Color gameDataPanelBackgroundColor = lighterColor(Color.lightGray, -30);
+    public static final Color gameDataPanelBackgroundColor = TestingFrameGUI.lighterColor(Color.lightGray, -30);
 
     public static Color lighterColor(Color col, int amount) {
-	return new Color(makeRGBRange(col.getRed() + amount), makeRGBRange(col.getGreen() + amount),
-		makeRGBRange(col.getBlue() + amount));
+	return new Color(TestingFrameGUI.makeRGBRange(col.getRed() + amount),
+		TestingFrameGUI.makeRGBRange(col.getGreen() + amount),
+		TestingFrameGUI.makeRGBRange(col.getBlue() + amount));
     }
 
     public static Color mixColors(Color col1, Color col2) {
-	return new Color(makeRGBRange((col1.getRed() + col2.getRed()) / 2),
-		makeRGBRange((col1.getGreen() + col2.getGreen()) / 2),
-		makeRGBRange((col1.getBlue() + col2.getBlue()) / 2));
+	return new Color(TestingFrameGUI.makeRGBRange((col1.getRed() + col2.getRed()) / 2),
+		TestingFrameGUI.makeRGBRange((col1.getGreen() + col2.getGreen()) / 2),
+		TestingFrameGUI.makeRGBRange((col1.getBlue() + col2.getBlue()) / 2));
     }
 
     public static Color addColors(Color col1, Color col2) {
-	return new Color(makeRGBRange(col1.getRed() + col2.getRed()), makeRGBRange(col1.getGreen() + col2.getGreen()),
-		makeRGBRange(col1.getBlue() + col2.getBlue()));
+	return new Color(TestingFrameGUI.makeRGBRange(col1.getRed() + col2.getRed()),
+		TestingFrameGUI.makeRGBRange(col1.getGreen() + col2.getGreen()),
+		TestingFrameGUI.makeRGBRange(col1.getBlue() + col2.getBlue()));
     }
 
     private static int makeRGBRange(int a) {
@@ -719,6 +729,10 @@ class TestingFrameGUI extends JFrame {
 		mouseIn = true;
 		testingFrame.mouseEntered(coor);
 
+		if (canCurrentlyClick) {
+		    testingFrame.mouseEnteredButton();
+		}
+
 		repaint();
 	    }
 
@@ -771,7 +785,7 @@ class TestingFrameGUI extends JFrame {
 			    && testingFrame.getMouseInSquare() != null) {
 			List<Square> aoe = testingFrame.aoeHighlightData.get(testingFrame.getMouseInSquare().getCoor());
 			if (aoe != null && aoe.contains(testingFrame.board.getSquare(coor))) {
-			    col = aoeColor;
+			    col = TestingFrameGUI.aoeColor;
 			}
 		    }
 		}
@@ -795,7 +809,7 @@ class TestingFrameGUI extends JFrame {
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		if (canCurrentlyClick) {
-		    Color circleCol = lighterColor(background, -50);
+		    Color circleCol = TestingFrameGUI.lighterColor(background, -50);
 		    g.setColor(circleCol);
 		    double percentCircle = .9;
 		    int width = (int) (getWidth() * percentCircle), height = (int) (getHeight() * percentCircle);
@@ -966,8 +980,28 @@ class TestingFrameGUI extends JFrame {
 
 	    normalBorders = new HashMap<>();
 
-	    GameDataPanel.this.organizeComponents();
+	    MouseAdapter mouseEnterListener = new MouseAdapter() {
+		@Override
+		public void mouseEntered(MouseEvent e) {
+		    AbstractButton button = (AbstractButton) e.getSource();
+		    if (button.isEnabled()) {
+			testingFrame.mouseEnteredButton();
+		    }
+		}
+	    };
+	    pickUnitTButton.addMouseListener(mouseEnterListener);
+	    pickMoveTButton.addMouseListener(mouseEnterListener);
+	    pickAttackTButton.addMouseListener(mouseEnterListener);
+	    pickDirectionTButton.addMouseListener(mouseEnterListener);
+	    endTurnButton.addMouseListener(mouseEnterListener);
+	    upDirButton.addMouseListener(mouseEnterListener);
+	    leftDirButton.addMouseListener(mouseEnterListener);
+	    rightDirButton.addMouseListener(mouseEnterListener);
+	    downDirButton.addMouseListener(mouseEnterListener);
+
 	    setupButtonLogic();
+
+	    GameDataPanel.this.organizeComponents();
 	}
 
 	public void organizeComponents() {
@@ -1134,7 +1168,7 @@ class TestingFrameGUI extends JFrame {
 	    unitInfoLabel2.setFont(normalFont);
 	    add(unitInfoLabel2, gdpgbConstrains);
 
-	    setBackground(gameDataPanelBackgroundColor);
+	    setBackground(TestingFrameGUI.gameDataPanelBackgroundColor);
 
 	    normalBorders.put(pickUnitTButton, pickUnitTButton.getBorder());
 	    normalBorders.put(pickMoveTButton, pickMoveTButton.getBorder());
