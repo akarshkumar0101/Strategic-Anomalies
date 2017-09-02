@@ -1,67 +1,77 @@
 package testing;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 import game.Communication;
 import game.Game;
+import main.Main;
 import setup.SetupTemplate;
 
 public class TestingClient {
 
     // GOAL FOR TODAY: FINISH A PROTOTYPE CLIENT AND SERVER PROGRAM COMPLETELY.
 
-    public static final String serverIP = "localhost";
-
     public static long randomSeed;
 
-    public static void main(String... args) throws UnknownHostException, IOException {
-	// Scanner scan = new Scanner(System.in);
-	// System.out.println("Enter server ip: ");
-	// String ip = scan.nextLine();
-	String servip = serverIP;
-	if (args != null) {
-	    servip = args[0];
+    public static void main(String... args) {
+	try {
+
+	    String serverIP = null;
+	    if (args == null || args.length == 0) {
+		System.out.println("Type in serverIP: ");
+		serverIP = Main.getStringInput();
+	    } else {
+		serverIP = args[0];
+	    }
+	    Socket sock;
+	    sock = new Socket(serverIP, TestingServer.PORT);
+	    System.out.println("Client connected to " + serverIP + "!");
+
+	    Communication servComm;
+	    servComm = new Communication(sock);
+
+	    if (!TestingServer.INIT_STRING.equals(servComm.recieveObject())) {
+		return;
+	    }
+
+	    TestingClient.randomSeed = (long) servComm.recieveObject();
+	    // System.out.println(randomSeed);
+
+	    boolean first = (boolean) servComm.recieveObject();
+
+	    System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
+	    int option = Main.getIntInput();
+
+	    TestingClient.newGame(servComm, first, option == 1);
+
+	} catch (Exception e) {
+	    throw new RuntimeException("Something went wrong with client", e);
 	}
-	Socket sock = new Socket(servip, TestingServer.PORT);
-	System.out.println("connected to " + servip + "!");
-
-	Communication servComm = new Communication(sock);
-
-	if (!TestingServer.INIT_STRING.equals(servComm.recieveObject())) {
-	    return;
-	}
-
-	TestingClient.randomSeed = (long) servComm.recieveObject();
-	// System.out.println(randomSeed);
-
-	boolean first = (boolean) servComm.recieveObject();
-
-	TestingClient.newGame(servComm, first);
     }
 
-    public static void newGame(Communication servComm, boolean first) {
-	File file = new File("/Users/GANGSTATOP/git/Strategic-Anomalies/resources/template"
-		+ (first ? "1" : "2") + ".TAOtmplt");
-
+    public static void newGame(Communication servComm, boolean first, boolean chooseTemplate) {
+	SetupTemplate homeSel = null;
 	// *display input*:
+	if (chooseTemplate) {
+	    TestingSetup testingSetup = new TestingSetup();
+	    homeSel = testingSetup.getFinalTemplate();
+	    testingSetup.dispose();
+	}
+	// *file input*:
+	else {
+	    InputStream templateis = TestingClient.class
+		    .getResourceAsStream("/template" + (first ? "1" : "2") + ".TAOtmplt");
 
-	TestingSetup testingSetup = new TestingSetup();
-	SetupTemplate homeSel = testingSetup.getFinalTemplate();
-	testingSetup.dispose();
-
-	// *input*:
-	// SetupTemplate homeSel = null;
-	// try {
-	// ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
-	// homeSel = (SetupTemplate) ois.readObject();
-	// ois.close();
-	// } catch (Exception e) {
-	// e.printStackTrace();
-	// }
-
+	    try {
+		ObjectInputStream ois = new ObjectInputStream(templateis);
+		homeSel = (SetupTemplate) ois.readObject();
+		ois.close();
+	    } catch (Exception e) {
+		e.printStackTrace();
+	    }
+	}
 	// *output*:
 
 	// try {
