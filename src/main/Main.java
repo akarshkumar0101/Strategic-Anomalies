@@ -12,6 +12,7 @@ import testing.TestingServer;
 //can attack friendly unit/blank square
 //if it kills itself, don't crash.
 //don't use template
+//This is a test
 
 public class Main {
     private static final Scanner inputScanner;
