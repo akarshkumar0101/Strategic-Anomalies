@@ -1,5 +1,8 @@
 package game.unit.listofunits;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import game.Game;
 import game.Player;
 import game.board.Board;
@@ -12,6 +15,7 @@ import game.unit.Unit;
 import game.unit.UnitStat;
 import game.unit.property.Property;
 import game.unit.property.ability.Ability;
+import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveTargetAbility;
@@ -31,7 +35,7 @@ public class DarkMagicWitch extends Unit {
     }
 }
 
-class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange {
+class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityRange, AbilityAOE {
     // TODO set ability range property to permanently be 3
     private final Property<Integer> abilityPowerProperty;
     private final Property<Integer> abilityRangeProperty;
@@ -58,11 +62,28 @@ class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityR
 	Coordinate coor = getUnitOwner().getPosProp().getValue(), targetcoor = target.getCoor();
 	boolean inRange = Board.walkDist(coor, targetcoor) <= getAbilityRangeProperty().getValue();
 	boolean inPattern = coor.x() == targetcoor.x() || coor.y() == targetcoor.y();
-	if (!canUseAbility() || !inRange || !inPattern) {
+	if (!canUseAbility() || !inRange || !inPattern || coor.equals(targetcoor)) {
 	    return false;
 	} else {
 	    return true;
 	}
+    }
+
+    @Override
+    public List<Square> getAOESqaures(Square target) {
+	List<Square> aoeSquares = new ArrayList<>();
+
+	Board board = getUnitOwner().getGame().getBoard();
+	Direction dir = Coordinate.inGeneralDirection(getUnitOwner().getPosProp().getValue(), target.getCoor());
+	if (dir != null) {
+	    for (int i = 1; i <= abilityRangeProperty.getValue(); i++) {
+		Coordinate targetCoor = Coordinate.shiftCoor(getUnitOwner().getPosProp().getValue(), dir, i);
+		if (board.isInBoard(targetCoor)) {
+		    aoeSquares.add(board.getSquare(targetCoor));
+		}
+	    }
+	}
+	return aoeSquares;
     }
 
     @Override
@@ -71,12 +92,13 @@ class WitchAbility extends ActiveTargetAbility implements AbilityPower, AbilityR
 	if (!canUseAbilityOn(target)) {
 	    return;
 	}
-	Damage damage = new Damage(getAbilityPowerProperty().getValue(), DamageType.MAGIC, getUnitOwner(),
-		target.getUnitOnTop());
-	if (!target.isEmpty()) {
-	    target.getUnitOnTop().getHealthProp().takeDamage(damage);
+	for (Square sqr : getAOESqaures(target)) {
+	    Damage damage = new Damage(getAbilityPowerProperty().getValue(), DamageType.MAGIC, getUnitOwner(),
+		    sqr.getUnitOnTop());
+	    if (!sqr.isEmpty()) {
+		sqr.getUnitOnTop().getHealthProp().takeDamage(damage);
+	    }
 	}
-
     }
 
 }

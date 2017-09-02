@@ -42,6 +42,7 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
+import game.unit.property.ability.Ability;
 import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
@@ -81,7 +82,7 @@ public class TestingFrame {
 	setupBlockAnimationTriggers();
 	frameUpdatingThread.start();
 	gui.setVisible(true);
-	Sounds.playSound(Sounds.headlinesSongSound);
+	// Sounds.playSound(Sounds.headlinesSongSound);
     }
 
     private void setupBlockAnimationTriggers() {
@@ -254,7 +255,7 @@ public class TestingFrame {
     }
 
     public boolean isLocalPlayerTurn() {
-	return localPlayer.equals(game.getCurrentTurn().getPlayerTurn());
+	return game.getCurrentTurn() == null ? false : localPlayer.equals(game.getCurrentTurn().getPlayerTurn());
     }
 
     private void transmitDataToGame(Object data) {
@@ -297,15 +298,15 @@ public class TestingFrame {
 	    return;
 	}
 	// TODO add conditions for if not target ability, can't move piece etc.
-	if (!game.hasSelectedUnit()) {
+	if (game.canSelectUnit() && !game.hasSelectedUnit()) {
 	    pickUnitButtonClicked();
-	} else if (!game.hasMoved()) {
+	} else if (game.canMove()) {
 	    pickMoveButtonClicked();
-	} else if (!game.hasAttacked()) {
+	} else if (game.canAttack()) {
 	    if (game.getSelectedUnit().getAbility() instanceof ActiveAbility) {
 		pickAttackButtonClicked();
 	    }
-	} else if (!game.hasChangedDir()) {
+	} else if (game.canChangeDir()) {
 	    pickDirectionButtonClicked();
 	} else {
 	    // this seems kind of weird tbh lol
@@ -318,7 +319,7 @@ public class TestingFrame {
 	if (!isLocalPlayerTurn()) {
 	    return;
 	}
-	if (game.hasSelectedUnit()) {
+	if (game.hasEditedTurn()) {
 	    throw new RuntimeException("Already selected unit");
 	}
 	transmitDataToGame(Message.UNIT_SELECT);
@@ -350,8 +351,10 @@ public class TestingFrame {
 
 	if (game.getSelectedUnit().getAbility() instanceof AbilityAOE) {
 	    for (Square sqr : board) {
-		aoeHighlightData.put(sqr.getCoor(),
-			((AbilityAOE) game.getSelectedUnit().getAbility()).getAOESqaures(sqr));
+		if (game.canAttack(sqr.getCoor())) {
+		    aoeHighlightData.put(sqr.getCoor(),
+			    ((AbilityAOE) game.getSelectedUnit().getAbility()).getAOESqaures(sqr));
+		}
 	    }
 	}
 
@@ -424,12 +427,13 @@ public class TestingFrame {
     }
 
     public void mouseEntered(Coordinate coor) {
-	if (board.isInBoard(coor) && isLocalPlayerTurn()) {
-	    synchronized (dataTransferLock) {
-		transmitDataToGame(Message.HOVER);
-		transmitDataToGame(coor);
+	if (board.isInBoard(coor)) {
+	    if (isLocalPlayerTurn()) {
+		synchronized (dataTransferLock) {
+		    transmitDataToGame(Message.HOVER);
+		    transmitDataToGame(coor);
+		}
 	    }
-
 	    setMouseInCoordinate(coor);
 	}
     }
@@ -1316,15 +1320,17 @@ class TestingFrameGUI extends JFrame {
 	    enableAllDirButtons(false);
 
 	    if (testingFrame.isLocalPlayerTurn()) {
-		enableTurnPartButton(Message.UNIT_SELECT, !testingFrame.game.hasSelectedUnit());
-		enableTurnPartButton(Message.UNIT_MOVE,
-			!testingFrame.game.hasMoved() && testingFrame.game.hasSelectedUnit());
-		enableTurnPartButton(Message.UNIT_ATTACK,
-			!testingFrame.game.hasAttacked() && testingFrame.game.hasSelectedUnit());
-		enableTurnPartButton(Message.UNIT_DIR,
-			!testingFrame.game.hasChangedDir() && testingFrame.game.hasSelectedUnit());
+		enableTurnPartButton(Message.UNIT_SELECT, testingFrame.game.canSelectUnit());
+		enableTurnPartButton(Message.UNIT_MOVE, testingFrame.game.canMove());
+		enableTurnPartButton(Message.UNIT_ATTACK, testingFrame.game.canAttack());
+		enableTurnPartButton(Message.UNIT_DIR, testingFrame.game.canChangeDir());
 
-		if (testingFrame.currentlyPicking == Message.UNIT_DIR && !testingFrame.game.hasChangedDir()) {
+		// if (testingFrame.currentlyPicking == Message.UNIT_DIR &&
+		// !testingFrame.game.hasChangedDir()
+		// && !testingFrame.game.hasDiedOnTurn()) {
+		// enableAllDirButtons(true);
+		// }
+		if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
 		    enableAllDirButtons(true);
 		}
 
@@ -1373,32 +1379,53 @@ class TestingFrameGUI extends JFrame {
 		String str = "<html>";
 
 		str += "<strong><u>" + title + "</u></strong>";
+		str += "<br>";
 
 		Player owner = unit.getOwnerProp().getValue();
-		str += "<br>" + owner.getName() + "'s " + unit.getClass().getSimpleName();
+		str += owner.getName() + "'s " + unit.getClass().getSimpleName();
+		str += "<br>";
+
+		str += "Move Range: " + colorize(unit.getMovingProp().getValue() + "", unit.getMovingProp().getValue(),
+			unit.getMovingProp().getDefaultValue(), true);
+		str += "<br>";
 
 		int health = unit.getHealthProp().getValue();
 		double percentHealth = unit.getHealthProp().currentPercentageHealth();
-		str += "<br>Health: "
-			+ colorize(health + "(" + (int) (percentHealth * 100) + "%)", percentHealth, 1, true);
-
-		int power = ((AbilityPower) unit.getAbility()).getAbilityPowerProperty().getValue();
-		int defaultPower = 0;
-		try {
-		    defaultPower = ((AbilityRange) unit.getAbility()).getAbilityRangeProperty().getDefaultValue();
-		} catch (ClassCastException e) {
-		}
-		str += "<br>Power: " + colorize(power + "", power, defaultPower, true);
+		str += "Health: " + colorize(health + "(" + (int) (percentHealth * 100) + "%)",
+			unit.getHealthProp().getValue(), unit.getHealthProp().getDefaultValue(), true);
+		str += "<br>";
 
 		int armor = unit.getHealthProp().getArmorProp().getValue();
 		int defaultArmor = unit.getHealthProp().getArmorProp().getDefaultValue();
-		str += "<br>Armor: " + colorize(armor + "", armor, defaultArmor, true);
+		str += "Armor: " + colorize(armor + "", armor, defaultArmor, true);
+		str += "<br>";
+
+		Ability ability = unit.getAbility();
+
+		if (ability instanceof AbilityPower) {
+		    AbilityPower power = (AbilityPower) ability;
+		    str += "Ability Power: " + colorize(power.getAbilityPowerProperty().getValue() + "",
+			    power.getAbilityPowerProperty().getValue(),
+			    power.getAbilityPowerProperty().getDefaultValue(), true);
+		    str += "<br>";
+		}
+		if (ability instanceof AbilityRange) {
+		    AbilityRange range = (AbilityRange) ability;
+		    str += "Ability Range: " + colorize(range.getAbilityRangeProperty().getValue() + "",
+			    range.getAbilityRangeProperty().getValue(),
+			    range.getAbilityRangeProperty().getDefaultValue(), true);
+		    str += "<br>";
+		}
+
+		str += "Ability AOE: " + (ability instanceof AbilityAOE);
 
 		if (unit.getStunnedProp().getValue()) {
-		    str += "<br>" + colorize("stunned*", 1, 2, true);
+		    str += colorize("Stunned*", 1, 2, true);
+		    str += "<br>";
 		}
 		if (unit.getWaitProp().isWaiting()) {
-		    str += "<br>" + colorize("is waiting*", 1, 2, true);
+		    str += colorize("Is waiting for " + unit.getWaitProp().getValue() + " turns*", 1, 2, true);
+		    str += "<br>";
 		}
 
 		str += "</html>";

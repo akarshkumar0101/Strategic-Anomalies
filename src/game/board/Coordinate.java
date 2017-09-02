@@ -96,10 +96,14 @@ public class Coordinate implements Serializable {
      * @return the Coordinate shifted one unit in the specified Direction
      */
     public static Coordinate shiftCoor(Coordinate coor, Direction dir) {
+	return Coordinate.shiftCoor(coor, dir, 1);
+    }
+
+    public static Coordinate shiftCoor(Coordinate coor, Direction dir, int amount) {
 	if (dir == Direction.RIGHT || dir == Direction.LEFT) {
-	    return new Coordinate(coor.x + dir.toInt(), coor.y);
+	    return new Coordinate(coor.x + dir.toInt() * amount, coor.y);
 	} else if (dir == Direction.UP || dir == Direction.DOWN) {
-	    return new Coordinate(coor.x, coor.y + dir.toInt());
+	    return new Coordinate(coor.x, coor.y + dir.toInt() * amount);
 	} else {
 	    return null;
 	}

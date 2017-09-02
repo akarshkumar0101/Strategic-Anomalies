@@ -20,6 +20,8 @@ public class TestingServer {
 	    long randomSeed = (long) ((Math.random() * 2 - 1) * Long.MAX_VALUE);
 	    ServerSocket serverSock;
 	    serverSock = new ServerSocket(TestingServer.PORT);
+	    System.out.println("Estalished server on port " + TestingServer.PORT + "!");
+
 	    Communication[] clientComms = new Communication[TestingServer.NUM_PLAYERS];
 	    for (int i = 0; i < TestingServer.NUM_PLAYERS; i++) {
 		Socket sock;

@@ -4,12 +4,10 @@ import java.util.Scanner;
 
 import javax.swing.UIManager;
 
-import testing.Sounds;
 import testing.TestingClient;
 import testing.TestingServer;
 
 // magic witch select 4
-
 // can select unit after selecting
 //can attack friendly unit/blank square
 //if it kills itself, don't crash.
@@ -40,14 +38,6 @@ public class Main {
 	    Main.test();
 	    return;
 	}
-	while (true) {
-	    Sounds.playSound(Sounds.beepSound);
-	    try {
-		Thread.sleep(10000);
-	    } catch (InterruptedException e) {
-		e.printStackTrace();
-	    }
-	}
 
     }
 
@@ -73,13 +63,13 @@ public class Main {
 	Thread client1Thead = new Thread() {
 	    @Override
 	    public void run() {
-		TestingClient.main("localhost");
+		TestingClient.main("localhost", "Dr. Monson");
 	    }
 	};
 	Thread client2Thead = new Thread() {
 	    @Override
 	    public void run() {
-		TestingClient.main("localhost");
+		TestingClient.main("localhost", "Dr. Buzen");
 	    }
 	};
 

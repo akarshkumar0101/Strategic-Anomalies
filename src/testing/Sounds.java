@@ -6,7 +6,6 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 
 public class Sounds {
 
@@ -26,27 +25,29 @@ public class Sounds {
     }
 
     public static void playSound(Sound sound) {
-	sound.playSound();
+	// sound.playSound();
     }
 
-    public static void repeatSound(Sound sound) {
-	Clip clip = sound.playSound();
-	Sounds.setVolume(clip, 1f);
-    }
-
-    private static float getVolume(Clip clip) {
-	FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-	return (float) Math.pow(10f, gainControl.getValue() / 20f);
-    }
-
-    private static void setVolume(Clip clip, float volume) {
-	if (volume < 0f || volume > 1f) {
-	    throw new IllegalArgumentException("Volume not valid: " + volume);
-	}
-	FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-	gainControl.setValue(20f * (float) Math.log10(volume));
-	//
-    }
+    // public static void repeatSound(Sound sound) {
+    // Clip clip = sound.playSound();
+    // Sounds.setVolume(clip, 1f);
+    // }
+    //
+    // private static float getVolume(Clip clip) {
+    // FloatControl gainControl = (FloatControl)
+    // clip.getControl(FloatControl.Type.MASTER_GAIN);
+    // return (float) Math.pow(10f, gainControl.getValue() / 20f);
+    // }
+    //
+    // private static void setVolume(Clip clip, float volume) {
+    // if (volume < 0f || volume > 1f) {
+    // throw new IllegalArgumentException("Volume not valid: " + volume);
+    // }
+    // FloatControl gainControl = (FloatControl)
+    // clip.getControl(FloatControl.Type.MASTER_GAIN);
+    // gainControl.setValue(20f * (float) Math.log10(volume));
+    // //
+    // }
 }
 
 class Sound {

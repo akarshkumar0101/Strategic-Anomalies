@@ -4,20 +4,30 @@ import game.Turn;
 import game.unit.Unit;
 
 public class WaitProperty extends Property<Integer> {
-
-    public final int defaultMaxValue;
+    public final Property<Integer> maxValueProperty;
 
     public WaitProperty(Unit unitOwner, int initValue, int defaultMaxValue) {
 	super(unitOwner, initValue);
-	this.defaultMaxValue = defaultMaxValue;
+	maxValueProperty = new Property<>(unitOwner, defaultMaxValue);
 
 	unitOwner.getGame().turnEndReporter.add(specifications -> {
 	    onTurnEnd((Turn) specifications[0]);
 	});
     }
 
-    public void triggerWaitAfterAttack() {
-	setValue(defaultMaxValue, getUnitOwner().getAbility());
+    public void triggerWaitForAttack() {
+	int maxValue = maxValueProperty.getValue();
+	int valinc = maxValue / 2;
+	if (valinc % 2 != 0) {
+	    valinc++;
+	}
+	setValue(getValue() + valinc, getUnitOwner().getAbility());
+    }
+
+    public void triggerWaitForMove() {
+	int maxValue = maxValueProperty.getValue();
+	int valinc = maxValue / 2;
+	setValue(getValue() + valinc, getUnitOwner().getAbility());
     }
 
     private void onTurnEnd(Turn endingTurn) {
