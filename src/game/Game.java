@@ -11,6 +11,7 @@ import game.board.Direction;
 import game.board.NormalBoard;
 import game.board.Path;
 import game.board.Square;
+import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 import game.unit.property.ability.ActiveAbility;
@@ -64,7 +65,7 @@ public class Game {
     /**
      * run this for online game
      */
-    public Game(Communication serverComm, long randomSeed, boolean first) {
+    public Game(Communication serverComm, long randomSeed, boolean first, String myname, String oppname) {
 	this.first = first;
 
 	random = new Random(randomSeed);
@@ -75,28 +76,18 @@ public class Game {
 
 	Communication comm1 = new Communication();
 
-	localPlayers = new ArrayList<>(2);
-	if (first) {
-	    player1 = new Player("Dr. Monson", comm1.connectLocally());
-	    player2 = new Player("Albert Einstein", null);
+	player1 = new Player(myname, comm1.connectLocally());
+	player2 = new Player(oppname, null);
 
-	    playerComms.put(player1, comm1);
-	    playerComms.put(player2, serverComm);
-
-	    localPlayers.add(player1);
-	} else {
-	    player2 = new Player("Dr. Monson", null);
-	    player1 = new Player("Albert Einstein", comm1.connectLocally());
-
-	    playerComms.put(player2, serverComm);
-	    playerComms.put(player1, comm1);
-
-	    localPlayers.add(player1);
-	}
+	playerComms.put(player1, comm1);
+	playerComms.put(player2, serverComm);
 
 	allPlayers = new ArrayList<>(2);
 	allPlayers.add(player1);
 	allPlayers.add(player2);
+
+	localPlayers = new ArrayList<>(2);
+	localPlayers.add(player1);
 
 	testingFrame = new TestingFrame(this, player1);
 
@@ -130,6 +121,11 @@ public class Game {
     private boolean onTurnHasMoved = false;
     private boolean onTurnHasAttacked = false;
     private boolean onTurnHasChangedDir = false;
+    private boolean onTurnHasDied = false;
+
+    private final IncidentListener deathMidTurnListener = specifications -> {
+	onTurnHasDied = true;
+    };
 
     public void startGame() {
 	testingFrame.startFrame();
@@ -137,6 +133,15 @@ public class Game {
 	// TODO add stop statement
 	// game loop for different turns
 	establishGame();
+
+	turnEndReporter.add(specifications -> {
+	    if (onTurnHasMoved) {
+		onTurnUnitPicked.getWaitProp().triggerWaitForMove();
+	    }
+	    if (onTurnHasAttacked) {
+		onTurnUnitPicked.getWaitProp().triggerWaitForAttack();
+	    }
+	});
 
 	gameStartReporter.reportIncident();
 
@@ -173,13 +178,8 @@ public class Game {
 	}
 
 	boolean shouldRun = true;
-
 	while (shouldRun) {
 	    shouldRun = handleCommand(currentComm);
-	}
-
-	if (onTurnHasAttacked) {
-	    onTurnUnitPicked.getWaitProp().triggerWaitAfterAttack();
 	}
     }
 
@@ -216,98 +216,6 @@ public class Game {
 	return true;
     }
 
-    public boolean hasSelectedUnit() {
-	synchronized (this) {
-	    return onTurnHasSelectedUnit;
-	}
-    }
-
-    public boolean canSelectUnit(Coordinate coor) {
-	synchronized (this) {
-	    Unit unit = board.getUnitAt(coor);
-	    // TODO make sure unit is selectable
-
-	    if (onTurnHasSelectedUnit) {
-		return false;
-	    } else if (unit == null) {
-		return false;
-	    } else if (!unit.getOwnerProp().getValue().equals(onTurnPlayer)) {
-		return false;
-	    }
-	    return true;
-	}
-    }
-
-    public Unit getSelectedUnit() {
-	synchronized (this) {
-	    if (hasSelectedUnit()) {
-		return onTurnUnitPicked;
-	    } else {
-		return null;
-	    }
-	}
-    }
-
-    public boolean hasMoved() {
-	synchronized (this) {
-	    return onTurnHasMoved;
-	}
-    }
-
-    public boolean canMoveTo(Coordinate coor) {
-	synchronized (this) {
-	    Path path = onTurnUnitPicked.getGamePathTo(coor);
-	    if (onTurnHasMoved) {
-		return false;
-	    } else if (onTurnUnitPicked.getPosProp().getValue().equals(coor)) {
-		return false;
-	    } else if (!board.getSquare(coor).isEmpty()) {
-		return false;
-	    } else if (path == null) {
-		return false;
-	    }
-	    return true;
-	}
-    }
-
-    public boolean hasAttacked() {
-	synchronized (this) {
-	    return onTurnHasAttacked;
-	}
-    }
-
-    public boolean canAttack(Coordinate coor) {
-	synchronized (this) {
-	    if (onTurnHasAttacked) {
-		return false;
-	    } else if (!(onTurnUnitPicked.getAbility() instanceof ActiveAbility)) {
-		return false;
-	    } else if (!((ActiveAbility) onTurnUnitPicked.getAbility()).canUseAbility()) {
-		return false;
-	    } else if (onTurnUnitPicked.getAbility() instanceof ActiveTargetAbility) {
-		if (!((ActiveTargetAbility) onTurnUnitPicked.getAbility()).canUseAbilityOn(board.getSquare(coor))) {
-		    return false;
-		}
-	    }
-	    return true;
-	}
-    }
-
-    public boolean hasChangedDir() {
-	synchronized (this) {
-	    return onTurnHasChangedDir;
-	}
-    }
-
-    public boolean canChangeDir(Direction dir) {
-	synchronized (this) {
-	    if (onTurnHasChangedDir) {
-		return false;
-	    }
-	    return true;
-	}
-    }
-
     private void handleFullCoreCommand(Message command, Object specs) {
 
 	if (Message.UNIT_SELECT.equals(command)) {
@@ -338,6 +246,140 @@ public class Game {
 	}
     }
 
+    public boolean hasDiedOnTurn() {
+	synchronized (this) {
+	    return onTurnHasDied;
+	}
+    }
+
+    public boolean hasSelectedUnit() {
+	synchronized (this) {
+	    return onTurnHasSelectedUnit;
+	}
+    }
+
+    public boolean hasEditedTurn() {
+	synchronized (this) {
+	    return onTurnHasMoved || onTurnHasAttacked || onTurnHasChangedDir;
+	}
+    }
+
+    public boolean hasMoved() {
+	synchronized (this) {
+	    return onTurnHasMoved;
+	}
+    }
+
+    public boolean hasAttacked() {
+	synchronized (this) {
+	    return onTurnHasAttacked;
+	}
+    }
+
+    public boolean hasChangedDir() {
+	synchronized (this) {
+	    return onTurnHasChangedDir;
+	}
+    }
+
+    public Unit getSelectedUnit() {
+	synchronized (this) {
+	    if (hasSelectedUnit()) {
+		return onTurnUnitPicked;
+	    } else {
+		return null;
+	    }
+	}
+    }
+
+    public boolean canSelectUnit() {
+	return !onTurnHasDied && !hasEditedTurn();
+    }
+
+    public boolean canMove() {
+	return !onTurnHasDied && onTurnHasSelectedUnit && !onTurnHasMoved;
+    }
+
+    public boolean canAttack() {
+	return !onTurnHasDied && onTurnHasSelectedUnit && !onTurnHasAttacked;
+    }
+
+    public boolean canChangeDir() {
+	return !onTurnHasDied && onTurnHasSelectedUnit && !onTurnHasChangedDir;
+    }
+
+    public boolean canSelectUnit(Coordinate coor) {
+	synchronized (this) {
+	    Unit unit = board.getUnitAt(coor);
+	    // TODO make sure unit is selectable
+	    if (onTurnHasDied) {
+		return false;
+	    } else if (hasEditedTurn()) {
+		return false;
+	    } else if (unit == null) {
+		return false;
+	    } else if (!unit.getOwnerProp().getValue().equals(onTurnPlayer)) {
+		return false;
+	    }
+	    return true;
+	}
+    }
+
+    public boolean canMoveTo(Coordinate coor) {
+	synchronized (this) {
+	    if (!onTurnHasSelectedUnit) {
+		return false;
+	    }
+	    Path path = onTurnUnitPicked.getGamePathTo(coor);
+	    if (onTurnHasDied) {
+		return false;
+	    } else if (onTurnHasMoved) {
+		return false;
+	    } else if (onTurnUnitPicked.getPosProp().getValue().equals(coor)) {
+		return false;
+	    } else if (!board.getSquare(coor).isEmpty()) {
+		return false;
+	    } else if (path == null) {
+		return false;
+	    }
+	    return true;
+	}
+    }
+
+    public boolean canAttack(Coordinate coor) {
+	synchronized (this) {
+	    if (onTurnHasDied) {
+		return false;
+	    } else if (onTurnHasAttacked) {
+		return false;
+	    } else if (!onTurnHasSelectedUnit) {
+		return false;
+	    } else if (!(onTurnUnitPicked.getAbility() instanceof ActiveAbility)) {
+		return false;
+	    } else if (!((ActiveAbility) onTurnUnitPicked.getAbility()).canUseAbility()) {
+		return false;
+	    } else if (onTurnUnitPicked.getAbility() instanceof ActiveTargetAbility) {
+		if (!((ActiveTargetAbility) onTurnUnitPicked.getAbility()).canUseAbilityOn(board.getSquare(coor))) {
+		    return false;
+		}
+	    }
+	    return true;
+	}
+    }
+
+    public boolean canChangeDir(Direction dir) {
+	synchronized (this) {
+	    if (onTurnHasDied) {
+		return false;
+	    } else if (!onTurnHasSelectedUnit) {
+		return false;
+	    } else if (onTurnHasChangedDir) {
+		return false;
+	    }
+	    return true;
+	}
+    }
+
     private void hover(Coordinate coor) {
 	if (isLocalPlayer) {
 	    announceToAllNonLocalPlayers(Message.HOVER);
@@ -350,8 +392,13 @@ public class Game {
 
     private void unitSelect(Coordinate coor) {
 	synchronized (this) {
+	    if (onTurnUnitPicked != null) {
+		onTurnUnitPicked.getDeathReporter().remove(deathMidTurnListener);
+	    }
 	    onTurnUnitPicked = board.getUnitAt(coor);
 	    onTurnHasSelectedUnit = true;
+
+	    onTurnUnitPicked.getDeathReporter().add(deathMidTurnListener);
 	}
     }
 
@@ -410,11 +457,16 @@ public class Game {
 	    Player player = currentTurn.getPlayerTurn() == player1 ? player2 : player1;
 	    currentTurn = new Turn(currentTurn.getTurnNumber() + 1, player);
 
+	    if (onTurnUnitPicked != null) {
+		onTurnUnitPicked.getDeathReporter().remove(deathMidTurnListener);
+	    }
+
 	    onTurnHasSelectedUnit = false;
 	    onTurnUnitPicked = null;
 	    onTurnHasMoved = false;
 	    onTurnHasAttacked = false;
 	    onTurnHasChangedDir = false;
+	    onTurnHasDied = false;
 	}
     }
 

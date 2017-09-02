@@ -19,15 +19,23 @@ public class TestingClient {
 	try {
 
 	    String serverIP = null;
-	    if (args == null || args.length == 0) {
+	    String name = null;
+	    try {
+		serverIP = args[0];
+	    } catch (NullPointerException | IndexOutOfBoundsException e) {
 		System.out.println("Type in serverIP: ");
 		serverIP = Main.getStringInput();
-	    } else {
-		serverIP = args[0];
 	    }
+	    try {
+		name = args[1];
+	    } catch (NullPointerException | IndexOutOfBoundsException e) {
+		System.out.println("Type in your name: ");
+		name = Main.getStringInput();
+	    }
+
 	    Socket sock;
 	    sock = new Socket(serverIP, TestingServer.PORT);
-	    System.out.println("Client connected to " + serverIP + "!");
+	    System.out.println("Client connected to " + serverIP + ":" + TestingServer.PORT + "!");
 
 	    Communication servComm;
 	    servComm = new Communication(sock);
@@ -42,16 +50,16 @@ public class TestingClient {
 	    boolean first = (boolean) servComm.recieveObject();
 
 	    System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
-	    int option = Main.getIntInput();
+	    int option = 2;// Main.getIntInput();
 
-	    TestingClient.newGame(servComm, first, option == 1);
+	    TestingClient.newGame(servComm, first, option == 1, name);
 
 	} catch (Exception e) {
 	    throw new RuntimeException("Something went wrong with client", e);
 	}
     }
 
-    public static void newGame(Communication servComm, boolean first, boolean chooseTemplate) {
+    public static void newGame(Communication servComm, boolean first, boolean chooseTemplate, String name) {
 	SetupTemplate homeSel = null;
 	// *display input*:
 	if (chooseTemplate) {
@@ -85,7 +93,10 @@ public class TestingClient {
 	servComm.sendObject(homeSel);
 	SetupTemplate awaySel = (SetupTemplate) servComm.recieveObject();
 
-	Game game = new Game(servComm, TestingClient.randomSeed, first);
+	servComm.sendObject(name);
+	String oppname = (String) servComm.recieveObject();
+
+	Game game = new Game(servComm, TestingClient.randomSeed, first, name, oppname);
 	game.setupBoardWithTemplates(homeSel, awaySel);
 	game.startGame();
     }

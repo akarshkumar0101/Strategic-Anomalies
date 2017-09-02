@@ -168,6 +168,9 @@ public abstract class Unit extends Affectable {
     public void useAbility(Square sqr) {
 	((ActiveTargetAbility) getAbility()).useAbility(sqr);
 	Direction newdirFacing = Coordinate.inGeneralDirection(getPosProp().getValue(), sqr.getCoor());
+	if (newdirFacing == null) {
+	    newdirFacing = getPosProp().getDirFacingProp().getValue();
+	}
 	getPosProp().getDirFacingProp().setValue(newdirFacing, getAbility());
     }
 
