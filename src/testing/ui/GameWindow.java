@@ -1,4 +1,4 @@
-package testing;
+package testing.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -47,15 +47,16 @@ import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveAbility;
+import testing.Message;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
-public class TestingFrame {
+public class GameWindow {
 
     final Game game;
     final Board board;
     final Player localPlayer;
 
-    private final TestingFrameGUI gui;
+    private final GameWindowGUI gui;
 
     private final FrameUpdatingThread frameUpdatingThread;
 
@@ -65,12 +66,12 @@ public class TestingFrame {
 
     final Map<Coordinate, List<Square>> aoeHighlightData;
 
-    public TestingFrame(Game game, Player localPlayer) {
+    public GameWindow(Game game, Player localPlayer) {
 	this.game = game;
 	board = game.getBoard();
 	this.localPlayer = localPlayer;
 
-	gui = new TestingFrameGUI(this);
+	gui = new GameWindowGUI(this);
 	gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	frameUpdatingThread = new FrameUpdatingThread();
@@ -453,10 +454,10 @@ public class TestingFrame {
     }
 }
 
-class TestingFrameGUI extends JFrame {
+class GameWindowGUI extends JFrame {
     private static final long serialVersionUID = 2570119871946595519L;
 
-    private final TestingFrame testingFrame;
+    private final GameWindow gameWindow;
 
     private final GridBagLayout gbLayout;
     private final GridBagConstraints gbConstrains;
@@ -464,10 +465,10 @@ class TestingFrameGUI extends JFrame {
     public GamePanel gamePanel;
     public GameDataPanel gameDataPanel;
 
-    public TestingFrameGUI(TestingFrame testingFrame) {
+    public GameWindowGUI(GameWindow gameWindow) {
 	super("Testing Frame for Strategic Anomalies");
 
-	this.testingFrame = testingFrame;
+	this.gameWindow = gameWindow;
 
 	gbLayout = new GridBagLayout();
 	gbConstrains = new GridBagConstraints();
@@ -529,40 +530,12 @@ class TestingFrameGUI extends JFrame {
     public static final Color slightBlue = new Color(192, 192, 255), slightRed = new Color(255, 192, 192),
 	    slightGreen = new Color(192, 255, 192);
     public static final Color friendlyUnitColor = new Color(192, 220, 192), enemyUnitColor = new Color(220, 192, 192);
-    public static final Color canSelectColor = TestingFrameGUI.lighterColor(Color.blue, 150),
-	    canMoveColor = TestingFrameGUI.lighterColor(Color.blue, 150),
-	    canAttackColor = TestingFrameGUI.lighterColor(Color.blue, 150);
-    public static final Color aoeColor = TestingFrameGUI.lighterColor(Color.blue, 200);
+    public static final Color canSelectColor = GUIUtil.lighterColor(Color.blue, 150),
+	    canMoveColor = GUIUtil.lighterColor(Color.blue, 150),
+	    canAttackColor = GUIUtil.lighterColor(Color.blue, 150);
+    public static final Color aoeColor = GUIUtil.lighterColor(Color.blue, 200);
 
-    public static final Color gameDataPanelBackgroundColor = TestingFrameGUI.lighterColor(Color.lightGray, -30);
-
-    public static Color lighterColor(Color col, int amount) {
-	return new Color(TestingFrameGUI.makeRGBRange(col.getRed() + amount),
-		TestingFrameGUI.makeRGBRange(col.getGreen() + amount),
-		TestingFrameGUI.makeRGBRange(col.getBlue() + amount));
-    }
-
-    public static Color mixColors(Color col1, Color col2) {
-	return new Color(TestingFrameGUI.makeRGBRange((col1.getRed() + col2.getRed()) / 2),
-		TestingFrameGUI.makeRGBRange((col1.getGreen() + col2.getGreen()) / 2),
-		TestingFrameGUI.makeRGBRange((col1.getBlue() + col2.getBlue()) / 2));
-    }
-
-    public static Color addColors(Color col1, Color col2) {
-	return new Color(TestingFrameGUI.makeRGBRange(col1.getRed() + col2.getRed()),
-		TestingFrameGUI.makeRGBRange(col1.getGreen() + col2.getGreen()),
-		TestingFrameGUI.makeRGBRange(col1.getBlue() + col2.getBlue()));
-    }
-
-    private static int makeRGBRange(int a) {
-	if (a > 255) {
-	    return 255;
-	} else if (a < 0) {
-	    return 0;
-	} else {
-	    return a;
-	}
-    }
+    public static final Color gameDataPanelBackgroundColor = GUIUtil.lighterColor(Color.lightGray, -30);
 
     private final Vector<Square> blockedSquares = new Vector<>();
 
@@ -578,7 +551,7 @@ class TestingFrameGUI extends JFrame {
 		blockedSquares.remove(sqr);
 		gamePanel.repaint();
 	    }
-	}, TestingFrameGUI.BLOCK_ANIMATION_TIME);
+	}, GameWindowGUI.BLOCK_ANIMATION_TIME);
     }
 
     class GamePanel extends JPanel {
@@ -590,11 +563,11 @@ class TestingFrameGUI extends JFrame {
 
 	public GamePanel() {
 	    super();
-	    labels = new SquareLabel[testingFrame.board.getWidth()][testingFrame.board.getHeight()];
-	    gridLayout = new GridLayout(testingFrame.board.getHeight(), testingFrame.board.getWidth());
+	    labels = new SquareLabel[gameWindow.board.getWidth()][gameWindow.board.getHeight()];
+	    gridLayout = new GridLayout(gameWindow.board.getHeight(), gameWindow.board.getWidth());
 
-	    for (int x = 0; x < testingFrame.board.getWidth(); x++) {
-		for (int y = 0; y < testingFrame.board.getHeight(); y++) {
+	    for (int x = 0; x < gameWindow.board.getWidth(); x++) {
+		for (int y = 0; y < gameWindow.board.getHeight(); y++) {
 		    Coordinate coor = new Coordinate(x, y);
 		    labels[x][y] = new SquareLabel(coor);
 		}
@@ -604,8 +577,8 @@ class TestingFrameGUI extends JFrame {
 
 	public void organizeComponents() {
 	    setLayout(gridLayout);
-	    for (int y = testingFrame.board.getHeight() - 1; y >= 0; y--) {
-		for (int x = 0; x < testingFrame.board.getWidth(); x++) {
+	    for (int y = gameWindow.board.getHeight() - 1; y >= 0; y--) {
+		for (int x = 0; x < gameWindow.board.getWidth(); x++) {
 		    this.add(labels[x][y]);
 		}
 	    }
@@ -617,8 +590,8 @@ class TestingFrameGUI extends JFrame {
 	}
 
 	public void updateInformation() {
-	    for (int x = 0; x < testingFrame.board.getWidth(); x++) {
-		for (int y = 0; y < testingFrame.board.getHeight(); y++) {
+	    for (int x = 0; x < gameWindow.board.getWidth(); x++) {
+		for (int y = 0; y < gameWindow.board.getHeight(); y++) {
 		    labels[x][y].updateInformation();
 		}
 	    }
@@ -626,24 +599,24 @@ class TestingFrameGUI extends JFrame {
 	}
 
 	public void updateColorsDisplayed() {
-	    for (Square sqr : testingFrame.board) {
+	    for (Square sqr : gameWindow.board) {
 		Coordinate coor = sqr.getCoor();
 
 		gamePanel.getSquareLabel(coor).setColorToDisplay(null);
 
-		// if (testingFrame.currentlyPicking == Message.UNIT_SELECT) {
-		// if (testingFrame.game.canSelectUnit(coor)) {
+		// if (gameWindow.currentlyPicking == Message.UNIT_SELECT) {
+		// if (gameWindow.game.canSelectUnit(coor)) {
 		// gamePanel.getSquareLabel(coor).setColorToDisplay(canSelectColor);
 		// }
-		// } else if (testingFrame.currentlyPicking == Message.UNIT_MOVE) {
-		// if (testingFrame.game.canMoveTo(coor)) {
+		// } else if (gameWindow.currentlyPicking == Message.UNIT_MOVE) {
+		// if (gameWindow.game.canMoveTo(coor)) {
 		// gamePanel.getSquareLabel(coor).setColorToDisplay(canMoveColor);
 		// }
-		// } else if (testingFrame.currentlyPicking == Message.UNIT_ATTACK) {
-		// if (testingFrame.game.canAttack(coor)) {
+		// } else if (gameWindow.currentlyPicking == Message.UNIT_ATTACK) {
+		// if (gameWindow.game.canAttack(coor)) {
 		// gamePanel.getSquareLabel(coor).setColorToDisplay(canAttackColor);
 		// }
-		// } else if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
+		// } else if (gameWindow.currentlyPicking == Message.UNIT_DIR) {
 		//
 		// }
 	    }
@@ -674,7 +647,7 @@ class TestingFrameGUI extends JFrame {
 	    public SquareLabel(Coordinate coor) {
 		super();
 		this.coor = coor;
-		isInBoard = testingFrame.board.isInBoard(coor);
+		isInBoard = gameWindow.board.isInBoard(coor);
 		if (isInBoard) {
 		    setToolTipText(coor.toString());
 		}
@@ -682,7 +655,7 @@ class TestingFrameGUI extends JFrame {
 	    }
 
 	    public void updateInformation() {
-		unitOnTop = isInBoard ? testingFrame.getSquare(coor).getUnitOnTop() : null;
+		unitOnTop = isInBoard ? gameWindow.getSquare(coor).getUnitOnTop() : null;
 
 		unitImg = null;
 		waitingImg = null;
@@ -698,7 +671,7 @@ class TestingFrameGUI extends JFrame {
 		    Class<? extends Unit> clazz = unitOnTop.getClass();
 		    unitImg = Images.getImage(clazz);
 		}
-		canCurrentlyClick = testingFrame.canCurrentlyClick(coor);
+		canCurrentlyClick = gameWindow.canCurrentlyClick(coor);
 	    }
 
 	    public void setColorToDisplay(Color col) {
@@ -708,7 +681,7 @@ class TestingFrameGUI extends JFrame {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
 		if (isInBoard && canCurrentlyClick) {
-		    testingFrame.coordinateClicked(coor);
+		    gameWindow.coordinateClicked(coor);
 		}
 	    }
 
@@ -731,10 +704,10 @@ class TestingFrameGUI extends JFrame {
 	    @Override
 	    public void mouseEntered(MouseEvent e) {
 		mouseIn = true;
-		testingFrame.mouseEntered(coor);
+		gameWindow.mouseEntered(coor);
 
 		if (canCurrentlyClick) {
-		    testingFrame.mouseEnteredButton();
+		    gameWindow.mouseEnteredButton();
 		}
 
 		repaint();
@@ -743,7 +716,7 @@ class TestingFrameGUI extends JFrame {
 	    @Override
 	    public void mouseExited(MouseEvent e) {
 		mouseIn = false;
-		testingFrame.mouseExited(coor);
+		gameWindow.mouseExited(coor);
 
 		repaint();
 	    }
@@ -760,10 +733,10 @@ class TestingFrameGUI extends JFrame {
 	    private Color getUnitOwnershipColor() {
 		if (unitOnTop != null) {
 		    Player owner = unitOnTop.getOwnerProp().getValue();
-		    if (owner.equals(testingFrame.localPlayer)) {
-			return TestingFrameGUI.friendlyUnitColor;
+		    if (owner.equals(gameWindow.localPlayer)) {
+			return GameWindowGUI.friendlyUnitColor;
 		    } else {
-			return TestingFrameGUI.enemyUnitColor;
+			return GameWindowGUI.enemyUnitColor;
 		    }
 		}
 		return null;
@@ -785,23 +758,23 @@ class TestingFrameGUI extends JFrame {
 		    if (canCurrentlyClick) {
 			// col = mixColors(col, lighterColor(Color.blue, 200));
 		    }
-		    if (testingFrame.currentlyPicking == Message.UNIT_ATTACK && testingFrame.aoeHighlightData != null
-			    && testingFrame.getMouseInSquare() != null) {
-			List<Square> aoe = testingFrame.aoeHighlightData.get(testingFrame.getMouseInSquare().getCoor());
-			if (aoe != null && aoe.contains(testingFrame.board.getSquare(coor))) {
-			    col = TestingFrameGUI.aoeColor;
+		    if (gameWindow.currentlyPicking == Message.UNIT_ATTACK && gameWindow.aoeHighlightData != null
+			    && gameWindow.getMouseInSquare() != null) {
+			List<Square> aoe = gameWindow.aoeHighlightData.get(gameWindow.getMouseInSquare().getCoor());
+			if (aoe != null && aoe.contains(gameWindow.board.getSquare(coor))) {
+			    col = GameWindowGUI.aoeColor;
 			}
 		    }
 		}
 
 		if (mousePressing) {
-		    col = TestingFrameGUI.lighterColor(col, -50);
+		    col = GUIUtil.lighterColor(col, -50);
 		} else if (mouseIn) {
-		    col = TestingFrameGUI.lighterColor(col, -25);
-		} else if (coor.equals(testingFrame.getOpponentHover())) {
-		    col = TestingFrameGUI.lighterColor(col, -25);
+		    col = GUIUtil.lighterColor(col, -25);
+		} else if (coor.equals(gameWindow.getOpponentHover())) {
+		    col = GUIUtil.lighterColor(col, -25);
 		}
-		// col = TestingFrame.combineColors(col,
+		// col = GameWindow.combineColors(col,
 		// gameDataPanel.colorsDisplayed[sqr.getCoor().x()][sqr.getCoor().y()]);
 		return col;
 	    }
@@ -813,14 +786,14 @@ class TestingFrameGUI extends JFrame {
 		g.fillRect(0, 0, getWidth(), getHeight());
 
 		if (canCurrentlyClick) {
-		    Color circleCol = TestingFrameGUI.lighterColor(background, -50);
+		    Color circleCol = GUIUtil.lighterColor(background, -50);
 		    g.setColor(circleCol);
 		    double percentCircle = .9;
 		    int width = (int) (getWidth() * percentCircle), height = (int) (getHeight() * percentCircle);
 		    g.fillOval((getWidth() - width) / 2, (getHeight() - height) / 2, width, height);
 		}
 
-		// if outside of testingFrame.board
+		// if outside of gameWindow.board
 		if (!isInBoard) {
 		    return;
 		}
@@ -884,14 +857,14 @@ class TestingFrameGUI extends JFrame {
 		}
 
 		// golden border if unit is picked
-		if (testingFrame.game.getSelectedUnit() == unitOnTop) {
+		if (gameWindow.game.getSelectedUnit() == unitOnTop) {
 		    g.drawImage(Images.goldenFrameImage, 1, 1, getWidth() - 2, getHeight() - 2, null);
 		}
 		// border
 		g.setColor(Color.black);
 		g.drawRect(0, 0, getWidth(), getHeight());
 
-		if (blockedSquares.contains(testingFrame.board.getSquare(coor))) {
+		if (blockedSquares.contains(gameWindow.board.getSquare(coor))) {
 		    int imgw = Images.blockedImage.getWidth(null), imgh = Images.blockedImage.getHeight(null);
 		    double scale = (double) getWidth() / imgw;
 		    int scaledimgh = (int) (imgh * scale);
@@ -989,7 +962,7 @@ class TestingFrameGUI extends JFrame {
 		public void mouseEntered(MouseEvent e) {
 		    AbstractButton button = (AbstractButton) e.getSource();
 		    if (button.isEnabled()) {
-			testingFrame.mouseEnteredButton();
+			gameWindow.mouseEnteredButton();
 		    }
 		}
 	    };
@@ -1172,7 +1145,7 @@ class TestingFrameGUI extends JFrame {
 	    unitInfoLabel2.setFont(normalFont);
 	    add(unitInfoLabel2, gdpgbConstrains);
 
-	    setBackground(TestingFrameGUI.gameDataPanelBackgroundColor);
+	    setBackground(GameWindowGUI.gameDataPanelBackgroundColor);
 
 	    normalBorders.put(pickUnitTButton, pickUnitTButton.getBorder());
 	    normalBorders.put(pickMoveTButton, pickMoveTButton.getBorder());
@@ -1183,31 +1156,31 @@ class TestingFrameGUI extends JFrame {
 
 	public void setupButtonLogic() {
 	    pickUnitTButton.addActionListener(e -> {
-		testingFrame.pickUnitButtonClicked();
+		gameWindow.pickUnitButtonClicked();
 	    });
 	    pickMoveTButton.addActionListener(e -> {
-		testingFrame.pickMoveButtonClicked();
+		gameWindow.pickMoveButtonClicked();
 	    });
 	    pickAttackTButton.addActionListener(e -> {
-		testingFrame.pickAttackButtonClicked();
+		gameWindow.pickAttackButtonClicked();
 	    });
 	    pickDirectionTButton.addActionListener(e -> {
-		testingFrame.pickDirectionButtonClicked();
+		gameWindow.pickDirectionButtonClicked();
 	    });
 	    endTurnButton.addActionListener(e -> {
-		testingFrame.endTurnButtonClicked();
+		gameWindow.endTurnButtonClicked();
 	    });
 	    upDirButton.addActionListener(e -> {
-		testingFrame.directionClicked(Direction.UP);
+		gameWindow.directionClicked(Direction.UP);
 	    });
 	    leftDirButton.addActionListener(e -> {
-		testingFrame.directionClicked(Direction.LEFT);
+		gameWindow.directionClicked(Direction.LEFT);
 	    });
 	    rightDirButton.addActionListener(e -> {
-		testingFrame.directionClicked(Direction.RIGHT);
+		gameWindow.directionClicked(Direction.RIGHT);
 	    });
 	    downDirButton.addActionListener(e -> {
-		testingFrame.directionClicked(Direction.DOWN);
+		gameWindow.directionClicked(Direction.DOWN);
 	    });
 
 	    // to use following code all the buttons above must do
@@ -1236,9 +1209,9 @@ class TestingFrameGUI extends JFrame {
 	private final ImageIcon redDotIcon = new ImageIcon(Images.getScaledImage(Images.redDotImage, 25, 25));
 
 	public void updateInformation() {
-	    Player currentPlayer = testingFrame.game.getCurrentTurn().getPlayerTurn();
+	    Player currentPlayer = gameWindow.game.getCurrentTurn().getPlayerTurn();
 	    turnInfoLabel.setText(currentPlayer.getName() + "'s turn ");
-	    turnInfoLabel.setIcon(testingFrame.isLocalPlayerTurn() ? greenDotIcon : redDotIcon);
+	    turnInfoLabel.setIcon(gameWindow.isLocalPlayerTurn() ? greenDotIcon : redDotIcon);
 
 	    updateEnableButtons();
 	    updateSelectButtons();
@@ -1248,17 +1221,17 @@ class TestingFrameGUI extends JFrame {
 	}
 
 	public void updateUnitInfoLabels() {
-	    if (testingFrame.game.hasSelectedUnit()) {
+	    if (gameWindow.game.hasSelectedUnit()) {
 		selectedUnitLabel = unitInfoLabel1;
 		hoverUnitLabel = unitInfoLabel2;
 	    } else {
 		hoverUnitLabel = unitInfoLabel1;
 		selectedUnitLabel = unitInfoLabel2;
 	    }
-	    Square mouseinsqr = testingFrame.getMouseInSquare();
+	    Square mouseinsqr = gameWindow.getMouseInSquare();
 	    hoverUnitLabel.setText(
 		    getHTMLabelInfoString(mouseinsqr == null ? null : mouseinsqr.getUnitOnTop(), "Hovering Over Unit"));
-	    selectedUnitLabel.setText(getHTMLabelInfoString(testingFrame.game.getSelectedUnit(), "Selected Unit"));
+	    selectedUnitLabel.setText(getHTMLabelInfoString(gameWindow.game.getSelectedUnit(), "Selected Unit"));
 	}
 
 	void selectTurnPartButton(Message turnPart, boolean selected) {
@@ -1309,28 +1282,28 @@ class TestingFrameGUI extends JFrame {
 	}
 
 	public void updateSelectButtons() {
-	    selectTurnPartButton(Message.UNIT_SELECT, testingFrame.game.hasSelectedUnit());
-	    selectTurnPartButton(Message.UNIT_MOVE, testingFrame.game.hasMoved());
-	    selectTurnPartButton(Message.UNIT_ATTACK, testingFrame.game.hasAttacked());
-	    selectTurnPartButton(Message.UNIT_DIR, testingFrame.game.hasChangedDir());
+	    selectTurnPartButton(Message.UNIT_SELECT, gameWindow.game.hasSelectedUnit());
+	    selectTurnPartButton(Message.UNIT_MOVE, gameWindow.game.hasMoved());
+	    selectTurnPartButton(Message.UNIT_ATTACK, gameWindow.game.hasAttacked());
+	    selectTurnPartButton(Message.UNIT_DIR, gameWindow.game.hasChangedDir());
 	}
 
 	public void updateEnableButtons() {
 	    enableAllTurnPartButtons(false);
 	    enableAllDirButtons(false);
 
-	    if (testingFrame.isLocalPlayerTurn()) {
-		enableTurnPartButton(Message.UNIT_SELECT, testingFrame.game.canSelectUnit());
-		enableTurnPartButton(Message.UNIT_MOVE, testingFrame.game.canMove());
-		enableTurnPartButton(Message.UNIT_ATTACK, testingFrame.game.canAttack());
-		enableTurnPartButton(Message.UNIT_DIR, testingFrame.game.canChangeDir());
+	    if (gameWindow.isLocalPlayerTurn()) {
+		enableTurnPartButton(Message.UNIT_SELECT, gameWindow.game.canSelectUnit());
+		enableTurnPartButton(Message.UNIT_MOVE, gameWindow.game.canMove());
+		enableTurnPartButton(Message.UNIT_ATTACK, gameWindow.game.canAttack());
+		enableTurnPartButton(Message.UNIT_DIR, gameWindow.game.canChangeDir());
 
-		// if (testingFrame.currentlyPicking == Message.UNIT_DIR &&
-		// !testingFrame.game.hasChangedDir()
-		// && !testingFrame.game.hasDiedOnTurn()) {
+		// if (gameWindow.currentlyPicking == Message.UNIT_DIR &&
+		// !gameWindow.game.hasChangedDir()
+		// && !gameWindow.game.hasDiedOnTurn()) {
 		// enableAllDirButtons(true);
 		// }
-		if (testingFrame.currentlyPicking == Message.UNIT_DIR) {
+		if (gameWindow.currentlyPicking == Message.UNIT_DIR) {
 		    enableAllDirButtons(true);
 		}
 
@@ -1418,6 +1391,7 @@ class TestingFrameGUI extends JFrame {
 		}
 
 		str += "Ability AOE: " + (ability instanceof AbilityAOE);
+		str += "<br>";
 
 		if (unit.getStunnedProp().getValue()) {
 		    str += colorize("Stunned*", 1, 2, true);

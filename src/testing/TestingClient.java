@@ -8,6 +8,7 @@ import game.Communication;
 import game.Game;
 import main.Main;
 import setup.SetupTemplate;
+import testing.ui.SetupWindow;
 
 public class TestingClient {
 
@@ -63,9 +64,9 @@ public class TestingClient {
 	SetupTemplate homeSel = null;
 	// *display input*:
 	if (chooseTemplate) {
-	    TestingSetup testingSetup = new TestingSetup();
-	    homeSel = testingSetup.getFinalTemplate();
-	    testingSetup.dispose();
+	    SetupWindow setupWindow = new SetupWindow();
+	    homeSel = setupWindow.getFinalTemplate();
+	    setupWindow.dispose();
 	}
 	// *file input*:
 	else {

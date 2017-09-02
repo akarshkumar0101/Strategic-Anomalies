@@ -1,4 +1,4 @@
-package testing;
+package testing.ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -23,15 +23,15 @@ import game.board.NormalBoard;
 import game.unit.Unit;
 import setup.SetupTemplate;
 
-public class TestingSetup {
+public class SetupWindow {
 
-    private final TestingSetupGUI gui;
+    private final SetupWindowGUI gui;
 
     private SetupTemplate template;
 
-    public TestingSetup() {
+    public SetupWindow() {
 	template = new SetupTemplate(NormalBoard.class);
-	gui = new TestingSetupGUI(this);
+	gui = new SetupWindowGUI(this);
     }
 
     public SetupTemplate getTemplateInUse() {
@@ -111,10 +111,10 @@ public class TestingSetup {
     }
 }
 
-class TestingSetupGUI extends JFrame {
+class SetupWindowGUI extends JFrame {
     private static final long serialVersionUID = -6412445808406230039L;
 
-    private final TestingSetup testingSetup;
+    private final SetupWindow setupWindow;
 
     private final GridBagLayout gblayout;
     private final GridBagConstraints gbc;
@@ -125,9 +125,9 @@ class TestingSetupGUI extends JFrame {
 
     public boolean donePressed = false;
 
-    public TestingSetupGUI(TestingSetup testingSetup) {
+    public SetupWindowGUI(SetupWindow setupWindow) {
 	super("Picking Pieces for Game");
-	this.testingSetup = testingSetup;
+	this.setupWindow = setupWindow;
 
 	gblayout = new GridBagLayout();
 	gbc = new GridBagConstraints();
@@ -232,8 +232,8 @@ class TestingSetupGUI extends JFrame {
 	    pickButtons.get(unitClass).setSelected(selected);
 	}
 
-	public Dimension dim = new Dimension(TestingSetupGUI.unitImageDimension.width * 6,
-		TestingSetupGUI.unitImageDimension.height * 2);
+	public Dimension dim = new Dimension(SetupWindowGUI.unitImageDimension.width * 6,
+		SetupWindowGUI.unitImageDimension.height * 2);
 
 	@Override
 	public Dimension getPreferredSize() {
@@ -276,8 +276,8 @@ class TestingSetupGUI extends JFrame {
 	    }
 	}
 
-	public Dimension dim = new Dimension(TestingSetupGUI.unitImageDimension.width * NormalBoard.WIDTH,
-		TestingSetupGUI.unitImageDimension.height * (NormalBoard.HEIGHT / 2));
+	public Dimension dim = new Dimension(SetupWindowGUI.unitImageDimension.width * NormalBoard.WIDTH,
+		SetupWindowGUI.unitImageDimension.height * (NormalBoard.HEIGHT / 2));
 
 	@Override
 	public Dimension getPreferredSize() {
@@ -348,23 +348,23 @@ class TestingSetupGUI extends JFrame {
 
 	@Override
 	public Dimension getPreferredSize() {
-	    return TestingSetupGUI.unitImageDimension;
+	    return SetupWindowGUI.unitImageDimension;
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
 	    if (boardButton) {
-		if (testingSetup.isInSelectionBoard(coor) && testingSetup.canCurrentlyClick(coor)) {
-		    testingSetup.coordinateClicked(coor);
+		if (setupWindow.isInSelectionBoard(coor) && setupWindow.canCurrentlyClick(coor)) {
+		    setupWindow.coordinateClicked(coor);
 		}
 	    } else {
-		testingSetup.unitClassClicked(unitClass);
+		setupWindow.unitClassClicked(unitClass);
 	    }
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-	    if (!boardButton || testingSetup.canCurrentlyClick(coor)) {
+	    if (!boardButton || setupWindow.canCurrentlyClick(coor)) {
 		mousePressing = true;
 		repaint();
 	    }
@@ -392,14 +392,14 @@ class TestingSetupGUI extends JFrame {
 
 	public Color determineBackgroundColor() {
 	    Color col = Color.lightGray;
-	    if (boardButton && !testingSetup.isInSelectionBoard(coor)) {
+	    if (boardButton && !setupWindow.isInSelectionBoard(coor)) {
 		return Color.black;
 	    }
 
 	    if (mousePressing || isSelected) {
-		col = TestingFrameGUI.lighterColor(col, -50);
+		col = GUIUtil.lighterColor(col, -50);
 	    } else if (mouseIn) {
-		col = TestingFrameGUI.lighterColor(col, -25);
+		col = GUIUtil.lighterColor(col, -25);
 	    }
 
 	    return col;
@@ -422,7 +422,7 @@ class TestingSetupGUI extends JFrame {
 	    g.fillRect(0, 0, getWidth(), getHeight());
 
 	    // if outside of board
-	    if (boardButton && !testingSetup.isInSelectionBoard(coor)) {
+	    if (boardButton && !setupWindow.isInSelectionBoard(coor)) {
 		return;
 	    }
 	    // border

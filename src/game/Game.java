@@ -18,7 +18,7 @@ import game.unit.property.ability.ActiveAbility;
 import game.unit.property.ability.ActiveTargetAbility;
 import setup.SetupTemplate;
 import testing.Message;
-import testing.TestingFrame;
+import testing.ui.GameWindow;
 
 public class Game {
 
@@ -31,7 +31,7 @@ public class Game {
 
     private final Board board;
 
-    public TestingFrame testingFrame;
+    public GameWindow gameWindow;
 
     private final Player player1;
     private final Player player2;
@@ -53,9 +53,9 @@ public class Game {
     public final IncidentReporter turnEndReporter;
 
     // The purpose of synchronizing some of the methods in TestingGame.java
-    // TestingFrame accesses some methods in TestingGame to get details about the
+    // GameWindow accesses some methods in TestingGame to get details about the
     // turn and game
-    // The game's data can change while the TestingFrame accesses it from another
+    // The game's data can change while the GameWindow accesses it from another
     // thread causing a disaster
     // Synchronizing all methods that give access to the data and all changes in
     // data will prevent this
@@ -89,7 +89,7 @@ public class Game {
 	localPlayers = new ArrayList<>(2);
 	localPlayers.add(player1);
 
-	testingFrame = new TestingFrame(this, player1);
+	gameWindow = new GameWindow(this, player1);
 
 	allUnits = new ArrayList<>();
 
@@ -128,7 +128,7 @@ public class Game {
     };
 
     public void startGame() {
-	testingFrame.startFrame();
+	gameWindow.startFrame();
 
 	// TODO add stop statement
 	// game loop for different turns

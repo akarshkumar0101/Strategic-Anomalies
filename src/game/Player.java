@@ -1,12 +1,12 @@
 package game;
 
-import testing.TestingFrame;
+import testing.ui.GameWindow;
 
 /**
  * Player that is in a team and a game, will be tied to a data stream that gives
  * inputs, either by live program input, or input over Internet (multiplayer
  * online)
- * 
+ *
  * @author Akarsh
  *
  */
@@ -16,7 +16,7 @@ public class Player {
 
     private final String name;
 
-    private TestingFrame testingFrame;
+    private GameWindow gameWindow;
 
     private Communication gameComm;
 
@@ -35,12 +35,12 @@ public class Player {
 	return name;
     }
 
-    public void setTestingFrame(TestingFrame testingFrame) {
-	this.testingFrame = testingFrame;
+    public void setTestingFrame(GameWindow gameWindow) {
+	this.gameWindow = gameWindow;
     }
 
-    public TestingFrame getTestingFrame() {
-	return testingFrame;
+    public GameWindow getTestingFrame() {
+	return gameWindow;
     }
 
     public void setGameComm(Communication gameComm) {
