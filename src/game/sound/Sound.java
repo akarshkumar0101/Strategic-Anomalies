@@ -14,6 +14,7 @@ public class Sound {
     public static void playSound() {
 	/* insert sound into the game... Quinn */
 	try {
+		//Testing
 	    // Open an audio input stream.
 	    InputStream is = Sound.class.getResourceAsStream("/sound/sound15.wav");
 	    AudioInputStream audioIn = AudioSystem.getAudioInputStream(is);
@@ -29,7 +30,6 @@ public class Sound {
 	} catch (LineUnavailableException e) {
 	    e.printStackTrace();
 	}
-
     }
 
 }
