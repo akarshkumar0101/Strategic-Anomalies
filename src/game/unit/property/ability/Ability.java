@@ -10,7 +10,7 @@ public abstract class Ability {
 	this.unitOwner = unitOwner;
     }
 
-    protected Unit getUnitOwner() {
+    public Unit getUnitOwner() {
 	return unitOwner;
     }
 

@@ -7,6 +7,7 @@ import game.interaction.Damage;
 import game.interaction.DamageType;
 import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
+import game.unit.property.ability.Ability;
 
 public class ArmorProperty extends Property<Integer> {
 
@@ -45,7 +46,7 @@ public class ArmorProperty extends Property<Integer> {
 	// is stunned, etc.
 
 	// fix this lol
-	return .5;
+	return 1;
     }
 
     private int filterThroughArmor(int damageAmount) {
@@ -55,9 +56,16 @@ public class ArmorProperty extends Property<Integer> {
 
     private void triggerBlock(Damage damage) {
 	// turn this unit to block
-	if (damage.getSource() instanceof Unit) {
+	System.out.println("block");
+	if (damage.getSource() instanceof Unit || damage.getSource() instanceof Ability) {
+	    System.out.println("unit source");
 	    Coordinate thiscoor = getUnitOwner().getPosProp().getValue();
-	    Coordinate othercoor = getUnitOwner().getGame().getBoard().locationOf((Unit) damage.getSource()).getCoor();
+	    Coordinate othercoor = null;
+	    if (damage.getSource() instanceof Unit) {
+		othercoor = ((Unit) damage.getSource()).getPosProp().getValue();
+	    } else if (damage.getSource() instanceof Ability) {
+		othercoor = ((Ability) damage.getSource()).getUnitOwner().getPosProp().getValue();
+	    }
 
 	    Direction damageDir = Coordinate.inGeneralDirection(thiscoor, othercoor);
 

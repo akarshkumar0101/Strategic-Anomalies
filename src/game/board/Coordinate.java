@@ -132,8 +132,14 @@ public class Coordinate implements Serializable {
     // coor2 is generally in one direction of coor1
     public static Direction inGeneralDirection(Coordinate coor1, Coordinate coor2) {
 	Direction dir = null;
+
+	if (coor1.equals(coor2)) {
+	    return dir;
+	}
+
 	int xdist = coor2.x() - coor1.x();
 	int ydist = coor2.y() - coor1.y();
+
 	if (Math.abs(xdist) > Math.abs(ydist)) {
 	    dir = xdist > 0 ? Direction.RIGHT : Direction.LEFT;
 	} else if (Math.abs(ydist) > Math.abs(xdist)) {
