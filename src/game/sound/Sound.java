@@ -10,6 +10,55 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Sound {
+	/********************************************************
+	 *  stepping.wav sound should be called for all knight movements
+	 * 
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  arrow2.wav sound should be called for all scouts attack (when successful)
+	 * 
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  block.wav sound should be called for all successful blocks (when successful).
+	 *  Note: This is temporary. This block noise is specifically for units
+	 *  with swords, but we will use this for all units atm.
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  explode.wav should be called for assassin special, and any 
+	 * fire attacks like pyromancer, dragon tyrants, etc.
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  healing.wav should be called for all units who are healing 
+	 * other units
+	 * 
+	 ********************************************************/
+	/********************************************************
+	 *  hit.wav should be called for all successful melee attacks
+	 * 
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  postclick.wav should be called for all clicks on buttons
+	 * 
+	 * 
+	 ********************************************************/
+	
+	/********************************************************
+	 *  soound15.wav is just for toggling noise while a player is browsing
+	 * 
+	 * 
+	 ********************************************************/
+	
+	
 
 	//This noise implements toggling noise 
     public static void toggleNoise() {
