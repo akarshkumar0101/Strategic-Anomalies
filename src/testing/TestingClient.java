@@ -51,7 +51,7 @@ public class TestingClient {
 	    boolean first = (boolean) servComm.recieveObject();
 
 	    System.out.println("Type 1 for manual setup of pieces, 2 for file setup");
-	    int option = 2;// Main.getIntInput();
+	    int option = 1;// Main.getIntInput();
 
 	    TestingClient.newGame(servComm, first, option == 1, name);
 

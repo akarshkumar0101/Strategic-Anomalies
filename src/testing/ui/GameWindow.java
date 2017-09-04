@@ -42,6 +42,11 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.Square;
 import game.unit.Unit;
+import game.unit.listofunits.Archer;
+import game.unit.listofunits.Guardian;
+import game.unit.listofunits.Hunter;
+import game.unit.listofunits.Scout;
+import game.unit.listofunits.Warrior;
 import game.unit.property.ability.Ability;
 import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
@@ -80,18 +85,11 @@ public class GameWindow {
     }
 
     public void startFrame() {
-	setupBlockAnimationTriggers();
+	gui.setupAnimationTriggers();
+	gui.setupSoundTriggers();
 	frameUpdatingThread.start();
 	gui.setVisible(true);
 	// Sounds.playSound(Sounds.headlinesSongSound);
-    }
-
-    private void setupBlockAnimationTriggers() {
-	for (Unit unit : game.getAllUnits()) {
-	    unit.getHealthProp().getArmorProp().getBlockReporter().add(specifications -> {
-		gui.triggerBlockAnimation(board.getSquare(unit.getPosProp().getValue()));
-	    });
-	}
     }
 
     Message currentlyPicking;
@@ -541,7 +539,31 @@ class GameWindowGUI extends JFrame {
 
     public static final int BLOCK_ANIMATION_TIME = 500;
 
-    public void triggerBlockAnimation(Square sqr) {
+    void setupAnimationTriggers() {
+	for (Unit unit : gameWindow.game.getAllUnits()) {
+	    unit.getHealthProp().getArmorProp().getBlockReporter().add(specifications -> {
+		triggerBlockAnimation(gameWindow.board.getSquare(unit.getPosProp().getValue()));
+	    });
+	}
+    }
+
+    void setupSoundTriggers() {
+	for (Unit unit : gameWindow.game.getAllUnits()) {
+	    unit.getHealthProp().getArmorProp().getBlockReporter().add(specifications -> {
+		Sounds.playSound(Sounds.blockSound);
+	    });
+	    if (unit instanceof Warrior || unit instanceof Guardian) {
+		((ActiveAbility) unit.getAbility()).getOnUseReporter()
+			.add(specifications -> Sounds.playSound(Sounds.hitSound));
+	    }
+	    if (unit instanceof Scout || unit instanceof Archer || unit instanceof Hunter) {
+		((ActiveAbility) unit.getAbility()).getOnUseReporter()
+			.add(specifications -> Sounds.playSound(Sounds.arrowSound));
+	    }
+	}
+    }
+
+    private void triggerBlockAnimation(Square sqr) {
 	blockedSquares.add(sqr);
 	gamePanel.repaint();
 	Timer timer = new Timer();
@@ -552,6 +574,7 @@ class GameWindowGUI extends JFrame {
 		gamePanel.repaint();
 	    }
 	}, GameWindowGUI.BLOCK_ANIMATION_TIME);
+	Sounds.playSound(Sounds.blockSound);
     }
 
     class GamePanel extends JPanel {
