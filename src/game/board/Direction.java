@@ -25,10 +25,19 @@ public enum Direction {
     /**
      * @return next in rotation
      */
-    public Direction next() {
+    public Direction rotateCW() {
 	int ordin = ordinal() + 1;
 	if (ordin > 3) {
 	    ordin -= 4;
+	}
+
+	return Direction.values()[ordin];
+    }
+
+    public Direction rotateCCW() {
+	int ordin = ordinal() - 1;
+	if (ordin < 0) {
+	    ordin += 4;
 	}
 
 	return Direction.values()[ordin];

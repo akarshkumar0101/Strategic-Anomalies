@@ -96,7 +96,7 @@ public class SetupWindow {
     public void coordinateClicked(Coordinate coor) {
 	if (selectedUnitClass == null && template.pieceExistsAt(coor)) {
 	    Class<? extends Unit> unitClass = template.getUnitClassAt(coor);
-	    Direction dir = template.getDirFacing(coor).next();
+	    Direction dir = template.getDirFacing(coor).rotateCW();
 	    gui.placePanel.set(coor, unitClass, dir);
 	    template.put(unitClass, coor, dir);
 	} else {

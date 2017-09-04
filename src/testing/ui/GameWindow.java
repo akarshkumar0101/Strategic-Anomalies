@@ -1402,6 +1402,12 @@ class GameWindowGUI extends JFrame {
 		    str += "<br>";
 		}
 
+		str += "Front Block: " + unit.getHealthProp().getArmorProp().getFrontBlockProperty().getValue();
+		str += "<br>";
+
+		str += "Side Block: " + unit.getHealthProp().getArmorProp().getSideBlockProperty().getValue();
+		str += "<br>";
+
 		str += "</html>";
 		return str;
 	    }

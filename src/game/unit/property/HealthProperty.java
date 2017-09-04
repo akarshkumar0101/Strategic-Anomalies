@@ -11,11 +11,12 @@ public class HealthProperty extends Property<Integer> {
 
     private final ArmorProperty armorProp;
 
-    public HealthProperty(Unit unit, int initialHealth, int initialArmor) {
+    public HealthProperty(Unit unit, int initialHealth, int initialArmor, double frontBlockPercent,
+	    double sideBlockPercent) {
 	super(unit, initialHealth);
 	maxHealthProp = new Property<>(unit, initialHealth);
 
-	armorProp = new ArmorProperty(unit, initialArmor);
+	armorProp = new ArmorProperty(unit, initialArmor, frontBlockPercent, sideBlockPercent);
 
 	setupNaturalPropEffects();
     }

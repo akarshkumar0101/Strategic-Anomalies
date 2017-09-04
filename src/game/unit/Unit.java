@@ -92,7 +92,8 @@ public abstract class Unit extends Affectable {
 
 	ownerProp = new OwnerProperty(this, playerOwner);
 	posProp = new PositionProperty(this, coor, directionFacing);
-	healthProp = new HealthProperty(this, defaultStat.defaultHealth, defaultStat.defaultArmor);
+	healthProp = new HealthProperty(this, defaultStat.defaultHealth, defaultStat.defaultArmor,
+		defaultStat.defaultFrontBlock, defaultStat.defaultSideBlock);
 	movingProp = new MovingProperty(this, defaultStat.defaultMoveRange, defaultStat.canDefaultTeleport);
 	stunnedProp = new StunnedProperty(this, false);
 

@@ -259,7 +259,7 @@ public class Property<T> {
      * change, then run the code for it to register the change and notify the
      * listeners.
      */
-    protected void valueUpdated() {
+    private void valueUpdated() {
 	if (!currentValue.equals(lastCurrentValue)) {
 	    Object[] specifications = getSpecificationsOfPropertyChange(lastCurrentValue, currentValue);
 	    notifyPropertyChanged(lastCurrentValue, currentValue, specifications);
