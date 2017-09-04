@@ -1,14 +1,14 @@
 package game.interaction.incident;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * IncidentReporters are used to maintain multiple IncidentListeners that are
  * listening for the same exact event to occur.
- * 
+ *
  * @author Akarsh
  *
  */
@@ -26,13 +26,13 @@ public class IncidentReporter {
      * Initializes the IncidentReporter.
      */
     public IncidentReporter() {
-	listeners = new HashMap<>();
+	listeners = new LinkedHashMap<>();
     }
 
     /**
      * Notifies all of the IncidentListeners that a incident has been reported with
      * the given specifications.
-     * 
+     *
      * @param specifications
      *            for the listeners
      */
@@ -59,7 +59,7 @@ public class IncidentReporter {
     /**
      * Adds the given listener to the list of listeners that will be notified on
      * broadcast of this IncidentReporter.
-     * 
+     *
      * @param listener
      */
     public void add(IncidentListener listener) {
@@ -71,7 +71,7 @@ public class IncidentReporter {
      * broadcast of this IncidentReporter. If the onlyOnce paramter is true then the
      * listener will be removed after the first broadcast; it will only be notified
      * once.
-     * 
+     *
      * @param listener
      * @param onlyOnce
      */
@@ -82,7 +82,7 @@ public class IncidentReporter {
     /**
      * Removes the given listener from the list of listeners to be notified on
      * broadcast.
-     * 
+     *
      * @param listener
      */
     public void remove(IncidentListener listener) {

@@ -17,7 +17,7 @@ public abstract class ActiveAbility extends Ability {
 
     public ActiveAbility(Unit unitOwner, int maxWaitTime) {
 	super(unitOwner);
-	waitProp = new WaitProperty(unitOwner, 0, maxWaitTime);
+	waitProp = new WaitProperty(unitOwner, 0, 2 * maxWaitTime + 1);
 	onAbilityUseReporter = new IncidentReporter();
 
 	canUseProperty = new Property<>(unitOwner, true);
