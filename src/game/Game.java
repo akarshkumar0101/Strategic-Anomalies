@@ -3,6 +3,7 @@ package game;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import game.board.Board;
@@ -39,7 +40,7 @@ public class Game {
 
     private final List<Player> localPlayers;
 
-    private final HashMap<Player, Communication> playerComms;
+    private final Map<Player, Communication> playerComms;
 
     private Turn currentTurn;
 
@@ -95,12 +96,7 @@ public class Game {
 
 	gameStartReporter = new IncidentReporter();
 	turnStartReporter = new IncidentReporter();
-	turnEndReporter = new IncidentReporter() {
-	    @Override
-	    public void add(IncidentListener listener, boolean onlyOnce) {
-		super.add(listener, onlyOnce);
-	    }
-	};
+	turnEndReporter = new IncidentReporter();
     }
 
     public void setupBoardWithTemplates(SetupTemplate homeSel, SetupTemplate awaySel) {

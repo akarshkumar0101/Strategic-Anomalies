@@ -9,15 +9,42 @@ import javax.sound.sampled.Clip;
 
 public class Sounds {
 
-    public static Sound beepSound;
-
     public static Sound headlinesSongSound;
+
+    // sound15.wav is just for toggling noise while a player is browsingThis noise
+    // implements toggling noise
+    public static Sound beepSound;
+    // postclick.wav should be called for all clicks on buttons
+    public static Sound postClickSound;
+
+    // hit.wav should be called for all successful melee attacks
+    public static Sound hitSound;
+    // block.wav sound should be called for all successful blocks (when successful).
+    // Note: This is temporary. This block noise is specifically for units
+    // with swords, but we will use this for all units atm.
+    public static Sound blockSound;
+
+    // healing.wav should be called for all units who are healing other units
+    public static Sound healingSound;
+    // explode.wav should be called for assassin special, and any fire attacks like
+    // pyromancer, dragon tyrants, etc.
+    public static Sound explodingSound;
+
+    // arrow2.wav sound should be called for all scouts attack (when successful)
+    public static Sound arrowSound;
 
     static {
 	try {
+	    Sounds.headlinesSongSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/headlines.wav"));
 
 	    Sounds.beepSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/sound15.wav"));
-	    Sounds.headlinesSongSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/headlines.wav"));
+	    Sounds.postClickSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/postclick.wav"));
+
+	    Sounds.hitSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/hit.wav"));
+	    Sounds.blockSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/block.wav"));
+	    Sounds.healingSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/healing.wav"));
+	    Sounds.explodingSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/explode.wav"));
+	    Sounds.arrowSound = new Sound(Sounds.class.getResourceAsStream("/temp_sounds/arrow2.wav"));
 
 	} catch (Exception e) {
 	    throw new RuntimeException("Could not load sounds", e);
@@ -25,7 +52,7 @@ public class Sounds {
     }
 
     public static void playSound(Sound sound) {
-	// sound.playSound();
+	sound.playSound();
     }
 
     // public static void repeatSound(Sound sound) {
