@@ -10,15 +10,15 @@ public class WaitProperty extends Property<Integer> {
 	super(unitOwner, initValue);
 	maxValueProperty = new Property<>(unitOwner, defaultMaxValue);
 
-	unitOwner.getGame().turnEndReporter.add(specifications -> {
-	    onTurnEnd((Turn) specifications[0]);
-	});
+	unitOwner.getGame().gameStartReporter.add(specifications -> unitOwner.getGame().turnEndReporter.add(specs -> {
+	    onTurnEnd((Turn) specs[0]);
+	}));
     }
 
     public void triggerWaitForAttack() {
 	int maxValue = maxValueProperty.getValue();
 	int valinc = maxValue / 2;
-	if (valinc % 2 != 0) {
+	if (maxValue % 2 != 0) {
 	    valinc++;
 	}
 	setValue(getValue() + valinc, getUnitOwner().getAbility());

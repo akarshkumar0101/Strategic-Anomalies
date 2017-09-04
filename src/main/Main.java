@@ -54,6 +54,10 @@ public class Main {
 	}
     }
 
+    public static synchronized void print(String s) {
+	System.out.println(Thread.currentThread() + ": " + s);
+    }
+
     public static void test() {
 	Thread servThread = new Thread() {
 	    @Override
@@ -82,4 +86,5 @@ public class Main {
 	}
 	client1Thead.start();
 	client2Thead.start();
-    } }
+    }
+}

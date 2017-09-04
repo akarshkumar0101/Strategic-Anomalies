@@ -162,10 +162,13 @@ public class ArmorProperty extends Property<Integer> {
 	int x = currentTurn.getTurnNumber() - lastIncident.getTurnNumber();
 
 	// percent if it did block
-	double currentBlockPercent = normalBlockPercentage
-		* (-ArmorProperty.amountChange * Math.pow(ArmorProperty.decayBase, -x) + 1);
-	if (!didBlock) {
-	    currentBlockPercent = 1 - currentBlockPercent;
+	double currentBlockPercent = 0;
+	if (didBlock) {
+	    currentBlockPercent = normalBlockPercentage
+		    * (-ArmorProperty.amountChange * Math.pow(ArmorProperty.decayBase, -x) + 1);
+	} else {
+	    currentBlockPercent = ArmorProperty.amountChange * (1 - normalBlockPercentage)
+		    * Math.pow(ArmorProperty.decayBase, -x) + normalBlockPercentage;
 	}
 
 	return currentBlockPercent;

@@ -95,7 +95,12 @@ public class Game {
 
 	gameStartReporter = new IncidentReporter();
 	turnStartReporter = new IncidentReporter();
-	turnEndReporter = new IncidentReporter();
+	turnEndReporter = new IncidentReporter() {
+	    @Override
+	    public void add(IncidentListener listener, boolean onlyOnce) {
+		super.add(listener, onlyOnce);
+	    }
+	};
     }
 
     public void setupBoardWithTemplates(SetupTemplate homeSel, SetupTemplate awaySel) {
@@ -128,6 +133,13 @@ public class Game {
     };
 
     public void startGame() {
+	if (first) {
+	    try {
+		Thread.sleep(100);
+	    } catch (InterruptedException e) {
+		e.printStackTrace();
+	    }
+	}
 	gameWindow.startFrame();
 
 	// TODO add stop statement
