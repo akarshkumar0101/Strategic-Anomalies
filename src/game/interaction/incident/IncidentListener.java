@@ -21,4 +21,8 @@ public interface IncidentListener {
      */
     public abstract void incidentReported(Object... specifications);
 
+    public default Condition shouldExistCondition() {
+	return Condition.trueCondition;
+    }
+
 }

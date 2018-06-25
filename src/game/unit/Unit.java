@@ -7,7 +7,6 @@ import game.board.Direction;
 import game.board.Path;
 import game.board.PathFinder;
 import game.board.Square;
-import game.interaction.effect.Affectable;
 import game.interaction.incident.IncidentListener;
 import game.interaction.incident.IncidentReporter;
 import game.unit.listofunits.Aquamancer;
@@ -57,7 +56,7 @@ import game.unit.property.ability.ActiveAbility;
 import game.unit.property.ability.ActiveTargetAbility;
 
 //36
-public abstract class Unit extends Affectable {
+public abstract class Unit {
 
     // TODO go through and document EVERYTHING
     // TODO go through and determine visibility of ALL members in every class.

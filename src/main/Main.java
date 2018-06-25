@@ -39,7 +39,6 @@ public class Main {
 	    Main.test();
 	    return;
 	}
-
     }
 
     public static String getStringInput() {
@@ -68,13 +67,13 @@ public class Main {
 	Thread client1Thead = new Thread() {
 	    @Override
 	    public void run() {
-		TestingClient.main("localhost", "Dr. Monson");
+		TestingClient.main("localhost", "uk246", "password");
 	    }
 	};
 	Thread client2Thead = new Thread() {
 	    @Override
 	    public void run() {
-		TestingClient.main("localhost", "Dr. Buzen");
+		TestingClient.main("localhost", "akarsh", "password");
 	    }
 	};
 

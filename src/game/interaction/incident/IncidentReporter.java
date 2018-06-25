@@ -1,9 +1,8 @@
 package game.interaction.incident;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
  * IncidentReporters are used to maintain multiple IncidentListeners that are
@@ -20,13 +19,13 @@ public class IncidentReporter {
      * true, the listener will be removed from the list of listeners after it has
      * received one broadcast.
      */
-    private final Map<IncidentListener, Boolean> listeners;
+    private final List<IncidentListener> listeners;
 
     /**
      * Initializes the IncidentReporter.
      */
     public IncidentReporter() {
-	listeners = new LinkedHashMap<>();
+	listeners = new ArrayList<>();
     }
 
     /**
@@ -37,13 +36,13 @@ public class IncidentReporter {
      *            for the listeners
      */
     public void reportIncident(Object... args) {
-	Iterator<IncidentListener> it = listeners.keySet().iterator();
+	Iterator<IncidentListener> it = listeners.iterator();
 	while (it.hasNext()) {
 	    IncidentListener listener = it.next();
 
 	    listener.incidentReported(args);
 
-	    if (listeners.get(listener)) {
+	    if (listener.shouldExistCondition().performCondition(this, listener)) {
 		it.remove();
 	    }
 	}
@@ -52,8 +51,8 @@ public class IncidentReporter {
     /**
      * @return the list of listeners.
      */
-    public Set<IncidentListener> getListeners() {
-	return listeners.keySet();
+    public List<IncidentListener> getListeners() {
+	return listeners;
     }
 
     /**
@@ -63,7 +62,7 @@ public class IncidentReporter {
      * @param listener
      */
     public void add(IncidentListener listener) {
-	add(listener, false);
+	listeners.add(listener);
     }
 
     /**
@@ -75,8 +74,16 @@ public class IncidentReporter {
      * @param listener
      * @param onlyOnce
      */
-    public void add(IncidentListener listener, boolean onlyOnce) {
-	listeners.put(listener, onlyOnce);
+    public void add(IncidentListener listener_, boolean onlyOnce) {
+	ConditionalIncidentListener listener = new ConditionalIncidentListener(
+		onlyOnce ? Condition.falseCondition : Condition.trueCondition) {
+
+	    @Override
+	    public void incidentReported(Object... specifications) {
+		listener_.incidentReported(specifications);
+	    }
+	};
+	add(listener);
     }
 
     /**

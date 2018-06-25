@@ -52,6 +52,7 @@ import game.unit.property.ability.AbilityAOE;
 import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveAbility;
+import game.unit.property.ability.ActiveTargetAbility;
 import testing.Message;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION
@@ -302,7 +303,7 @@ public class GameWindow {
 	} else if (game.canMove()) {
 	    pickMoveButtonClicked();
 	} else if (game.canAttack()) {
-	    if (game.getSelectedUnit().getAbility() instanceof ActiveAbility) {
+	    if (game.getSelectedUnit().getAbility() instanceof ActiveTargetAbility) {
 		pickAttackButtonClicked();
 	    }
 	} else if (game.canChangeDir()) {

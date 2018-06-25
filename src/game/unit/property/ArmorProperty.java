@@ -12,6 +12,7 @@ import game.unit.property.ability.Ability;
 
 public class ArmorProperty extends Property<Integer> {
 
+    private final IncidentReporter onAttackReporter;
     private final IncidentReporter blockReporter;
 
     private Turn lastBlockingIncident;
@@ -26,6 +27,7 @@ public class ArmorProperty extends Property<Integer> {
 	frontBlockProperty = new Property<>(unitOwner, frontBlockPercent);
 	sideBlockProperty = new Property<>(unitOwner, sideBlockPercent);
 
+	onAttackReporter = new IncidentReporter();
 	blockReporter = new IncidentReporter();
 
 	lastBlockingIncident = null;
@@ -74,6 +76,8 @@ public class ArmorProperty extends Property<Integer> {
     }
 
     public boolean attemptBlock(Damage damage) {
+
+	onAttackReporter.reportIncident(damage);
 	// determine if it blocked the damage
 	if (DamageType.PHYSICAL.equals(damage.getDamageType())) {
 
@@ -145,6 +149,10 @@ public class ArmorProperty extends Property<Integer> {
 
 	blockReporter.reportIncident(damage);
 
+    }
+
+    public IncidentReporter getOnAttackReporter() {
+	return onAttackReporter;
     }
 
     public IncidentReporter getBlockReporter() {
