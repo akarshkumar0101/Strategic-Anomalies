@@ -1,5 +1,6 @@
 package game;
 
+import io.Communication;
 import testing.ui.GameWindow;
 
 /**

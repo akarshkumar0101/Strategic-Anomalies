@@ -33,7 +33,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
-import game.Communication;
 import game.Game;
 import game.Player;
 import game.board.Board;
@@ -53,6 +52,7 @@ import game.unit.property.ability.AbilityPower;
 import game.unit.property.ability.AbilityRange;
 import game.unit.property.ability.ActiveAbility;
 import game.unit.property.ability.ActiveTargetAbility;
+import io.Communication;
 import testing.Message;
 
 //TODO MAKE SURE YOU USE JAVAFX IN FINAL VERSION

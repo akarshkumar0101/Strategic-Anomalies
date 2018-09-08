@@ -10,7 +10,6 @@ package game.interaction.incident;
  */
 @FunctionalInterface
 public interface Condition {
-
     public static final Condition trueCondition = args -> true;
     public static final Condition falseCondition = args -> false;
     // public static final Condition randomCondition = args -> Math.random() > .5;

@@ -15,6 +15,7 @@ import testing.TestingServer;
 //This is a test
 
 public class Main {
+
     private static final Scanner inputScanner;
 
     static {

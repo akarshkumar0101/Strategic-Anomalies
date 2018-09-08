@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import game.Communication;
 import game.board.Coordinate;
 import game.board.Direction;
 import game.board.NormalBoard;
+import io.Communication;
 import main.Main;
 
 public class TestingServer {

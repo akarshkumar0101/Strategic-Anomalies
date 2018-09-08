@@ -17,6 +17,7 @@ import game.interaction.incident.IncidentReporter;
 import game.unit.Unit;
 import game.unit.property.ability.ActiveAbility;
 import game.unit.property.ability.ActiveTargetAbility;
+import io.Communication;
 import setup.SetupTemplate;
 import testing.Message;
 import testing.ui.GameWindow;

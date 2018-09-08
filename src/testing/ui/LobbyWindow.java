@@ -10,16 +10,38 @@ import javax.swing.JScrollPane;
 
 import testing.TestingClient;
 
-public class LobbyWindow extends JFrame {
+public class LobbyWindow {
+    protected final TestingClient client;
 
-    private static final long serialVersionUID = 3759719847857051056L;
-
-    private JPanel panel;
-    private TestingClient client;
+    private final LobbyWindowGUI lobbyWindowGUI;
 
     public LobbyWindow(TestingClient client) {
-	super("Lobby Window for TAO - logged in as " + client.name);
 	this.client = client;
+
+	lobbyWindowGUI = new LobbyWindowGUI(this);
+
+    }
+
+    public JFrame getGUI() {
+	return lobbyWindowGUI;
+    }
+
+    public void set(String[] names) {
+	lobbyWindowGUI.set(names);
+    }
+}
+
+class LobbyWindowGUI extends JFrame {
+
+    private static final long serialVersionUID = 5609424981495462156L;
+
+    public final LobbyWindow lobbyWindow;
+
+    private JPanel panel;
+
+    public LobbyWindowGUI(LobbyWindow lobbyWindow) {
+	super("Lobby Window for TAO - logged in as " + lobbyWindow.client.name);
+	this.lobbyWindow = lobbyWindow;
 
 	setupDisplay();
 
@@ -43,7 +65,7 @@ public class LobbyWindow extends JFrame {
 	    button.setFont(normalFont);
 	    panel.add(button);
 	    button.addActionListener(e -> {
-		client.clickedName(name);
+		lobbyWindow.client.clickedName(name);
 	    });
 	}
 

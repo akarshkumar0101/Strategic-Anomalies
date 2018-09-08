@@ -5,8 +5,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
-import game.Communication;
 import game.Game;
+import io.Communication;
 import main.Main;
 import setup.SetupTemplate;
 import testing.ui.LobbyWindow;
@@ -113,7 +113,7 @@ public class TestingClient {
     }
 
     public void newGame(String gameServerIP, int gameServerPort, String name) {
-	lobbyWindow.setVisible(false);
+	lobbyWindow.getGUI().setVisible(false);
 	try {
 	    Socket gameSock = new Socket(gameServerIP, gameServerPort);
 	    Communication gameServComm = new Communication(gameSock);
